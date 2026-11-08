@@ -1,0 +1,512 @@
+<title>Projet Alumni ENC</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Mise en page : colonne de lecture unique, sommaire collant à gauche sur grand écran, bandeau burgundy de l'ENC en tête. */
+:root {
+  --bg: #fbfafa;
+  --surface: #ffffff;
+  --sunk: #f3eff0;
+  --fg: #221a1c;
+  --muted: #6b5f62;
+  --line: #e4dcde;
+  --accent: #7d1d2f;
+  --accent-soft: #f6e7ea;
+  --ok: #1f6b45;   --ok-bg: #e3f2ea;
+  --warn: #8a5a00; --warn-bg: #fbf0d9;
+  --no: #9b2c2c;   --no-bg: #fbe5e5;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171314; --surface: #1f1a1b; --sunk: #2a2324; --fg: #f1eaeb; --muted: #b3a5a8; --line: #3a3133;
+    --accent: #e8909f; --accent-soft: #3a1f25;
+    --ok: #7fd3a6; --ok-bg: #173226; --warn: #f0c46b; --warn-bg: #3a2d12; --no: #f19a9a; --no-bg: #3d1c1c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171314; --surface: #1f1a1b; --sunk: #2a2324; --fg: #f1eaeb; --muted: #b3a5a8; --line: #3a3133;
+  --accent: #e8909f; --accent-soft: #3a1f25;
+  --ok: #7fd3a6; --ok-bg: #173226; --warn: #f0c46b; --warn-bg: #3a2d12; --no: #f19a9a; --no-bg: #3d1c1c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+code { font: 0.86em var(--mono); background: var(--sunk); padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.15; }
+h2 { font-size: 1.75rem; margin: 0 0 0.4rem; }
+h3 { font-size: 1.18rem; margin: 1.6rem 0 0.5rem; }
+p { margin: 0 0 0.9rem; }
+ul { margin: 0 0 1rem; padding-left: 1.2rem; }
+li { margin-bottom: 0.3rem; }
+
+.band { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .band { color: #1a0d10; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .band { color: #1a0d10; } }
+.band-in { max-width: 1120px; margin: 0 auto; padding-block: 2.6rem 2.2rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.eyebrow { font: 600 0.78rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+.band h1 { font-size: clamp(2rem, 5vw, 3.1rem); margin: 0.4rem 0 0.6rem; }
+.band p { max-width: 62ch; font-size: 1.08rem; margin: 0; opacity: 0.95; }
+.facts { display: flex; flex-wrap: wrap; gap: 0.5rem 1.6rem; margin-top: 1.4rem; font: 0.85rem var(--mono); }
+.facts b { font-weight: 600; }
+
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 3rem; padding-block: 2.5rem 4rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1.5rem); align-self: start; font-size: 0.93rem; }
+nav.toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.15rem; }
+nav.toc a { display: block; padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--muted); text-decoration: none; }
+nav.toc a:hover { background: var(--sunk); color: var(--fg); }
+nav.toc .lbl { font: 600 0.72rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0 0.6rem 0.5rem; }
+main { min-width: 0; }
+section { padding-bottom: 2.6rem; margin-bottom: 2.6rem; border-bottom: 1px solid var(--line); scroll-margin-top: 1rem; }
+section:last-child { border-bottom: 0; }
+.lede { color: var(--muted); font-size: 1.05rem; max-width: 66ch; }
+.prose { max-width: 70ch; }
+
+.callout { background: var(--accent-soft); border-radius: 10px; padding: 1rem 1.2rem; margin: 1.2rem 0; max-width: 72ch; }
+.callout strong:first-child { color: var(--accent); }
+
+.tbl { overflow-x: auto; margin: 1rem 0 1.2rem; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font: 600 0.74rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--sunk); }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 0.88rem; white-space: nowrap; }
+
+.pill { display: inline-block; font: 600 0.72rem var(--mono); letter-spacing: 0.03em; padding: 0.2rem 0.5rem; border-radius: 999px; white-space: nowrap; }
+.pill.ok { color: var(--ok); background: var(--ok-bg); }
+.pill.warn { color: var(--warn); background: var(--warn-bg); }
+.pill.no { color: var(--no); background: var(--no-bg); }
+
+.team { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+.member { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.2rem 0.6rem; min-width: 0; }
+.member header { display: flex; gap: 0.8rem; align-items: center; margin-bottom: 0.6rem; }
+.ini { flex: none; width: 2.6rem; height: 2.6rem; border-radius: 50%; display: grid; place-items: center; font: 700 0.95rem var(--display); background: var(--accent-soft); color: var(--accent); }
+.member h3 { margin: 0; font-size: 1.1rem; }
+.dom { font-size: 0.85rem; color: var(--muted); }
+.member .dom { font-size: 0.88rem; color: var(--muted); }
+.member ul { font-size: 0.93rem; padding-left: 1.05rem; }
+
+.steps { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 1rem 0; font-size: 0.92rem; }
+.steps span { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.7rem; }
+.steps span.key { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.steps i { color: var(--muted); font-style: normal; }
+
+.timeline { display: grid; gap: 0; margin: 1rem 0; border-left: 2px solid var(--line); padding-left: 1.2rem; }
+.timeline div { position: relative; padding: 0 0 1rem; }
+.timeline div::before { content: ""; position: absolute; left: calc(-1.2rem - 6px); top: 0.45rem; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+.timeline div.key::before { background: var(--accent); }
+.callout ul { margin: 0.5rem 0; }
+.timeline ul { margin: 0.4rem 0 0; }
+.timeline b { font: 600 0.82rem var(--mono); display: block; color: var(--accent); }
+
+.stat { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.8rem; margin: 1.2rem 0; }
+.stat div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem 0.9rem; }
+.stat b { display: block; font: 700 1.6rem var(--display); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.85rem; color: var(--muted); }
+
+footer { color: var(--muted); font-size: 0.88rem; }
+
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  nav.toc { position: static; }
+  nav.toc ol { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  nav.toc a { background: var(--sunk); padding: 0.25rem 0.6rem; }
+  .team { grid-template-columns: minmax(0, 1fr); }
+  .stat { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="band"><div class="band-in">
+  <div class="eyebrow">ENC Bessières · BTS SIO 2ᵉ année · 2026-2027</div>
+  <h1>Projet Alumni ENC</h1>
+  <p>Remplacer la plateforme louée à Datalumni par une plateforme de l'établissement, en service en mars-avril 2027, puis la rendre vivante pour les étudiants et les alumni.</p>
+  <div class="facts">
+    <span><b>Intégration et déploiement</b> Timothée Robert</span>
+    <span><b>Relations institutionnelles et Datalumni</b> Philippe Chenut, DDFPT</span>
+    <span><b>Stage</b> 9 nov. – 18 déc. 2026</span>
+    <span><b>Relevé</b> 8 novembre 2026</span>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Sommaire">
+    <div class="lbl">Sommaire</div>
+    <ol>
+      <li><a href="#constat">Le constat</a></li>
+      <li><a href="#critiques">Ce qui freine l'usage</a></li>
+      <li><a href="#repartition">Répartition</a></li>
+      <li><a href="#calendrier">Calendrier</a></li>
+      <li><a href="#points-durs">Points durs</a></li>
+      <li><a href="#prototype">Projet 2026</a></li>
+      <li><a href="#technique">Choix technique</a></li>
+      <li><a href="#prerequis">Prérequis</a></li>
+      <li><a href="#methode">Méthode de travail</a></li>
+      <li><a href="#reseaux">Réseaux sociaux</a></li>
+      <li><a href="#mobile">Mobile</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="constat">
+      <h2>Le constat</h2>
+      <p class="lede">Les fonctions sont là, mais l'usage manque. Une plateforme de ce type demande une animation régulière, et l'outil actuel ne donne pas beaucoup de raisons de revenir.</p>
+      <div class="stat">
+        <div><b>1214</b><span>membres dans l'annuaire</span></div>
+        <div><b>9</b><span>étudiants inscrits, contre 1143 alumni</span></div>
+        <div><b>0</b><span>offre d'emploi ou de stage</span></div>
+        <div><b>19/03</b><span>dernière publication, en 2026</span></div>
+      </div>
+      <div class="prose">
+        <p>La plateforme compte 14 articles, 2 événements et un club. 24&nbsp;% des profils ont une photo et 28&nbsp;% une expérience. Beaucoup des 784 comptes importés en avril 2025 n'ont pas encore été complétés par leurs titulaires.</p>
+        <p>C'est tout l'enjeu du projet : reproduire les fonctions ne suffira pas. La nouvelle plateforme doit faire <strong>venir les étudiants</strong> et donner aux alumni <strong>des raisons de revenir</strong>.</p>
+      </div>
+    </section>
+
+    <section id="critiques">
+      <h2>Ce qui freine l'usage aujourd'hui</h2>
+      <p class="lede">Ces remarques portent sur l'outil Datalumni. La plupart viennent de choix de l'éditeur, que l'ENC ne peut pas modifier. Une plateforme à nous permettra de les corriger.</p>
+      <h3>Annuaire</h3>
+      <ul class="prose">
+        <li><strong>Pas de tri ni de regroupement.</strong> On ne choisit pas l'ordre d'affichage, et on ne peut pas regrouper par filière ou par promo.</li>
+        <li><strong>La filière est difficile à trouver.</strong> Le filtre visible « Catégorie » propose Alumni, Étudiant, Enseignant… Le diplôme et la promo sont dans la fenêtre « Tous les filtres ».</li>
+        <li><strong>Une fiche n'affiche ni le diplôme ni la promo</strong>, alors que c'est souvent ce qu'on cherche en premier. Les cartes sont grandes (12 par page), et un carré gris remplace les photos manquantes.</li>
+        <li><strong>Pas de mots-clés</strong> pour dire ce qu'on peut apporter : « alternance », « entretien », « création d'entreprise »…</li>
+      </ul>
+      <h3>Carte</h3>
+      <ul class="prose">
+        <li>Elle n'a pas de légende. Elle ne montre que les membres qui ont indiqué leur ville, soit environ la moitié, sans dire de quelle filière ils sont.</li>
+      </ul>
+      <h3>Ensemble du site</h3>
+      <ul class="prose">
+        <li>Le menu latéral n'affiche que des icônes. Le libellé n'apparaît qu'au survol de la souris, ce qui est impossible sur un téléphone.</li>
+        <li>Les modules s'affichent même quand ils sont vides (Emplois, Ressources), ce qui donne une impression d'inactivité. Un texte provisoire « Lorem ipsum » est aussi resté sur la page À propos.</li>
+        <li>Rien n'incite à revenir : pas de résumé hebdomadaire, pas de notification sur le téléphone.</li>
+        <li>Remplir son profil prend du temps, et rien ne permet de reprendre son CV ou son LinkedIn.</li>
+        <li>Les CGU et la politique de confidentialité sont celles de Datalumni.</li>
+      </ul>
+    </section>
+
+    <section id="repartition">
+      <h2>Répartition</h2>
+      <p class="lede">Objectif de la bascule : au moins tout ce que fait Datalumni aujourd'hui, avec les données migrées. Chaque étudiant est responsable d'un domaine, de la base de données à l'écran.</p>
+      <div class="team">
+        <article class="member">
+          <header><div class="ini">AX</div><div><h3>Axel Xu</h3><div class="dom">Comptes, profils, annuaire : le socle</div></div></header>
+          <ul>
+            <li>Connexion par e-mail et mot de passe, Google, LinkedIn ; mot de passe oublié</li>
+            <li>Vérification des mots de passe importés de Datalumni</li>
+            <li>Inscription en étapes, choix de la catégorie, diplôme et promo, validation par un validateur</li>
+            <li>Rôles et droits, définis à un seul endroit</li>
+            <li>Profil : photo, CV, localisation, expériences, formations, compétences, liens</li>
+            <li>Paramètres : visibilité, notifications, blocage, suppression du compte</li>
+            <li>Annuaire : recherche, filtres, tri, regroupement, vue carte</li>
+          </ul>
+        </article>
+        <article class="member">
+          <header><div class="ini">LZ</div><div><h3>Luc Zhang</h3><div class="dom">Migration des données, administration, recette</div></div></header>
+          <ul>
+            <li>Scripts d'import depuis Datalumni : membres, profils, groupes, articles, médias</li>
+            <li>Comptes : mots de passe importés, rapprochement Google/LinkedIn par e-mail, doublons</li>
+            <li>Script rejouable et 3 migrations à blanc chronométrées</li>
+            <li>Référentiels (sites, diplômes, tags, secteurs) ; import CSV ; rôles en masse ; export</li>
+            <li>E-mails : envoi automatique et newsletter, avec désinscription</li>
+            <li>Jeu de données anonymisé, scénarios de recette</li>
+          </ul>
+        </article>
+        <article class="member">
+          <header><div class="ini">SZ</div><div><h3>Steeve Zhou</h3><div class="dom">Mise en relation</div></div></header>
+          <ul>
+            <li>Mentorat : mentors et mentorés, sujets, sollicitation, acceptation, retour d'expérience, charte</li>
+            <li><strong>Chat en direct, repris du prototype :</strong> membres connectés, salon public, messages privés en temps réel avec fichiers, modération ; alerte par e-mail</li>
+            <li>Groupes et clubs : création validée, adhésion, membres, posts, invitations</li>
+            <li>Notifications dans le site</li>
+          </ul>
+        </article>
+        <article class="member">
+          <header><div class="ini">MD</div><div><h3>Marie Dominique Dzalamou</h3><div class="dom">Contenus et vie du réseau</div></div></header>
+          <ul>
+            <li>Page d'accueil : bandeau, à la une, chiffres clés, derniers inscrits</li>
+            <li>Pages libres, dont les mentions légales, CGU et confidentialité de l'ENC</li>
+            <li>Blog : rédaction, validation, publication, likes, commentaires, signalement</li>
+            <li>Fil d'actualité ; événements avec inscription et export vers un agenda</li>
+            <li>Offres d'emploi et de stage ; ressources</li>
+          </ul>
+        </article>
+      </div>
+      <h3>Relectures croisées</h3>
+      <p class="prose">Chaque demande de fusion est relue par un autre étudiant avant que Timothée la valide :</p>
+      <ul class="prose">
+        <li>Axel relit Steeve ;</li>
+        <li>Luc relit Marie Dominique ;</li>
+        <li>Axel et Luc se relisent mutuellement.</li>
+      </ul>
+    </section>
+
+    <section id="calendrier">
+      <h2>Calendrier du stage</h2>
+      <p class="lede">Du lundi 9 novembre au vendredi 18 décembre 2026, à temps plein. Aucun socle n'est prêt : la première semaine sert à le construire ensemble. Le mercredi 11 novembre est férié.</p>
+      <h3>Semaine 1 : démarrage et socle</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Jour</th><th>Matin</th><th>Après-midi</th></tr></thead>
+        <tbody>
+          <tr><td class="num">Lun. 9</td><td>Présentation du projet ; vérification des postes ; chacun découvre son domaine (plateforme actuelle et prototype 2026)</td><td>Mini-tâche de 2 heures dans l'option technique qui tente chacun ; <strong>décision à 17 h</strong></td></tr>
+          <tr><td class="num">Mar. 10, jeu. 12, ven. 13</td><td colspan="2">Socle, une brique chacun. Vendredi après-midi : socle fusionné et première démo.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="prose">Les quatre briques du socle :</p>
+      <ul class="prose">
+        <li><strong>Axel :</strong> modèle Membre, connexion par e-mail et mot de passe, rôles.</li>
+        <li><strong>Luc :</strong> référentiels (sites, diplômes, promos) et générateur de fausses données au format Datalumni.</li>
+        <li><strong>Steeve :</strong> gabarit des pages, menu avec libellés, mise en page mobile d'abord, manifeste de l'application installable.</li>
+        <li><strong>Marie Dominique :</strong> administration et pages libres (À propos, mentions légales, CGU).</li>
+      </ul>
+      <h3>Semaines 2 à 6</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Semaine</th><th>Dates</th><th>Objectif</th></tr></thead>
+        <tbody>
+          <tr><td class="num">S2 – S4</td><td class="num">16 nov. – 4 déc.</td><td>Parité par domaine, fusions au fil de l'eau, démo chaque vendredi</td></tr>
+          <tr><td class="num">S5</td><td class="num">7 – 11 déc.</td><td>Fin de la parité, puis tri et regroupement de l'annuaire, version mobile, partage</td></tr>
+          <tr><td class="num">S6</td><td class="num">14 – 18 déc.</td><td>Chacun teste le domaine d'un autre ; corrections, documentation, démo finale devant le chef de travaux</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Pendant ce temps</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Philippe : Datalumni et contacts institutionnels</th><th>Timothée : technique</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Lundi 9 :</strong> valider la création de l'organisation GitHub de l'ENC ; récupérer un <strong>accès administrateur Datalumni</strong>, pour voir tout le contenu, les exports et l'enquête d'insertion</td><td><strong>Lundi 9 :</strong> organisation GitHub, dépôt, tâches de la semaine</td></tr>
+          <tr><td><strong>Lundi 9 :</strong> envoyer la demande d'export à Datalumni</td><td><strong>Semaine 1 :</strong> protection de la branche principale, fusion du socle, mise en ligne de la recette</td></tr>
+          <tr><td><strong>Semaine 1 :</strong> savoir qui possède le domaine, et qui administre la page LinkedIn de l'école</td><td><strong>Avant S2 :</strong> applications Google et LinkedIn de développement</td></tr>
+          <tr><td><strong>En continu :</strong> relances Datalumni, DPO, direction</td><td><strong>Dès réception de l'échantillon :</strong> données anonymisées pour l'équipe</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Après le stage</h3>
+      <div class="timeline">
+        <div><b>Janvier – février</b>Intégration par Timothée, compléments en atelier ou pour l'épreuve E6, hébergement de production, 2 à 3 migrations à blanc.</div>
+        <div class="key"><b>Avant le 25 mars 2027</b>Bascule sur bessieres-alumni.org. Le domaine expire ce jour-là.</div>
+        <div><b>Avril – juin</b>Évolutions réseaux sociaux et mobile.</div>
+      </div>
+    </section>
+
+    <section id="points-durs">
+      <h2>Points durs à anticiper</h2>
+      <p class="lede">Les étudiants construisent chaque mécanisme avec des données et des services de test. Philippe obtient ce qui dépend de Datalumni et de l'établissement, et Timothée branche le tout sur le réel.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Sujet</th><th>Difficulté</th><th>Étudiants</th><th>Philippe et Timothée</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Mots de passe</strong></td><td>Stockés par Authentik, le système de connexion de Datalumni, au format Django <code>pbkdf2_sha256</code>. Beaucoup des 784 comptes importés n'ont sans doute jamais été activés</td><td>Vérification de l'ancien mot de passe puis ré-enregistrement ; lien d'activation ; tests avec des empreintes générées</td><td>Philippe obtient les empreintes, Timothée les importe</td></tr>
+          <tr><td><strong>Doublons</strong></td><td>Une même personne importée, puis inscrite avec une autre adresse</td><td>Rapport de doublons</td><td>Timothée : fusion manuelle</td></tr>
+          <tr><td><strong>Google et LinkedIn</strong></td><td>Les applications actuelles appartiennent à Datalumni. Une adresse Google différente de celle du compte crée un doublon. L'application LinkedIn doit être validée par un administrateur de la page de l'école</td><td>Connexion, rattachement par identifiant puis par e-mail, « lier mon compte » ; jamais de création automatique</td><td>Timothée crée les applications de l'ENC ; Philippe trouve l'administrateur de la page LinkedIn</td></tr>
+          <tr><td><strong>E-mails</strong></td><td>Plus de 1214 envois le jour de la bascule ; risque de spam ; adresses mortes</td><td>Modèles, envoi par lots, désinscription, tout vers Mailpit</td><td>Timothée : prestataire d'envoi, DNS (SPF, DKIM, DMARC), envoi réel</td></tr>
+          <tr><td><strong>Fichiers</strong></td><td>Photos, CV et images hébergés chez Datalumni</td><td>Script de rapatriement</td><td>Timothée l'exécute avant la fin du contrat</td></tr>
+          <tr><td><strong>Anciens liens</strong></td><td>Liens vers les profils et articles déjà partagés</td><td>Conserver l'identifiant Datalumni et rediriger</td><td>—</td></tr>
+          <tr><td><strong>Domaine</strong></td><td>Propriétaire inconnu, expire le 25 mars 2027</td><td>—</td><td>Philippe vérifie le propriétaire et fait renouveler ; Timothée bascule le DNS</td></tr>
+          <tr><td><strong>RGPD</strong></td><td>CGU et confidentialité à refaire, membres à informer</td><td>Pages, acceptation au premier login</td><td>Philippe : DPO, registre, validation des textes</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>Philippe demande à Datalumni dès lundi :</strong>
+        <ul>
+          <li>un <strong>accès administrateur</strong> à la plateforme ;</li>
+          <li>tous les comptes, y compris les comptes masqués ;</li>
+          <li>les mots de passe tels qu'Authentik les stocke ;</li>
+          <li>les liaisons Google et LinkedIn ;</li>
+          <li>les profils, les groupes et les promos, les contenus, les messages et le mentorat ;</li>
+          <li>les fichiers en originaux et les consentements ;</li>
+          <li><strong>un échantillon tout de suite</strong>, puis un dernier export le jour de la bascule.</li>
+        </ul>
+        La liste détaillée est dans <code>docs/06-points-durs.md</code>.
+      </div>
+    </section>
+
+    <section id="prototype">
+      <h2>Le projet de 2026 : notre point de départ</h2>
+      <p class="lede">En un stage de première année, <strong>Axel, Luc et Steeve</strong> ont reproduit l'essentiel des fonctions du site. C'est un travail remarquable, et c'est lui qui rend le projet de cette année crédible. Ils sont tous les trois dans l'équipe : ce sont leurs écrans et leurs idées qui servent de point de départ, et ils les connaissent mieux que personne.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Ce qu'ils ont fait</th><th>Ce qu'il reste à faire pour une mise en production</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill ok">Acquis</span> Profils, annuaire avec carte, groupes, événements, blog, offres, messagerie, connexion Google et LinkedIn</td><td>Ces écrans et ces parcours servent de <strong>maquette</strong> et de cahier des charges</td></tr>
+          <tr><td><span class="pill warn">À compléter</span> Installation</td><td>Un README et une configuration qui permettent à un nouveau venu de démarrer seul</td></tr>
+          <tr><td><span class="pill warn">À compléter</span> Droits d'accès</td><td>Ouvert au public avec de vraies données personnelles, le site doit réserver les profils (téléphone, rémunération) aux seuls membres autorisés</td></tr>
+          <tr><td><span class="pill warn">À compléter</span> Robustesse</td><td>Passer par l'ORM plutôt que par du SQL écrit à la main ; ajouter des tests ; réunir les deux branches</td></tr>
+          <tr><td><span class="pill warn">À compléter</span> Hébergement</td><td>Le code a été adapté aux offres gratuites (Vercel, Neon). La production de l'ENC sera hébergée autrement</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>Leur réalisation la plus remarquable : le chat en direct.</strong> Datalumni n'a rien de comparable. Le prototype propose :
+        <ul>
+          <li>la liste des membres <strong>connectés en ce moment</strong> ;</li>
+          <li>un <strong>salon public</strong> où ils peuvent échanger ;</li>
+          <li>des <strong>messages privés</strong> en temps réel, avec envoi de fichiers ;</li>
+          <li>un <strong>forum</strong> qui se met à jour sans recharger la page ;</li>
+          <li>un filtre de <strong>modération</strong> ;</li>
+          <li>une messagerie flottante disponible sur toutes les pages.</li>
+        </ul>
+        Cette fonction est reprise telle quelle dans le projet de cette année, puis améliorée (voir « Mise en relation »). Sa version la plus aboutie est sur la branche <code>main</code> du prototype.</div>
+      <p class="prose">Ces points ne sont pas des erreurs : ce sont les exigences propres à une mise en production, qu'on n'attend pas d'un stage de première année. On ouvre donc un dépôt neuf, où Axel, Luc et Steeve reprennent leurs écrans et leurs parcours, et où Marie Dominique apporte un regard neuf. Si l'équipe reste sur Next.js + Payload, une partie de leur code pourra être reprise directement.</p>
+    </section>
+
+    <section id="technique">
+      <h2>Choix technique : à trancher ensemble</h2>
+      <p class="lede">L'équipe travaille 6 semaines sur ce projet. La technique doit lui donner envie et produire le plus possible dans ce délai.</p>
+      <div class="callout"><strong>Le choix de 2026 était un bon choix.</strong> Next.js + Payload est une technique moderne et cohérente, et elle reste une option sérieuse. Ce qui change cette année, ce sont les contraintes : mise en production, reprise des données, maintenance après le départ de l'équipe.</div>
+      <h3>Ce qui fait la différence ici</h3>
+      <ul class="prose">
+        <li><strong>Six semaines :</strong> ce que le framework fournit tout fait (administration, connexion, droits, migrations) vaut de l'or.</li>
+        <li><strong>Les mots de passe Datalumni</strong> sont stockés par Authentik, écrit en Django, au format Django. Django les relit sans une ligne de code. Les autres options doivent écrire ce vérificateur.</li>
+        <li><strong>La maintenance après juin 2027 :</strong> une version maintenue plusieurs années (LTS) évite de tout mettre à jour chaque rentrée.</li>
+        <li><strong>Une ou deux bases de code :</strong> un front séparé de l'API double les langages, les déploiements et les sources de bugs.</li>
+      </ul>
+      <h3>Les quatre options</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Option</th><th>Pour</th><th>Contre</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A. Next.js + Payload</strong><br><span class="dom">leur choix, dans un dépôt neuf</span></td><td><strong>Déjà pratiquée par Axel, Luc et Steeve</strong> sur le prototype ; une partie de leurs écrans réutilisable, dont le <strong>chat en direct</strong> ; back-office Payload ; interfaces riches en React ; motivante</td><td>Versions qui changent chaque année ; communauté Payload encore petite ; Marie Dominique devra s'y former ; vérificateur de mots de passe à écrire ; peu enseignée en BTS</td></tr>
+          <tr><td><strong>B. Nuxt + Django REST</strong><br><span class="dom">sans doute comme Datalumni</span></td><td>Mots de passe relus nativement ; back-office Django ; Python apprécié ; API toute prête pour une app native</td><td><strong>Deux bases de code</strong> et deux langages : à 4 en 6 semaines, on livre moins ; Nuxt a changé de version majeure en 2025 ; copier l'architecture de Datalumni n'apporte rien, on ne reprend que ses données</td></tr>
+          <tr><td><strong>C. Django + HTMX</strong><br><span class="dom">un seul programme Python</span></td><td>Mots de passe relus sans code ; <strong>back-office gratuit</strong> ; un seul langage ; Django 5.2 LTS jusqu'en avril 2028 ; Python apprécié ; très bien connu des IA</td><td>Moins « tendance » ; messagerie en temps réel plus laborieuse ; HTMX à découvrir, mais il s'apprend en une journée</td></tr>
+          <tr><td><strong>D. Symfony + Twig/Turbo</strong><br><span class="dom">programme SLAM</span></td><td>Au programme ; Symfony 7.4 LTS jusqu'en 2029 ; droits centralisés ; back-office EasyAdmin</td><td>Timothée n'en est pas spécialiste, alors qu'il intègre ; vérificateur de mots de passe à écrire ; plus de configuration au départ</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Critère</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
+        <tbody>
+          <tr><td>Fourni tout fait</td><td>+</td><td>+</td><td>++</td><td>+</td></tr>
+          <tr><td>Mots de passe Datalumni</td><td>−</td><td>++</td><td>++</td><td>+</td></tr>
+          <tr><td>Bases de code</td><td>1</td><td><strong>2</strong></td><td>1</td><td>1</td></tr>
+          <tr><td>Rendement en 6 semaines</td><td>++</td><td>−</td><td>+</td><td>+</td></tr>
+          <tr><td>Maintenance après juin</td><td>−</td><td>~</td><td>++</td><td>++</td></tr>
+          <tr><td>Interfaces riches</td><td>++</td><td>++</td><td>+</td><td>+</td></tr>
+          <tr><td>Version mobile (PWA)</td><td>++</td><td>++</td><td>+</td><td>+</td></tr>
+          <tr><td>Envie de l'équipe</td><td colspan="4">à demander</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>Recommandation : A, Next.js + Payload, avec quatre conditions.</strong> Trois des quatre étudiants l'ont déjà pratiquée : en 6 semaines, c'est l'avantage décisif, et leurs écrans se reprennent directement. Les conditions :
+        <ul>
+          <li>un dépôt neuf ;</li>
+          <li>des droits définis dans Payload et jamais contournés ;</li>
+          <li>un hébergement Docker ordinaire plutôt que Vercel ;</li>
+          <li>des versions figées pendant toute l'année.</li>
+        </ul>
+        Si l'équipe préfère changer de technique, <strong>C (Django + HTMX)</strong> est la meilleure alternative : plus simple à maintenir, et les mots de passe Datalumni passent sans code.</div>
+      <h3>Comment trancher</h3>
+      <ul class="prose">
+        <li>Présenter les quatre options sans annoncer la recommandation.</li>
+        <li>Chacun dit ce qu'il connaît et ce qu'il a envie d'apprendre.</li>
+        <li>En 2 heures, chacun réalise la même mini-tâche dans l'option qui le tente : une liste des membres filtrée par promo, avec sa page d'administration.</li>
+        <li>On décide ensemble, et on note la décision et ses raisons dans <code>docs/</code>.</li>
+      </ul>
+    </section>
+
+    <section id="prerequis">
+      <h2>Prérequis</h2>
+      <p class="lede">Les postes de la salle sont déjà équipés : on peut travailler dès le premier matin.</p>
+      <p class="prose"><strong>Déjà installé, rien à faire :</strong> Docker Desktop, Git, VS Code, PhpStorm, Node.js, Python, DBeaver, Bruno.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>À avoir</th><th>Pourquoi</th></tr></thead>
+        <tbody>
+          <tr><td>Son compte GitHub (chacun en a déjà un), avec authentification à deux facteurs</td><td>Contribuer au dépôt de l'équipe</td></tr>
+          <tr><td>Slack</td><td>Échanger au quotidien</td></tr>
+          <tr><td>Un compte Claude gratuit (<code>claude.ai</code>)</td><td>L'assistant IA de l'équipe : on y dépose <code>AGENTS.md</code> en début de conversation pour qu'il connaisse le projet</td></tr>
+        </tbody>
+      </table></div>
+      <p class="prose"><strong>Facultatif :</strong> le GitHub Student Developer Pack, gratuit, qui donne GitHub Copilot dans VS Code. Aucun abonnement payant n'est demandé.</p>
+      <h3>Ce qu'on apprendra en route</h3>
+      <p class="prose">Personne ne maîtrise tout au départ. Voici ce que le projet va mobiliser :</p>
+      <ul class="prose">
+        <li>Git à plusieurs : branches, demandes de fusion, relecture ;</li>
+        <li>le framework retenu et PostgreSQL ;</li>
+        <li>HTML et CSS pensés pour le mobile ;</li>
+        <li>les tests automatiques ;</li>
+        <li>les bases du RGPD ;</li>
+        <li>et un usage de l'IA où l'on <strong>comprend et sait expliquer</strong> ce qu'elle produit.</li>
+      </ul>
+      <h3>Côté établissement</h3>
+      <ul class="prose">
+        <li><strong>Philippe :</strong> accès administrateur Datalumni, demande d'export, propriété du domaine <code>bessieres-alumni.org</code> (expire le 25 mars 2027), administrateur de la page LinkedIn.</li>
+        <li><strong>Philippe :</strong> donner son accord à la création d'un <strong>espace GitHub au nom de l'ENC</strong> (une « organisation » <code>enc-bessieres</code>, gratuite), et en devenir le second propriétaire, pour que le projet ne dépende pas d'une seule personne.</li>
+        <li><strong>Timothée :</strong> créer cette organisation et demander les avantages GitHub Education.</li>
+      </ul>
+    </section>
+
+    <section id="methode">
+      <h2>Méthode de travail</h2>
+      <h3>Le dépôt</h3>
+      <p class="prose">Un <strong>dépôt neuf</strong> <code>enc-bessieres/alumni</code>, dans l'organisation de l'école. Le prototype de 2026 y est transféré puis archivé, et GitHub redirige son ancienne adresse.</p>
+      <p class="prose">Le dépôt reste <strong>public</strong>, à deux conditions : aucune donnée réelle et aucun secret. C'est même un atout : les protections de branche sont gratuites, et le projet compte dans le portfolio de l'épreuve E6.</p>
+      <h3>L'adresse du site</h3>
+      <p class="prose">On garde <strong>bessieres-alumni.org</strong>, pour ne casser ni les liens partagés, ni les marque-pages, ni les e-mails déjà envoyés.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Environnement</th><th>Adresse</th><th>Données</th></tr></thead>
+        <tbody>
+          <tr><td>Développement</td><td>Le poste de chaque étudiant</td><td>Anonymisées</td></tr>
+          <tr><td>Recette</td><td><code>recette.bessieres-alumni.org</code>, protégée, déployée par Timothée</td><td>Anonymisées</td></tr>
+          <tr><td>Production</td><td><code>www.bessieres-alumni.org</code></td><td>Réelles, après la bascule</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Gestion de projet : léger mais tenu</h3>
+      <p class="prose">Trois rituels suffisent, et ils laissent aussi des traces utiles pour l'épreuve E6 :</p>
+      <ul class="prose">
+        <li><strong>Un tableau GitHub</strong> à quatre colonnes : À faire, En cours, En relecture, Terminé. Une carte = une issue.</li>
+        <li><strong>Un point de 10 minutes chaque matin</strong>, à l'oral : ce que j'ai fini, ce que je fais, ce qui me bloque.</li>
+        <li><strong>Une démo chaque vendredi</strong>, sur le site de recette.</li>
+      </ul>
+      <p class="prose">On s'en tient là : pas de diagramme de Gantt, pas de compte rendu écrit quotidien, pas d'estimation en points.</p>
+      <h3>Le cycle d'une tâche</h3>
+      <div class="steps">
+        <span>Issue assignée</span><i>→</i><span>Branche</span><i>→</i><span>Pull request</span><i>→</i><span>Relecture par un autre étudiant</span><i>→</i><span class="key">Fusion par Timothée</span><i>→</i><span>Recette</span>
+      </div>
+      <p class="prose">La branche <code>main</code> est protégée : personne ne pousse directement dessus.</p>
+      <h3>Slack : oui, à une condition</h3>
+      <p class="prose">Slack convient, mais la version gratuite n'affiche que 90 jours d'historique, pour un projet de six mois. La règle est donc :</p>
+      <ul class="prose">
+        <li><strong>Slack sert à discuter.</strong></li>
+        <li><strong>GitHub sert à tout ce qui doit rester :</strong> une tâche ou une décision est une issue, un livrable est une pull request.</li>
+        <li><strong>Deux canaux suffisent :</strong> <code>#alumni</code> pour échanger, et <code>#alumni-dev</code>, où l'application GitHub poste les issues et les pull requests.</li>
+      </ul>
+      <h3>La documentation</h3>
+      <p class="prose">Elle vit <strong>dans le dépôt, en Markdown, dans <code>docs/</code></strong>, et c'est la seule source de vérité.</p>
+      <ul class="prose">
+        <li><strong>Pas de Google Drive :</strong> la documentation y vit séparée du code, se périme sans que personne ne le voie, et les IA ne la lisent pas.</li>
+        <li><strong>Markdown plutôt qu'AsciiDoc :</strong> c'est le format des fichiers de contexte des IA, et GitHub l'affiche directement.</li>
+        <li><strong>Cette page n'est qu'une vitrine :</strong> elle sert à ceux qui ne vont pas sur GitHub, et elle est régénérée depuis <code>docs/</code>. Pour corriger quelque chose, on modifie <code>docs/</code>, jamais la page.</li>
+      </ul>
+    </section>
+
+    <section id="reseaux">
+      <h2>Réseaux sociaux : ce qui est faisable</h2>
+      <p class="lede">Les jeunes sont sur Instagram, TikTok et WhatsApp. Le site doit produire des contenus faits pour y être partagés, et servir de point d'arrivée quand on clique.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Réseau</th><th>Ce qu'on fait</th><th>Faisabilité</th></tr></thead>
+        <tbody>
+          <tr><td>Tous</td><td>Bouton de partage du téléphone sur chaque profil, offre, article et événement ; aperçus soignés (image, titre) quand un lien est partagé</td><td><span class="pill ok">Sans condition</span></td></tr>
+          <tr><td>WhatsApp</td><td>Lien vers la communauté WhatsApp de chaque filière ou promo, affiché dans le groupe correspondant ; bouton « m'écrire sur WhatsApp » sur le profil, si le membre l'active</td><td><span class="pill ok">Sans condition</span></td></tr>
+          <tr><td>WhatsApp</td><td>Envoi automatique de notifications</td><td><span class="pill warn">Payant + vérification Meta</span></td></tr>
+          <tr><td>TikTok</td><td>Vidéos de l'école intégrées à l'accueil et aux articles</td><td><span class="pill ok">Sans condition</span></td></tr>
+          <tr><td>TikTok</td><td>Publication automatique depuis le site</td><td><span class="pill warn">Audit TikTok</span> sans audit, les vidéos restent privées</td></tr>
+          <tr><td>Instagram</td><td>Publication automatique des articles et événements sur le compte de l'école ; derniers posts de l'école sur l'accueil</td><td><span class="pill warn">Compte pro + vérification Meta</span></td></tr>
+          <tr><td>LinkedIn</td><td>Connexion conservée ; bouton « partager sur LinkedIn »</td><td><span class="pill ok">Sans condition</span></td></tr>
+          <tr><td>LinkedIn</td><td>Récupérer automatiquement le parcours d'un membre</td><td><span class="pill no">Impossible</span> l'API est réservée aux partenaires de LinkedIn</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><strong>À la place de l'import LinkedIn :</strong> le membre dépose son CV ou l'export PDF de son profil LinkedIn, une IA en extrait les expériences et les formations, et le membre valide. C'est la réponse aux 72&nbsp;% de profils vides.</div>
+    </section>
+
+    <section id="mobile">
+      <h2>Mobile : une application web installable</h2>
+      <p class="prose">Le site devient une <strong>PWA</strong> : il s'installe sur l'écran d'accueil du téléphone et s'ouvre en plein écran. Il n'y a qu'une seule base de code et rien à publier dans les stores.</p>
+      <ul class="prose">
+        <li>Notifications sur Android, et sur iPhone depuis iOS 16.4, une fois le site ajouté à l'écran d'accueil.</li>
+        <li>QR codes pour la carte de membre, l'inscription pendant une soirée alumni ou une JPO, et le pointage des présents.</li>
+        <li>Résumé hebdomadaire personnalisé, envoyé seulement s'il y a du nouveau dans la filière : inscrits, offres, événements, demandes de mentorat.</li>
+        <li><strong>Le chat en direct</strong> trouve toute sa place sur le téléphone : salon ouvert pendant une soirée alumni ou une JPO, et rencontres spontanées entre membres connectés au même moment.</li>
+        <li>Une présence dans les stores reste possible plus tard, en emballant la même application, sans la réécrire.</li>
+      </ul>
+      <footer><p>Sources : relevé de bessieres-alumni.org (compte membre) et du dépôt Awerox/Alumni_Clone, le 8 novembre 2026. Documents complets dans <code>docs/</code> du projet.</p></footer>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,5 @@
+# Fins de ligne LF partout : les scripts exécutés dans Docker (Linux) cassent avec des CRLF Windows.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

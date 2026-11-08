@@ -1,0 +1,21 @@
+# Documents de pilotage de l'enseignant : jamais publiés
+/_prof/
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Données : jamais dans le dépôt
+/data/
+/exports/
+*.sql
+*.sql.gz
+*.dump
+
+# Éditeurs et systèmes
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
