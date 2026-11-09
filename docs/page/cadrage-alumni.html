@@ -347,12 +347,12 @@ footer { color: var(--muted); font-size: 0.88rem; }
           <li>un filtre de <strong>modération</strong> ;</li>
           <li>une messagerie flottante disponible sur toutes les pages.</li>
         </ul>
-        Cette fonction est reprise telle quelle dans le projet de cette année, puis améliorée (voir « Mise en relation »). Sa version la plus aboutie est sur la branche <code>main</code> du prototype.</div>
-      <p class="prose">Ces points ne sont pas des erreurs : ce sont les exigences propres à une mise en production, qu'on n'attend pas d'un stage de première année. On ouvre donc un dépôt neuf, où Axel, Luc et Steeve reprennent leurs écrans et leurs parcours, et où Marie Dominique apporte un regard neuf. Si l'équipe reste sur Next.js + Payload, une partie de leur code pourra être reprise directement.</p>
+        Cette fonction est reprise dans le projet de cette année, réécrite en Django avec la même technique, puis améliorée (voir « Mise en relation »). Sa version la plus aboutie est sur la branche <code>main</code> du prototype.</div>
+      <p class="prose">Ces points ne sont pas des erreurs : ce sont les exigences propres à une mise en production, qu'on n'attend pas d'un stage de première année. On ouvre donc un dépôt neuf, où Axel, Luc et Steeve reprennent leurs écrans et leurs parcours, et où Marie Dominique apporte un regard neuf. Le nouveau site est écrit en Django : ils y reprennent ce qu'ils ont conçu, en sachant déjà ce qu'il faut construire.</p>
     </section>
 
     <section id="technique">
-      <h2>Choix technique : à trancher ensemble</h2>
+      <h2>Choix technique : Django + HTMX</h2>
       <p class="lede">L'équipe travaille 6 semaines sur ce projet. La technique doit lui donner envie et produire le plus possible dans ce délai.</p>
       <div class="callout"><strong>Le choix de 2026 était un bon choix.</strong> Next.js + Payload est une technique moderne et cohérente, et elle reste une option sérieuse. Ce qui change cette année, ce sont les contraintes : mise en production, reprise des données, maintenance après le départ de l'équipe.</div>
       <h3>Ce qui fait la différence ici</h3>
@@ -385,21 +385,14 @@ footer { color: var(--muted); font-size: 0.88rem; }
           <tr><td>Envie de l'équipe</td><td colspan="4">à demander</td></tr>
         </tbody>
       </table></div>
-      <div class="callout"><strong>Recommandation : A, Next.js + Payload, avec quatre conditions.</strong> Trois des quatre étudiants l'ont déjà pratiquée : en 6 semaines, c'est l'avantage décisif, et leurs écrans se reprennent directement. Les conditions :
+      <div class="callout"><strong>Décision du lundi 9 novembre 2026 : C, Django + HTMX.</strong>
         <ul>
-          <li>un dépôt neuf ;</li>
-          <li>des droits définis dans Payload et jamais contournés ;</li>
-          <li>un hébergement Docker ordinaire plutôt que Vercel ;</li>
-          <li>des versions figées pendant toute l'année.</li>
+          <li>Les mots de passe Datalumni passent sans code.</li>
+          <li>Le back-office, la connexion et les droits sont fournis par Django.</li>
+          <li>Il n'y a qu'un langage et qu'une base de code.</li>
+          <li>Django 5.2 est maintenu jusqu'en avril 2028.</li>
         </ul>
-        Si l'équipe préfère changer de technique, <strong>C (Django + HTMX)</strong> est la meilleure alternative : plus simple à maintenir, et les mots de passe Datalumni passent sans code.</div>
-      <h3>Comment trancher</h3>
-      <ul class="prose">
-        <li>Présenter les quatre options sans annoncer la recommandation.</li>
-        <li>Chacun dit ce qu'il connaît et ce qu'il a envie d'apprendre.</li>
-        <li>En 2 heures, chacun réalise la même mini-tâche dans l'option qui le tente : une liste des membres filtrée par promo, avec sa page d'administration.</li>
-        <li>On décide ensemble, et on note la décision et ses raisons dans <code>docs/</code>.</li>
-      </ul>
+        Le prototype de 2026 reste la référence fonctionnelle : ses écrans et ses parcours sont réécrits en Django, et son chat en direct garde la même technique (SSE).</div>
     </section>
 
     <section id="prerequis">

@@ -52,7 +52,7 @@ Aujourd'hui, 9 étudiants sont inscrits pour 1143 alumni.
 
 Le prototype de 2026 a déjà un chat en direct : membres connectés, salon public, messages privés, forum mis à jour sans recharger. Datalumni n'a rien de comparable.
 
-**Comment ça marche.** Le navigateur garde une connexion ouverte avec le serveur, qui lui pousse les nouveaux messages dès qu'ils arrivent. Le prototype utilise les *Server-Sent Events* (SSE), une technique standard et légère. Comme il était hébergé sur Vercel, chaque connexion interrogeait la base toutes les 3 secondes. Sur notre propre serveur, PostgreSQL peut prévenir directement le serveur de chaque nouveau message (`LISTEN/NOTIFY`) : les messages arrivent instantanément, sans interroger la base en boucle.
+**Comment ça marche.** Le navigateur garde une connexion ouverte avec le serveur, qui lui pousse les nouveaux messages dès qu'ils arrivent. Le prototype utilise les *Server-Sent Events* (SSE), une technique standard et légère. Comme il était hébergé sur Vercel, chaque connexion interrogeait la base toutes les 3 secondes. Sur notre propre serveur, Django sert les SSE avec une vue asynchrone, et PostgreSQL le prévient de chaque nouveau message (`LISTEN/NOTIFY`) : les messages arrivent instantanément, sans interroger la base en boucle. Côté navigateur, l'extension SSE de HTMX les affiche.
 
 **Ce qu'on en fait :**
 

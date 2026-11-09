@@ -1,4 +1,6 @@
-# Choix technique — à trancher avec l'équipe
+# Choix technique
+
+> **Décision du lundi 9 novembre 2026 : Django + HTMX** (option C). Voir [decisions/0001-django-htmx.md](decisions/0001-django-htmx.md). La comparaison ci-dessous est conservée pour garder la trace du raisonnement.
 
 L'équipe va travailler 6 semaines sur ce projet (stage du 9 novembre au 18 décembre 2026), et **la décision se prend le lundi 9 à 17 h**. La technique doit lui donner envie, et doit produire le plus possible dans ce délai. Ce document compare quatre options pour en discuter avec les étudiants.
 
@@ -81,23 +83,13 @@ Légende : ++ très favorable · + favorable · ~ neutre · − défavorable.
 
 Les « ? » dépendent de ce que Timothée maîtrise déjà : Node.js ou Python.
 
-## Recommandation
+## Décision
 
-**A. Next.js + Payload, dans un dépôt neuf.** Axel, Luc et Steeve ont construit le prototype avec cette technique. Sur 6 semaines, partir d'une technique que trois des quatre étudiants pratiquent déjà est l'avantage décisif. Leurs écrans se reprennent, et ils commencent à produire dès le premier jour.
+**C. Django + HTMX.** Les mots de passe Datalumni passent sans code, le back-office et la connexion sont fournis, il n'y a qu'un langage et qu'une base de code, et Django 5.2 est maintenu jusqu'en avril 2028.
 
-J'avais d'abord recommandé Symfony, puis Django. Je reviens sur ces deux choix maintenant que je sais que trois des quatre étudiants sont les auteurs du prototype.
+Le prototype de 2026 reste la référence fonctionnelle : on reprend ses écrans et ses parcours, réécrits en Django. Son chat en direct garde la même technique (SSE), servie par Django.
 
-Les conditions :
-
-- un **dépôt neuf**, avec relecture obligatoire ;
-- les **droits définis dans Payload** (règles d'accès des collections), jamais contournés ;
-- un **hébergement ordinaire** (Docker), et non Vercel/Neon ;
-- des **versions figées** (Next.js, Payload) pour toute l'année ; on ne les met à jour qu'après la bascule ;
-- le **vérificateur de mots de passe Django** (`pbkdf2_sha256`) écrit et testé dès la semaine 2. Il fait environ 30 lignes avec le module `crypto` de Node.js.
-
-**Si l'équipe préfère changer de technique,** C (Django + HTMX) est la meilleure alternative. Elle est plus simple à maintenir après juin, et les mots de passe Datalumni passent sans code.
-
-**B** ne se justifie que si une application mobile *native* devient prioritaire.
+Le détail est dans [decisions/0001-django-htmx.md](decisions/0001-django-htmx.md).
 
 ## Comment animer la discussion
 

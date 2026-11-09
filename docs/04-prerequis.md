@@ -13,9 +13,9 @@ Une mise en production demande des choses qu'on n'attend pas d'un stage de premi
 | Robustesse | Passer par l'ORM plutôt que par du SQL écrit à la main ; ajouter des tests ; réunir les deux branches |
 | Hébergement | Le code a été adapté aux offres gratuites (Vercel, Neon) ; la production de l'ENC sera hébergée autrement |
 
-On ouvre donc un dépôt neuf, où ils reprennent leurs écrans et leurs parcours. Si l'équipe reste sur Next.js + Payload, comme je le recommande, une partie de leur code pourra être reprise directement.
+On ouvre donc un dépôt neuf, en Django, où ils reprennent leurs écrans et leurs parcours. Ils savent déjà ce qu'il faut construire, et comment l'utilisateur s'en sert.
 
-## 2. La technique : à trancher avec l'équipe
+## 2. La technique : Django + HTMX
 
 Quatre options sont comparées dans [05-choix-technique.md](05-choix-technique.md) :
 
@@ -24,7 +24,7 @@ Quatre options sont comparées dans [05-choix-technique.md](05-choix-technique.m
 - C. Django + HTMX ;
 - D. Symfony.
 
-Ma recommandation est **Next.js + Payload**, que trois des quatre étudiants ont déjà pratiquée, dans un dépôt neuf. La décision se prend avec eux.
+**Décision du 9 novembre 2026 : Django + HTMX** (option C), expliquée dans [decisions/0001-django-htmx.md](decisions/0001-django-htmx.md).
 
 ## 3. Prérequis : le strict nécessaire
 
