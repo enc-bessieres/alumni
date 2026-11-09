@@ -1,0 +1,6 @@
+# Dépendances de l'application. Versions figées jusqu'après la bascule :
+# « ~= » n'accepte que les correctifs (5.2.x), jamais une nouvelle version.
+Django~=5.2.0
+psycopg[binary]~=3.3.0
+uvicorn~=0.54.0
+whitenoise~=6.12.0

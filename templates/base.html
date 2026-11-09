@@ -1,0 +1,24 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}Alumni ENC Bessières{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <script src="{% static 'vendor/htmx-2.0.11.min.js' %}" defer></script>
+</head>
+{# Le jeton CSRF est envoyé avec chaque requête HTMX (POST, PUT, DELETE). #}
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="entete">
+    <a class="marque" href="{% url 'accueil:index' %}">Alumni ENC Bessières</a>
+  </header>
+
+  <main class="contenu">
+    {% block contenu %}{% endblock %}
+  </main>
+
+  <footer class="pied">
+    <p>À COMPLÉTER : adresses des deux sites et liens vers les pages légales (issue #11).</p>
+  </footer>
+</body>
+</html>

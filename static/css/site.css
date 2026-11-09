@@ -1,0 +1,43 @@
+/* Feuille de style provisoire : le gabarit complet arrive avec l'issue #11. */
+/* Mobile d'abord : les règles de base visent le téléphone. */
+
+:root {
+  --texte: #1d2433;
+  --fond: #ffffff;
+  --accent: #1a4d8f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: var(--texte);
+  background: var(--fond);
+}
+
+.entete,
+.contenu,
+.pied {
+  padding: 1rem;
+}
+
+.entete {
+  background: var(--accent);
+}
+
+.marque {
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (min-width: 48rem) {
+  .contenu {
+    max-width: 60rem;
+    margin: 0 auto;
+  }
+}

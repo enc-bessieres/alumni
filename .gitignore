@@ -13,6 +13,11 @@
 *.sql.gz
 *.dump
 
+# Python et Django
+__pycache__/
+*.pyc
+/staticfiles/
+
 # Éditeurs et systèmes
 .idea/
 .vscode/*

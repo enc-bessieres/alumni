@@ -25,7 +25,7 @@ Remplacer la plateforme alumni louée par l'ENC Bessières à **Datalumni** (htt
 
 ## Technique
 
-> **Décidée le lundi 9 novembre 2026** : voir `docs/decisions/0001-django-htmx.md`. Les commandes sont complétées avec le squelette du projet.
+> **Décidée le lundi 9 novembre 2026** : voir `docs/decisions/0001-django-htmx.md`.
 
 - Framework : **Django 5.2 LTS**, en **Python 3.13**. Un seul programme : les pages sont produites par les templates Django.
 - Interactivité : **HTMX 2** (filtres instantanés, chargement partiel, chat en direct par SSE). Pas de framework JavaScript.
@@ -37,6 +37,31 @@ Remplacer la plateforme alumni louée par l'ENC Bessières à **Datalumni** (htt
 - Environnement : **Docker**. Tout le projet démarre avec `docker compose up`, sans autre installation que Docker.
 - Postes de la salle : Windows + WSL 2, Docker Desktop, Git (`core.autocrlf=true`), VS Code portable, PhpStorm, Node.js (NVM), Python 3.13, DBeaver, Bruno. Ils font déjà tourner une pile Docker commune (ports 5432, 8025, 8081, 6379) : **le projet utilise d'autres ports**.
 - E-mails en développement : **Mailpit** (http://localhost:8026, car le 8025 est pris par la pile de la salle). Aucun e-mail ne sort réellement.
+- Style : **Ruff** (`ruff check .` et `ruff format .`), vérifié par l'intégration continue.
+
+### Organisation du code
+
+| Emplacement | Contenu |
+|---|---|
+| `config/` | Réglages (`settings.py`, lus depuis `.env`) et adresses racines (`urls.py`) |
+| `accueil/` | Application d'exemple : page d'accueil, `/sante/`, commande `charger_donnees_dev` |
+| `templates/` | Gabarits communs, dont `base.html` ; chaque application a ses gabarits dans `templates/<application>/` |
+| `static/` | CSS ; `static/vendor/` contient HTMX, servi par le site et non par un CDN |
+
+Chaque domaine a **sa propre application Django** (`python manage.py startapp membres`), avec ses modèles, ses vues, ses adresses (`urls.py`) et ses tests (`tests.py`).
+
+### Commandes
+
+Toutes passent par le conteneur `web`, pendant que `docker compose up` tourne :
+
+```bash
+docker compose exec web python manage.py test            # tests
+docker compose exec web python manage.py makemigrations  # après une modification de modèle
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py charger_donnees_dev
+docker compose exec web ruff check . && docker compose exec web ruff format .
+```
 
 ## Vocabulaire du domaine
 

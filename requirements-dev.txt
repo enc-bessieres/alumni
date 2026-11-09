@@ -1,0 +1,3 @@
+# Outils de développement, en plus des dépendances de l'application.
+-r requirements.txt
+ruff==0.17.4
