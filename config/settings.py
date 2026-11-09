@@ -99,6 +99,10 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 # arrivent avec une adresse déjà vérifiée : l'import crée la ligne EmailAddress correspondante.
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "membres.adapter.AdaptateurCompte"
+# Mot de passe oublié : aucun e-mail n'est envoyé à une adresse qui n'est pas celle d'un membre.
+ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
+# Le lien reçu par e-mail est valable une heure (Django le garde 3 jours par défaut).
+PASSWORD_RESET_TIMEOUT = 60 * 60
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
