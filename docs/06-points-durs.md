@@ -123,7 +123,7 @@ Les villes sont géocodées (latitude, longitude, commune, département, région
 | **Bascule DNS** | Réduire la durée de cache (TTL) quelques jours avant, puis faire pointer le domaine vers le nouveau serveur | Timothée |
 | **Certificat HTTPS** | Let's Encrypt automatique sur le nouveau serveur | Timothée |
 | **Anciens liens** | Rediriger `/profile/<uuid>`, `/blog/<slug>` et `/directory` vers les nouvelles adresses | Étudiants, avec `legacy_id` |
-| **Hébergement de production** | À décider avant février : serveur de l'ENC ou VPS (OVH, etc.), avec des sauvegardes quotidiennes de la base et des fichiers | Timothée |
+| **Hébergement de production** | Demandé au prestataire de l'ENC : serveur Linux avec Docker, accès SSH, hébergement dans l'UE, sauvegardes quotidiennes hors du serveur, disponible mi-janvier | Philippe demande, Timothée installe |
 | **Fenêtre de bascule** | Datalumni en lecture seule, dernier export, import, vérifications, ouverture | Timothée, un soir ou un week-end |
 
 ## 7. RGPD
