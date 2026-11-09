@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% comment %}
+  Les pages de django-allauth (connexion, mot de passe oublié…) s'affichent dans NOTRE gabarit :
+  ce fichier remplace le gabarit de base d'allauth et branche ses blocs sur les nôtres.
+  Il affiche aussi les messages (compte en attente, mot de passe changé…).
+{% endcomment %}
+{% block titre %}{% block head_title %}{% endblock head_title %} — Alumni ENC Bessières{% endblock titre %}
+{% block contenu %}
+  {% if messages %}
+    <ul class="messages" role="status">
+      {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+  {% block content %}{% endblock content %}
+{% endblock contenu %}
