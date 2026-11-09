@@ -20,6 +20,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Connexion, mot de passe oublié, puis Google et LinkedIn (django-allauth)
+    "allauth",
+    "allauth.account",
     "accueil",
     "membres",  # Alex : comptes, profils, annuaire
 ]
@@ -33,6 +36,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -79,6 +83,22 @@ DATABASES = {
 # avant la première migration qui crée les tables de connexion : Django ne sait pas en changer
 # ensuite. Les mots de passe sont hachés en pbkdf2_sha256, le format de Datalumni.
 AUTH_USER_MODEL = "membres.Membre"
+
+# --- Connexion avec django-allauth -----------------------------------------------------------
+LOGIN_URL = "account_login"
+LOGIN_REDIRECT_URL = "accueil:index"
+# ModelBackend : le back-office de Django ; celui d'allauth : la connexion par e-mail du site.
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+ACCOUNT_LOGIN_METHODS = {"email"}  # on se connecte avec son e-mail
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # notre Membre n'a pas d'identifiant
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+# Une adresse doit être vérifiée avant de se connecter. Les comptes importés de Datalumni
+# arrivent avec une adresse déjà vérifiée : l'import crée la ligne EmailAddress correspondante.
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_ADAPTER = "membres.adapter.AdaptateurCompte"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

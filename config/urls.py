@@ -5,5 +5,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # Connexion, déconnexion, mot de passe oublié… fournis par django-allauth.
+    path("compte/", include("allauth.urls")),
     path("", include("accueil.urls")),
 ]
