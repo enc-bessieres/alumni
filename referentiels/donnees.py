@@ -2,8 +2,9 @@
 Les référentiels de l'école (issue #10, docs/01-audit-existant.md « Structure de l'école »).
 
 Ce ne sont pas des données personnelles : ils ont leur place dans le dépôt.
-Ce fichier ne dépend pas de Django : il sert à la migration de données 0002
-et au générateur de fausses données.
+Ce fichier ne dépend pas de Django : il sert au générateur de fausses données.
+La migration 0002 en garde une copie figée : si tu modifies une liste ici, écris aussi
+une nouvelle migration, sinon le test des données initiales échouera.
 """
 
 SITES = ["ENC Bessières", "ENC Bessières Apprentissage"]
