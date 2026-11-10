@@ -65,7 +65,7 @@ C'est le chemin critique : il commence dès l'obtention d'un premier export.
   - « Solliciter comme mentor », puis acceptation ou refus ;
   - retour d'expérience en fin de relation ;
   - charte.
-- **Chat en direct, repris du prototype de 2026** (branche `main` d'Alumni_Clone). C'est une fonction que Datalumni n'a pas :
+- **Chat en direct, repris du prototype de 2026** (branche `main` d'Alumni_Clone) et réécrit en Django, avec la même technique (SSE). C'est une fonction que Datalumni n'a pas :
   - présence des membres connectés ;
   - salon public ;
   - messages privés en temps réel, avec fichiers ;

@@ -25,12 +25,18 @@ Remplacer la plateforme alumni louée par l'ENC Bessières à **Datalumni** (htt
 
 ## Technique
 
-> **Décidée le lundi 9 novembre 2026 à 17 h.** Cette section est complétée ce soir-là, avec le framework, les versions et les commandes.
+> **Décidée le lundi 9 novembre 2026** : voir `docs/decisions/0001-django-htmx.md`. Les commandes sont complétées avec le squelette du projet.
 
-- Base de données : **PostgreSQL**.
+- Framework : **Django 5.2 LTS**, en **Python 3.13**. Un seul programme : les pages sont produites par les templates Django.
+- Interactivité : **HTMX 2** (filtres instantanés, chargement partiel, chat en direct par SSE). Pas de framework JavaScript.
+- Administration : le **back-office de Django** (`django.contrib.admin`).
+- Connexion et droits : `django.contrib.auth` (groupes et permissions). Google et LinkedIn : `django-allauth`.
+- Tests : le lanceur de Django, `python manage.py test`.
+- Les versions sont **figées** jusqu'après la bascule. On n'ajoute pas de dépendance sans en parler à Timothée.
+- Base de données : **PostgreSQL 17**.
 - Environnement : **Docker**. Tout le projet démarre avec `docker compose up`, sans autre installation que Docker.
 - Postes de la salle : Windows + WSL 2, Docker Desktop, Git (`core.autocrlf=true`), VS Code portable, PhpStorm, Node.js (NVM), Python 3.13, DBeaver, Bruno. Ils font déjà tourner une pile Docker commune (ports 5432, 8025, 8081, 6379) : **le projet utilise d'autres ports**.
-- E-mails en développement : **Mailpit** (http://localhost:8025). Aucun e-mail ne sort réellement.
+- E-mails en développement : **Mailpit** (http://localhost:8026, car le 8025 est pris par la pile de la salle). Aucun e-mail ne sort réellement.
 
 ## Vocabulaire du domaine
 
