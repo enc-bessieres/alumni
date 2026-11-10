@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block titre %}Accès refusé — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+<h1>Accès refusé</h1>
+{% if user.is_authenticated and user.statut_inscription == "en_attente" %}
+  <p>Votre inscription est en attente de validation. Vous aurez accès au réseau dès qu'elle aura été validée.</p>
+{% else %}
+  <p>Vous n'avez pas accès à cette page.</p>
+{% endif %}
+{% endblock %}

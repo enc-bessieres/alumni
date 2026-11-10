@@ -33,7 +33,6 @@ class MembreManager(BaseUserManager):
 
     def create_superuser(self, email, password=None, **champs):
         champs.update(
-            is_staff=True,
             is_superuser=True,
             role=Membre.Role.ADMINISTRATEUR,
             statut_inscription=Membre.StatutInscription.VALIDEE,
@@ -96,7 +95,7 @@ class Membre(AbstractBaseUser, PermissionsMixin):
     # La date de dernière connexion est le champ last_login d'AbstractBaseUser : Django le met
     # à jour à chaque connexion et s'en sert pour périmer les liens « mot de passe oublié ».
 
-    # Utilisés par Django : compte actif, accès au back-office.
+    # Utilisés par Django : compte actif, accès au back-office (déduit du rôle, voir save).
     is_active = models.BooleanField("actif", default=True)
     is_staff = models.BooleanField("accès au back-office", default=False)
 
@@ -113,6 +112,12 @@ class Membre(AbstractBaseUser, PermissionsMixin):
             # Filet de sécurité dans la base : même un import qui contourne save() (bulk_create)
             # ne peut pas créer deux comptes dont les e-mails ne diffèrent que par la casse.
             models.UniqueConstraint(Lower("email"), name="membre_email_unique_sans_casse"),
+        ]
+        # Permissions propres au projet, attribuées aux rôles dans membres/droits.py
+        permissions = [
+            ("consulter_annuaire", "Peut consulter l'annuaire"),
+            ("valider_inscription", "Peut valider ou refuser une inscription"),
+            ("changer_role", "Peut changer le rôle d'un membre"),
         ]
 
     def __str__(self):
@@ -132,4 +137,6 @@ class Membre(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         # À chaque enregistrement, d'où qu'il vienne : formulaire, import, shell.
         self.email = self.__class__.objects.normalize_email(self.email)
+        # L'accès au back-office découle du rôle : on ne le règle jamais à la main.
+        self.is_staff = self.is_superuser or self.role != self.Role.MEMBRE
         super().save(*args, **kwargs)
