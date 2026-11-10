@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 
@@ -8,6 +9,19 @@ class MembreManager(BaseUserManager):
     """Crée les comptes : on se connecte avec son e-mail, sans identifiant."""
 
     use_in_migrations = True
+
+    @classmethod
+    def normalize_email(cls, email):
+        """
+        Toute l'adresse en minuscules, sans espaces autour : Ines.Martin@Exemple.test et
+        ines.martin@exemple.test sont la même personne. (Django ne met en minuscules que le
+        domaine, après le @.)
+        """
+        return (email or "").strip().lower()
+
+    def get_by_natural_key(self, email):
+        # Utilisé par Django à la connexion : on retrouve le membre quelle que soit la casse saisie.
+        return self.get(email__iexact=email)
 
     def create_user(self, email, password=None, **champs):
         if not email:
@@ -95,6 +109,11 @@ class Membre(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "membre"
         ordering = ["nom", "prenom"]
+        constraints = [
+            # Filet de sécurité dans la base : même un import qui contourne save() (bulk_create)
+            # ne peut pas créer deux comptes dont les e-mails ne diffèrent que par la casse.
+            models.UniqueConstraint(Lower("email"), name="membre_email_unique_sans_casse"),
+        ]
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
@@ -104,3 +123,13 @@ class Membre(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.prenom
+
+    def clean(self):
+        # Avant la vérification d'unicité des formulaires (back-office, inscription).
+        super().clean()
+        self.email = self.__class__.objects.normalize_email(self.email)
+
+    def save(self, *args, **kwargs):
+        # À chaque enregistrement, d'où qu'il vienne : formulaire, import, shell.
+        self.email = self.__class__.objects.normalize_email(self.email)
+        super().save(*args, **kwargs)

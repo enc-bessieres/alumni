@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from django.db import IntegrityError
 from django.test import TestCase
 
@@ -14,7 +15,7 @@ def creer(email, mot_de_passe="motdepasse-de-test", **champs):
 class MembreTests(TestCase):
     def test_un_membre_se_cree_avec_son_e_mail_sans_identifiant(self):
         membre = creer("Ines.Martin@Exemple.test", prenom="Inès", nom="Martin")
-        self.assertEqual(membre.email, "Ines.Martin@exemple.test")  # domaine mis en minuscules
+        self.assertEqual(membre.email, "ines.martin@exemple.test")  # tout en minuscules
         self.assertTrue(membre.password.startswith("pbkdf2_sha256$"))  # jamais en clair
         self.assertEqual(membre.statut_inscription, Membre.StatutInscription.EN_ATTENTE)
         self.assertEqual(membre.role, Membre.Role.MEMBRE)
@@ -33,6 +34,33 @@ class MembreTests(TestCase):
         creer("double@exemple.test")
         with self.assertRaises(IntegrityError):
             creer("double@exemple.test")
+
+    def test_la_casse_ne_cree_pas_de_doublon(self):
+        creer("ines.martin@exemple.test")
+        with self.assertRaises(IntegrityError):
+            creer(" Ines.Martin@Exemple.TEST ")
+
+    def test_la_base_refuse_un_doublon_de_casse_meme_sans_passer_par_save(self):
+        # Un import en masse (bulk_create) contourne save() : la contrainte de la base le bloque.
+        creer("lina@exemple.test")
+        with self.assertRaises(IntegrityError):
+            Membre.objects.bulk_create(
+                [
+                    Membre(
+                        email="LINA@exemple.test", prenom="Lina", nom="Doublon", categorie="alumni"
+                    )
+                ]
+            )
+
+    def test_la_connexion_ignore_la_casse_de_l_e_mail(self):
+        membre = creer("hugo.benali@exemple.test", mot_de_passe="motdepasse-de-test")
+        retrouve = authenticate(email="Hugo.Benali@Exemple.test", password="motdepasse-de-test")
+        self.assertEqual(retrouve, membre)
+
+    def test_le_back_office_enregistre_l_e_mail_en_minuscules(self):
+        membre = Membre(email="Theo@Exemple.test", prenom="Théo", nom="Petit", categorie="alumni")
+        membre.full_clean(exclude=["password"])  # ce que fait un formulaire avant d'enregistrer
+        self.assertEqual(membre.email, "theo@exemple.test")
 
     def test_un_compte_importe_sans_mot_de_passe_ne_peut_pas_se_connecter(self):
         membre = creer("importe@exemple.test", mot_de_passe=None)
