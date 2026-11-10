@@ -1,0 +1,5 @@
+.git
+.env
+_prof
+staticfiles
+**/__pycache__

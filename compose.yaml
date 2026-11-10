@@ -1,0 +1,38 @@
+# Pile de développement : application, PostgreSQL et Mailpit.
+# Les ports évitent ceux de la pile Docker de la salle (5432, 8025, 8081, 6379).
+name: alumni
+
+services:
+  web:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"   # le site : http://localhost:8000
+    volumes:
+      - .:/app        # le code du poste, modifiable sans reconstruire l'image
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  db:
+    image: postgres:17-alpine
+    env_file: .env
+    ports:
+      - "5433:5432"   # pour DBeaver : localhost:5433
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.33
+    ports:
+      - "8026:8025"   # la boîte de réception : http://localhost:8026
+
+volumes:
+  db-data:

@@ -1,0 +1,10 @@
+# Configuration de Ruff, qui vérifie le style du code Python.
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+# E/W : style PEP 8 ; F : erreurs (imports inutiles...) ; I : ordre des imports ;
+# DJ : bonnes pratiques Django ; B : pièges courants.
+select = ["E", "W", "F", "I", "DJ", "B"]
