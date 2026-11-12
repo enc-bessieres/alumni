@@ -1,4 +1,6 @@
+import json
 import re
+import struct
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -145,3 +147,58 @@ class PagesErreurTests(TestCase):
 
         self.assertContains(reponse, "Accès refusé", status_code=403)
         self.assertContains(reponse, "Annuaire", status_code=403)
+
+
+class ApplicationInstallableTests(TestCase):
+    statique = settings.BASE_DIR / "static"
+
+    def lire_manifeste(self):
+        return json.loads((self.statique / "manifest.webmanifest").read_text(encoding="utf-8"))
+
+    def bordeaux_du_css(self):
+        css = (self.statique / "css" / "site.css").read_text(encoding="utf-8")
+        return re.search(r"--bordeaux:\s*(#[0-9a-fA-F]{6})", css).group(1).lower()
+
+    def dimensions_png(self, chemin):
+        """Lit la largeur et la hauteur dans l'en-tête du fichier PNG."""
+        entete = chemin.read_bytes()[:24]
+        self.assertEqual(entete[:8], b"\x89PNG\r\n\x1a\n", f"{chemin.name} n'est pas un PNG")
+        return struct.unpack(">II", entete[16:24])
+
+    def test_le_manifeste_decrit_une_application_installable(self):
+        manifeste = self.lire_manifeste()
+
+        self.assertEqual(manifeste["name"], "Alumni ENC Bessières")
+        self.assertEqual(manifeste["start_url"], "/")
+        self.assertEqual(manifeste["display"], "standalone")
+
+    def test_les_icones_du_manifeste_existent_a_la_bonne_taille(self):
+        tailles = set()
+        for icone in self.lire_manifeste()["icons"]:
+            with self.subTest(icone=icone["src"]):
+                largeur, hauteur = self.dimensions_png(self.statique / icone["src"])
+
+                self.assertEqual(f"{largeur}x{hauteur}", icone["sizes"])
+                tailles.add(icone["sizes"])
+
+        # Android exige au moins une icône 192 et une 512.
+        self.assertTrue({"192x192", "512x512"} <= tailles)
+
+    def test_l_icone_iphone_fait_180_pixels(self):
+        icone = self.statique / "icones" / "apple-touch-icon.png"
+
+        self.assertEqual(self.dimensions_png(icone), (180, 180))
+
+    def test_la_couleur_du_theme_est_le_bordeaux_du_css(self):
+        bordeaux = self.bordeaux_du_css()
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertEqual(self.lire_manifeste()["theme_color"].lower(), bordeaux)
+        self.assertContains(reponse, f'<meta name="theme-color" content="{bordeaux}">')
+
+    def test_le_gabarit_annonce_le_manifeste_et_l_icone_iphone(self):
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertContains(reponse, 'rel="manifest"')
+        self.assertContains(reponse, "manifest.webmanifest")
+        self.assertContains(reponse, 'rel="apple-touch-icon"')
