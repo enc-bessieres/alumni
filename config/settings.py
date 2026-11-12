@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "membres",  # Alex : comptes, profils, annuaire
     "referentiels",  # Luc : sites, niveaux, diplômes
     "pages_libres",
+    "gabarit",  # Steeve : gabarit des pages, menu, application installable
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "gabarit.context_processors.menu",
             ],
             "loaders": _LOADERS,
         },
