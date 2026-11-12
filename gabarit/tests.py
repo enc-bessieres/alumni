@@ -3,7 +3,9 @@ import re
 import struct
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.messages.storage.cookie import CookieStorage
 from django.core.exceptions import PermissionDenied
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, TestCase
@@ -202,3 +204,25 @@ class ApplicationInstallableTests(TestCase):
         self.assertContains(reponse, 'rel="manifest"')
         self.assertContains(reponse, "manifest.webmanifest")
         self.assertContains(reponse, 'rel="apple-touch-icon"')
+
+
+class MessagesTests(SimpleTestCase):
+    def afficher_la_page(self, *textes):
+        requete = RequestFactory().get("/")
+        requete.user = AnonymousUser()
+        # Le stockage des messages, que le middleware de Django installe sur chaque requête.
+        requete._messages = CookieStorage(requete)
+        for texte in textes:
+            messages.success(requete, texte)
+        return render_to_string("base.html", request=requete)
+
+    def test_les_messages_s_affichent_dans_le_gabarit(self):
+        html = self.afficher_la_page("Vous êtes déconnecté.")
+
+        self.assertIn('<ul class="messages" role="status">', html)
+        self.assertIn("<li>Vous êtes déconnecté.</li>", html)
+
+    def test_sans_message_rien_ne_s_affiche(self):
+        html = self.afficher_la_page()
+
+        self.assertNotIn('class="messages"', html)
