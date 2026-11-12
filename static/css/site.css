@@ -1,10 +1,28 @@
-/* Feuille de style provisoire : le gabarit complet arrive avec l'issue #11. */
-/* Mobile d'abord : les règles de base visent le téléphone. */
+/* Feuille de style du site.
+   Mobile d'abord : les règles de base visent le téléphone,
+   celles pour ordinateur sont dans le @media à la fin. */
 
+/* Couleurs et typographie : définies ici, une seule fois. */
 :root {
+  --bordeaux: #55001f;
+  --bordeaux-fonce: #370028;
+  --bordeaux-clair: #f5e6ea;
+
   --texte: #1d2433;
+  --texte-doux: #5b6272;
   --fond: #ffffff;
-  --accent: #1a4d8f;
+  --sur-bordeaux: #ffffff;
+  --bordure: #e2e4ea;
+  --ombre: 0 0.5rem 1.5rem rgb(0 0 0 / 15%);
+
+  --police: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --taille-texte: 1rem;
+  --taille-petite: 0.875rem;
+  --taille-mini: 0.8rem;
+  --interligne: 1.5;
+
+  --rayon: 0.5rem;
+  --hauteur-barre-mobile: 3.75rem;
 }
 
 * {
@@ -13,31 +31,188 @@
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
+  /* Laisse la place à la barre du bas sur mobile. */
+  padding-bottom: var(--hauteur-barre-mobile);
+  font-family: var(--police);
+  font-size: var(--taille-texte);
+  line-height: var(--interligne);
   color: var(--texte);
   background: var(--fond);
 }
 
-.entete,
-.contenu,
-.pied {
-  padding: 1rem;
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  color: var(--bordeaux-fonce);
 }
 
+a {
+  color: var(--bordeaux);
+}
+
+/* Listes des menus : sans puces ni marges. Les listes du contenu des pages gardent les leurs. */
+.entete ul,
+nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Safari affiche sinon un petit triangle devant « Plus ». */
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* En-tête */
 .entete {
-  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bordeaux);
+  color: var(--sur-bordeaux);
 }
 
 .marque {
-  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--sur-bordeaux);
   font-weight: 700;
   text-decoration: none;
 }
 
+.logo {
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* Menu déroulant « Plus » */
+.plus ul {
+  position: absolute;
+  right: 0.5rem;
+  bottom: calc(var(--hauteur-barre-mobile) + 0.25rem);
+  z-index: 5;
+  min-width: 12rem;
+  padding: 0.5rem 0;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--fond);
+  box-shadow: var(--ombre);
+}
+
+.plus a {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: var(--texte);
+  text-align: left;
+  text-decoration: none;
+}
+
+/* Contenu */
+.contenu {
+  padding: 1rem;
+}
+
+/* Pied de page */
+.pied {
+  padding: 1rem;
+  border-top: 1px solid var(--bordure);
+  color: var(--texte-doux);
+  font-size: var(--taille-petite);
+}
+
+.sites {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Menus : la colonne de gauche est cachée sur mobile. */
+.menu-lateral {
+  display: none;
+}
+
+.menu-lateral a,
+.barre-mobile a,
+.barre-mobile summary {
+  color: var(--texte);
+  text-decoration: none;
+}
+
+[aria-current="page"] {
+  color: var(--bordeaux);
+  font-weight: 700;
+}
+
+/* Barre du bas sur mobile */
+.barre-mobile {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--hauteur-barre-mobile);
+  border-top: 1px solid var(--bordure);
+  background: var(--fond);
+}
+
+.barre-mobile > ul {
+  display: flex;
+  height: 100%;
+}
+
+.barre-mobile > ul > li {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  font-size: var(--taille-mini);
+  text-align: center;
+}
+
+/* Ordinateur : menu à gauche, plus de barre en bas. */
 @media (min-width: 48rem) {
+  body {
+    padding-bottom: 0;
+  }
+
+  .barre-mobile {
+    display: none;
+  }
+
+  .mise-en-page {
+    display: grid;
+    grid-template-columns: 14rem 1fr;
+  }
+
+  .menu-lateral {
+    display: block;
+    padding: 1rem;
+    border-right: 1px solid var(--bordure);
+  }
+
+  .menu-lateral a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--rayon);
+  }
+
+  .menu-lateral [aria-current="page"] {
+    background: var(--bordeaux-clair);
+  }
+
+  /* Le texte garde une largeur lisible, aligné à gauche à côté du menu. */
   .contenu {
     max-width: 60rem;
-    margin: 0 auto;
+    padding: 1.5rem 2rem;
+  }
+
+  .sites {
+    grid-template-columns: 1fr 1fr;
   }
 }
