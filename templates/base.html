@@ -36,6 +36,12 @@
     </nav>
 
     <main class="contenu">
+      {# Messages de Django (connexion réussie, déconnexion…) : affichés une fois, puis effacés. #}
+      {% if messages %}
+        <ul class="messages" role="status">
+          {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+        </ul>
+      {% endif %}
       {% block contenu %}{% endblock %}
     </main>
   </div>
