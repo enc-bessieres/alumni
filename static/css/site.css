@@ -51,7 +51,9 @@ a {
   color: var(--bordeaux);
 }
 
-ul {
+/* Listes des menus : sans puces ni marges. Les listes du contenu des pages gardent les leurs. */
+.entete ul,
+nav ul {
   margin: 0;
   padding: 0;
   list-style: none;

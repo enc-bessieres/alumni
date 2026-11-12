@@ -44,6 +44,13 @@ class MenuTests(TestCase):
         self.assertEqual(actives, ["Annuaire"])
         self.assertContains(reponse, 'aria-current="page"')
 
+    def test_seules_les_listes_des_menus_perdent_leurs_puces(self):
+        css = (settings.BASE_DIR / "static" / "css" / "site.css").read_text(encoding="utf-8")
+
+        # Aucune règle ne vise toutes les listes du site : celles du contenu gardent leurs puces.
+        self.assertNotRegex(css, r"(?m)^ul\s*[,{]")
+        self.assertIn("nav ul {", css)
+
     def test_les_pages_provisoires_affichent_bientot_disponible(self):
         for page in pages_provisoires:
             with self.subTest(page=page.name):
@@ -65,4 +72,4 @@ class CouleursTests(SimpleTestCase):
     def test_les_couleurs_ne_sont_ecrites_que_dans_root(self):
         hors_racine = re.sub(r":root\s*\{.*?\}", "", self.lire_css(), count=1, flags=re.DOTALL)
 
-        self.assertEqual(re.findall(r"#[0-9a-fA-F]{3,8}\b|rgb\(", hors_racine), [])
+        self.assertEqual(re.findall(r"#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(", hors_racine), [])
