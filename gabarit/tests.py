@@ -1,9 +1,13 @@
 import re
 
 from django.conf import settings
-from django.test import SimpleTestCase, TestCase
+from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import PermissionDenied
+from django.template.loader import render_to_string
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 from django.utils.html import escape
+from django.views.defaults import permission_denied
 
 from .menu import MENU, NB_ENTREES_MOBILE
 from .urls import urlpatterns as pages_provisoires
@@ -59,6 +63,58 @@ class MenuTests(TestCase):
                 self.assertContains(reponse, "Bientôt disponible.")
 
 
+class FauxMembre:
+    """Un membre connecté, sans base de données.
+
+    La zone membre n'utilise que les méthodes standard d'un compte Django : elle fonctionne
+    avec le modèle Membre d'Axel (issue #9) comme avec le compte par défaut.
+    """
+
+    is_authenticated = True
+
+    def __init__(self, prenom, nom, email):
+        self.prenom = prenom
+        self.nom = nom
+        self.email = email
+
+    def get_short_name(self):
+        return self.prenom
+
+    def get_full_name(self):
+        return f"{self.prenom} {self.nom}".strip()
+
+    def get_username(self):
+        return self.email
+
+
+class ZoneMembreTests(SimpleTestCase):
+    def afficher(self, utilisateur):
+        requete = RequestFactory().get("/")
+        requete.user = utilisateur
+        return render_to_string("gabarit/zone_membre.html", request=requete)
+
+    def test_un_visiteur_voit_se_connecter(self):
+        html = self.afficher(AnonymousUser())
+
+        self.assertIn("Se connecter", html)
+        self.assertNotIn("Paramètres", html)
+
+    def test_un_membre_voit_son_prenom_ses_initiales_et_son_menu(self):
+        html = self.afficher(FauxMembre("Chloé", "Petit", "chloe.petit@exemple.test"))
+
+        self.assertIn("Chloé", html)
+        self.assertIn(">CP<", html)
+        self.assertIn("Profil", html)
+        self.assertIn("Paramètres", html)
+        self.assertNotIn("Se connecter", html)
+
+    def test_sans_nom_l_initiale_vient_de_l_identifiant(self):
+        html = self.afficher(FauxMembre("", "", "bruno@exemple.test"))
+
+        self.assertIn(">B<", html)
+        self.assertIn("bruno@exemple.test", html)
+
+
 class CouleursTests(SimpleTestCase):
     def lire_css(self):
         chemin = settings.BASE_DIR / "static" / "css" / "site.css"
@@ -73,3 +129,19 @@ class CouleursTests(SimpleTestCase):
         hors_racine = re.sub(r":root\s*\{.*?\}", "", self.lire_css(), count=1, flags=re.DOTALL)
 
         self.assertEqual(re.findall(r"#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(", hors_racine), [])
+
+
+class PagesErreurTests(TestCase):
+    def test_la_page_404_utilise_le_gabarit(self):
+        reponse = self.client.get("/cette-page-n-existe-pas/")
+
+        self.assertContains(reponse, "Page introuvable", status_code=404)
+        self.assertContains(reponse, "Annuaire", status_code=404)
+
+    def test_la_page_403_utilise_le_gabarit(self):
+        requete = RequestFactory().get("/page-interdite/")
+
+        reponse = permission_denied(requete, PermissionDenied())
+
+        self.assertContains(reponse, "Accès refusé", status_code=403)
+        self.assertContains(reponse, "Annuaire", status_code=403)
