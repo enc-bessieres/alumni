@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block titre %}Page introuvable — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <h1>Page introuvable</h1>
+  <p>Cette page n'existe pas, ou elle a été déplacée.</p>
+  <p><a href="{% url 'accueil:index' %}">Revenir à l'accueil</a></p>
+{% endblock %}

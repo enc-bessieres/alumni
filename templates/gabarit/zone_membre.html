@@ -1,0 +1,23 @@
+{% if user.is_authenticated %}
+  <details class="zone-membre">
+    <summary>
+      {# À COMPLÉTER : la photo du profil, quand le domaine « comptes » l'aura (#9). #}
+      <span class="initiales" aria-hidden="true">{{ initiales }}</span>
+      <span>{{ user.get_short_name|default:user.get_username }}</span>
+    </summary>
+    <ul>
+      <li><a href="{% url 'gabarit:profil' %}">Profil</a></li>
+      <li><a href="{% url 'gabarit:parametres' %}">Paramètres</a></li>
+      {% if url_deconnexion %}
+        <li>
+          <form method="post" action="{{ url_deconnexion }}">
+            {% csrf_token %}
+            <button type="submit">Déconnexion</button>
+          </form>
+        </li>
+      {% endif %}
+    </ul>
+  </details>
+{% else %}
+  <a class="se-connecter" href="{{ url_connexion }}?next={{ request.path|urlencode }}">Se connecter</a>
+{% endif %}
