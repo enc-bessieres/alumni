@@ -18,4 +18,6 @@ urlpatterns = [
     path("evenements/", views.bientot, {"titre": "Événements"}, name="evenements"),
     path("emplois/", views.bientot, {"titre": "Emplois & stages"}, name="emplois"),
     path("ressources/", views.bientot, {"titre": "Ressources"}, name="ressources"),
+    path("profil/", views.bientot, {"titre": "Profil"}, name="profil"),
+    path("parametres/", views.bientot, {"titre": "Paramètres"}, name="parametres"),
 ]

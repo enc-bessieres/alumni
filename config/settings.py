@@ -56,6 +56,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "gabarit.context_processors.menu",
+                "gabarit.context_processors.compte",
             ],
             "loaders": _LOADERS,
         },
