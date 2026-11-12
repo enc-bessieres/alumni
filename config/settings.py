@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "accueil",
     "membres",  # Alex : comptes, profils, annuaire
     "referentiels",  # Luc : sites, niveaux, diplômes
+    "pages_libres",
 ]
 
 MIDDLEWARE = [
