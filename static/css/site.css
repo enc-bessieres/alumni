@@ -168,6 +168,20 @@ summary::-webkit-details-marker {
   padding: 1rem;
 }
 
+/* Messages de Django (connexion réussie, déconnexion…) */
+.messages {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.messages li {
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--bordeaux);
+  border-radius: var(--rayon);
+  background: var(--bordeaux-clair);
+}
+
 /* Pied de page */
 .pied {
   padding: 1rem;
