@@ -67,7 +67,7 @@ class FauxMembre:
     """Un membre connecté, sans base de données.
 
     La zone membre n'utilise que les méthodes standard d'un compte Django : elle fonctionne
-    avec le modèle Membre d'Axel (issue #9) comme avec le compte par défaut.
+    avec le modèle Membre d'Alex (issue #9) comme avec le compte par défaut.
     """
 
     is_authenticated = True

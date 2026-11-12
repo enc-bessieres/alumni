@@ -31,7 +31,7 @@ def menu(request):
 def compte(request):
     """Ce que la zone membre affiche.
 
-    La connexion et la déconnexion viennent de django-allauth, installé par Axel (issue #9) :
+    La connexion et la déconnexion viennent de django-allauth, installé par Alex (issue #9) :
     tant que sa déconnexion n'existe pas, le bouton reste masqué.
     """
     try:
@@ -40,7 +40,7 @@ def compte(request):
         url_deconnexion = None
 
     # Les initiales passent par les méthodes standard d'un compte Django : elles marchent avec
-    # le modèle Membre d'Axel comme avec le compte par défaut.
+    # le modèle Membre d'Alex comme avec le compte par défaut.
     membre = getattr(request, "user", None)
     initiales = ""
     if membre is not None and membre.is_authenticated:
