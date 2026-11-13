@@ -14,7 +14,7 @@ DEBUG = os.environ.get("DJANGO_DEBUG") == "1"
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "config.apps.AdminDuProjet",  # le back-office de Django (voir config/admin.py)
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
