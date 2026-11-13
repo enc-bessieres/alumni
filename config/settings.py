@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "accueil",
+    "membres",  # Alex : comptes, profils, annuaire
 ]
 
 MIDDLEWARE = [
@@ -73,6 +74,11 @@ DATABASES = {
         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
+
+# Le compte de connexion est notre modèle Membre (membres/models.py). Il doit être déclaré
+# avant la première migration qui crée les tables de connexion : Django ne sait pas en changer
+# ensuite. Les mots de passe sont hachés en pbkdf2_sha256, le format de Datalumni.
+AUTH_USER_MODEL = "membres.Membre"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
