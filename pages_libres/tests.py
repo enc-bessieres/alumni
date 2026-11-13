@@ -111,3 +111,7 @@ class BackOfficeTests(TestCase):
         reponse = self.client.post(reverse("admin:logout"))
         self.assertNotEqual(reponse.status_code, 403)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_l_adresse_publique_d_une_page(self):
+        page = Page.objects.get(slug="cgu")
+        self.assertEqual(page.get_absolute_url(), "/page/cgu/")
