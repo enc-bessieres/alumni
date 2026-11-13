@@ -9,11 +9,13 @@ faux membres (adresse de la forme prenom.nom.12@exemple.test), puis les recrée.
 créés à la main (createsuperuser, back-office) ne sont jamais touchés.
 
 Tous les faux membres ont le même mot de passe, connu de l'équipe : la variable
-MOT_DE_PASSE_DONNEES_DEV du fichier .env (voir .env.example).
+MOT_DE_PASSE_DONNEES_DEV du fichier .env (voir .env.example). Leur adresse est marquée comme
+vérifiée pour django-allauth (quand il est installé), sinon ils ne pourraient pas se connecter.
 """
 
 import os
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -63,8 +65,8 @@ class Command(BaseCommand):
         # Une seule requête pour chaque référentiel, au lieu d'une par formation créée.
         diplomes = {d.nom: d for d in Diplome.objects.all()}
         sites = {s.nom: s for s in Site.objects.all()}
-        membres = generer_membres(options["nombre"], options["graine"])
-        for donnees in membres:
+        membres_crees = []
+        for donnees in generer_membres(options["nombre"], options["graine"]):
             parcours = donnees.pop("parcours")  # ce n'est pas un champ du Membre
             membre = Membre.objects.create(
                 password=empreinte,
@@ -80,10 +82,30 @@ class Command(BaseCommand):
                 )
                 for etape in parcours
             )
+            membres_crees.append(membre)
 
+        self.marquer_les_adresses_verifiees(membres_crees)
         self.stdout.write(
             self.style.SUCCESS(
-                f"{supprimes} faux membres supprimés, {len(membres)} créés. "
+                f"{supprimes} faux membres supprimés, {len(membres_crees)} créés. "
                 "Mot de passe commun : MOT_DE_PASSE_DONNEES_DEV dans .env."
             )
+        )
+
+    @staticmethod
+    def marquer_les_adresses_verifiees(membres):
+        """
+        La connexion d'Alex (django-allauth, ACCOUNT_EMAIL_VERIFICATION = "mandatory") n'accepte
+        qu'une adresse vérifiée, enregistrée à part dans EmailAddress. Sans elle, un faux membre
+        recevrait un e-mail de vérification au lieu d'être connecté.
+
+        Seulement si allauth est installé : avant la fusion de la connexion, il ne l'est pas, et
+        l'importer ferait planter la commande. Les adresses partent avec leur membre (CASCADE).
+        """
+        if not apps.is_installed("allauth.account"):
+            return
+        from allauth.account.models import EmailAddress
+
+        EmailAddress.objects.bulk_create(
+            EmailAddress(user=m, email=m.email, verified=True, primary=True) for m in membres
         )

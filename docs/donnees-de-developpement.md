@@ -25,6 +25,7 @@ docker compose exec web python manage.py charger_donnees_dev
 - Promos de **1990 à 2026** sur les 20 diplômes ; 2027 ou 2028 pour les étudiants ; environ un alumni sur cinq a un second diplôme, obtenu 1 à 3 ans après le premier. Les enseignants, l'équipe, les candidats et le recruteur n'ont pas de parcours.
 - Adresses de la forme `prenom.nom.12@exemple.test` uniquement : `.test` est un domaine réservé, aucun e-mail ne peut partir vers une vraie personne.
 - **Mot de passe commun** de tous les faux membres : la variable `MOT_DE_PASSE_DONNEES_DEV` du fichier `.env` (valeur factice dans `.env.example`).
+- **Adresse vérifiée** : la connexion par django-allauth n'accepte qu'une adresse vérifiée (`EmailAddress`). La commande la crée pour chaque faux membre dès qu'allauth est installé ; sans elle, ils recevraient un e-mail de vérification au lieu d'être connectés. L'import Datalumni devra faire de même.
 
 **Rejouable :** la relancer remet la base dans le même état. Elle efface les faux membres (et leurs formations), puis les recrée à l'identique. Les comptes créés à la main (`createsuperuser`, back-office) ne sont jamais touchés, car leur adresse n'a pas le numéro final.
 

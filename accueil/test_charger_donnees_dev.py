@@ -1,10 +1,13 @@
 """La commande charger_donnees_dev, testée sur la base de test."""
 
 from io import StringIO
+from unittest import skipUnless
 
+from django.apps import apps
 from django.contrib.auth import authenticate
 from django.core.management import CommandError, call_command
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from membres.models import Membre
 from referentiels.models import Diplome, Formation
@@ -84,3 +87,26 @@ class ChargerDonneesDevTests(TestCase):
         with self.assertRaises(CommandError):
             charger("--nombre", "1")
         self.assertEqual(Membre.objects.count(), 0)
+
+
+# La connexion par django-allauth arrive avec la branche d'Alex (#9) : d'ici là, ces tests sont
+# ignorés (« skipped »), et ils s'activent tout seuls dès qu'allauth est installé.
+@skipUnless(apps.is_installed("allauth.account"), "django-allauth n'est pas encore installé")
+@override_settings(DEBUG=True)
+class ConnexionDesFauxMembresTests(TestCase):
+    def test_chaque_faux_membre_a_une_adresse_verifiee(self):
+        from allauth.account.models import EmailAddress
+
+        charger("--nombre", "10")
+        self.assertEqual(EmailAddress.objects.filter(verified=True, primary=True).count(), 10)
+        charger("--nombre", "10")  # relancer ne crée pas de doublon : elles partent avec le membre
+        self.assertEqual(EmailAddress.objects.count(), 10)
+
+    def test_un_faux_membre_se_connecte_avec_le_mot_de_passe_commun(self):
+        charger("--nombre", "3")
+        email = Membre.objects.first().email
+        self.client.post(
+            reverse("account_login"), {"login": email, "password": "motdepasse-factice"}
+        )
+        # Connecté directement, sans e-mail de vérification : l'adresse est bien vérifiée.
+        self.assertIn("_auth_user_id", self.client.session)
