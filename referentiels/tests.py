@@ -19,6 +19,35 @@ from .models import Diplome, Niveau, Site
 TOUS_LES_DIPLOMES = [nom for noms in DIPLOMES.values() for nom in noms]
 
 
+def creer_compte(nom, superutilisateur=False, **champs):
+    """
+    Crée un compte de test avec ce qu'exige le modèle d'utilisateur, QUEL QU'IL SOIT :
+    l'utilisateur par défaut de Django (identifiant), ou le Membre d'Alex (e-mail, prénom, nom,
+    rôle, #17). Ces tests passent ainsi avant comme après la fusion de #17, sans retouche.
+    """
+    Utilisateur = get_user_model()
+    valeurs = {
+        "username": nom,
+        "email": f"{nom}@exemple.test",
+        "prenom": nom.capitalize(),
+        "nom": "Exemple",
+    }
+    # Les champs obligatoires du modèle : l'identifiant de connexion, puis REQUIRED_FIELDS.
+    donnees = {
+        champ: valeurs[champ]
+        for champ in [Utilisateur.USERNAME_FIELD, *Utilisateur.REQUIRED_FIELDS]
+    }
+    # Les champs facultatifs, seulement s'ils existent : « role » n'existe qu'avec Membre.
+    existants = {f.name for f in Utilisateur._meta.get_fields()}
+    donnees.update({champ: v for champ, v in champs.items() if champ in existants})
+    creer = (
+        Utilisateur.objects.create_superuser
+        if superutilisateur
+        else Utilisateur.objects.create_user
+    )
+    return creer(password="motdepasse-factice", **donnees)
+
+
 class DonneesInitialesTests(TestCase):
     """Ce que la migration 0002 a mis dans la base."""
 
@@ -68,11 +97,11 @@ class BackOfficeTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        utilisateurs = get_user_model().objects
-        mdp = "motdepasse-factice"
-        cls.admin = utilisateurs.create_superuser("admin", "admin@exemple.test", mdp)
-        cls.equipe = utilisateurs.create_user("equipe", "equipe@exemple.test", mdp, is_staff=True)
-        cls.membre = utilisateurs.create_user("membre", "membre@exemple.test", mdp)
+        cls.admin = creer_compte("admin", superutilisateur=True)
+        # is_staff : l'accès au back-office aujourd'hui. role : ce qui le donnera avec la branche
+        # des droits d'Alex (alex/9-droits), où is_staff se déduit du rôle.
+        cls.equipe = creer_compte("equipe", is_staff=True, role="validateur")
+        cls.membre = creer_compte("membre")
         cls.liste = reverse("admin:referentiels_diplome_changelist")
 
     def test_l_administrateur_voit_les_20_diplomes(self):
@@ -81,10 +110,13 @@ class BackOfficeTests(TestCase):
         self.assertEqual(reponse.status_code, 200)
         self.assertContains(reponse, "20 diplômes")
 
-    def test_un_membre_ordinaire_est_renvoye_a_la_connexion(self):
+    def test_un_membre_ordinaire_n_entre_pas_dans_le_back_office(self):
         self.client.force_login(self.membre)
         reponse = self.client.get(self.liste)
-        self.assertRedirects(reponse, f"{reverse('admin:login')}?next={self.liste}")
+        # Django le renvoie vers la connexion (302) ; avec le back-office de #23 (pages libres),
+        # il reçoit une 403. Dans les deux cas, ce qui compte : il ne voit pas la liste.
+        self.assertIn(reponse.status_code, (302, 403))
+        self.assertNotContains(reponse, "20 diplômes", status_code=reponse.status_code)
 
     def test_l_equipe_sans_permission_ne_peut_rien_faire(self):
         self.client.force_login(self.equipe)
