@@ -14,6 +14,8 @@ from django.urls import include, path, reverse
 from django.utils.html import escape
 from django.views.defaults import permission_denied
 
+from config.urls import urlpatterns as adresses_du_site
+
 from .menu import MENU, NB_ENTREES_MOBILE, PIED_DE_PAGE
 from .urls import urlpatterns as pages_provisoires
 
@@ -235,9 +237,17 @@ def page_libre_factice(request, slug):
 
 
 class AdressesSansPagesLibres:
-    """Les adresses du site sans l'application « pages_libres »."""
+    """Les vraies adresses du site, moins celles de l'application « pages_libres ».
 
-    urlpatterns = [path("", include("accueil.urls")), path("", include("gabarit.urls"))]
+    Partir des vraies adresses garde celles des autres applications, par exemple la connexion
+    d'Alex (/compte/) : sans elle, la zone membre ne trouverait pas l'adresse de connexion.
+    """
+
+    urlpatterns = [
+        adresse
+        for adresse in adresses_du_site
+        if getattr(adresse, "namespace", None) != "pages_libres"
+    ]
 
 
 class AdressesAvecPagesLibres:
