@@ -7,6 +7,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Connexion, déconnexion, mot de passe oublié… fournis par django-allauth.
     path("compte/", include("allauth.urls")),
-    path("pages/", include("pages_libres.urls")),
+    path("page/", include("pages_libres.urls")),
     path("", include("accueil.urls")),
 ]
