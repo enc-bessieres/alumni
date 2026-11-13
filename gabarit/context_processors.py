@@ -4,7 +4,7 @@ from django.conf import settings
 from django.shortcuts import resolve_url
 from django.urls import NoReverseMatch, reverse
 
-from .menu import MENU, NB_ENTREES_MOBILE
+from .menu import MENU, NB_ENTREES_MOBILE, PIED_DE_PAGE
 
 
 def _est_actif(url, chemin):
@@ -52,3 +52,19 @@ def compte(request):
         "url_deconnexion": url_deconnexion,
         "initiales": initiales,
     }
+
+
+def pied_de_page(request):
+    """Liens du pied de page vers les pages libres de Marie-Dominique (issue #12).
+
+    Tant que son application « pages_libres » n'est pas installée, la liste reste vide
+    et le pied de page garde son « À COMPLÉTER ».
+    """
+    try:
+        liens = [
+            {"libelle": lien.libelle, "url": reverse("pages_libres:detail", args=[lien.slug])}
+            for lien in PIED_DE_PAGE
+        ]
+    except NoReverseMatch:
+        liens = []
+    return {"liens_du_pied": liens}
