@@ -104,3 +104,10 @@ class BackOfficeTests(TestCase):
         self.client.force_login(self.equipe)
 
         self.assertEqual(self.client.get(self.liste).status_code, 200)
+
+    def test_un_membre_hors_equipe_peut_se_deconnecter(self):
+        membre = get_user_model().objects.create_user("membre_deconnexion")
+        self.client.force_login(membre)
+        reponse = self.client.post(reverse("admin:logout"))
+        self.assertNotEqual(reponse.status_code, 403)
+        self.assertNotIn("_auth_user_id", self.client.session)
