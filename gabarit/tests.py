@@ -7,13 +7,16 @@ from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.storage.cookie import CookieStorage
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.test import RequestFactory, SimpleTestCase, TestCase
-from django.urls import reverse
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+from django.urls import include, path, reverse
 from django.utils.html import escape
 from django.views.defaults import permission_denied
 
-from .menu import MENU, NB_ENTREES_MOBILE
+from config.urls import urlpatterns as adresses_du_site
+
+from .menu import MENU, NB_ENTREES_MOBILE, PIED_DE_PAGE
 from .urls import urlpatterns as pages_provisoires
 
 
@@ -226,3 +229,49 @@ class MessagesTests(SimpleTestCase):
         html = self.afficher_la_page()
 
         self.assertNotIn('class="messages"', html)
+
+
+def page_libre_factice(request, slug):
+    """Remplace la vue des pages libres de Marie-Dominique (issue #12) le temps d'un test."""
+    return HttpResponse(slug)
+
+
+class AdressesSansPagesLibres:
+    """Les vraies adresses du site, moins celles de l'application « pages_libres ».
+
+    Partir des vraies adresses garde celles des autres applications, par exemple la connexion
+    d'Alex (/compte/) : sans elle, la zone membre ne trouverait pas l'adresse de connexion.
+    """
+
+    urlpatterns = [
+        adresse
+        for adresse in adresses_du_site
+        if getattr(adresse, "namespace", None) != "pages_libres"
+    ]
+
+
+class AdressesAvecPagesLibres:
+    """Les mêmes, plus une application « pages_libres » factice, à la même adresse que la vraie."""
+
+    pages_libres = [path("<slug:slug>/", page_libre_factice, name="detail")]
+    urlpatterns = AdressesSansPagesLibres.urlpatterns + [
+        path("page/", include((pages_libres, "pages_libres"))),
+    ]
+
+
+class PiedDePageTests(TestCase):
+    @override_settings(ROOT_URLCONF=AdressesSansPagesLibres)
+    def test_sans_les_pages_libres_le_pied_de_page_reste_a_completer(self):
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertContains(reponse, "À COMPLÉTER : liens vers les mentions légales")
+        self.assertNotContains(reponse, "liens-du-pied")
+
+    @override_settings(ROOT_URLCONF=AdressesAvecPagesLibres)
+    def test_avec_les_pages_libres_le_pied_de_page_affiche_leurs_liens(self):
+        reponse = self.client.get(reverse("accueil:index"))
+
+        for lien in PIED_DE_PAGE:
+            with self.subTest(page=lien.slug):
+                self.assertContains(reponse, f'<a href="/page/{lien.slug}/">{lien.libelle}</a>')
+        self.assertNotContains(reponse, "À COMPLÉTER : liens vers les mentions légales")

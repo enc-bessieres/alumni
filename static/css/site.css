@@ -195,6 +195,12 @@ summary::-webkit-details-marker {
   gap: 1rem;
 }
 
+.liens-du-pied ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
 /* Menus : la colonne de gauche est cachée sur mobile. */
 .menu-lateral {
   display: none;

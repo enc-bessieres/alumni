@@ -57,6 +57,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "gabarit.context_processors.menu",
                 "gabarit.context_processors.compte",
+                "gabarit.context_processors.pied_de_page",
             ],
             "loaders": _LOADERS,
         },
