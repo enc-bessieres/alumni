@@ -1,5 +1,5 @@
 """
-Référentiels : sites, niveaux, diplômes (issue #10).
+Référentiels : sites, niveaux, diplômes, et le parcours des membres (issue #10).
 La base de test est créée avec toutes les migrations, donc avec les données de la 0002.
 """
 
@@ -7,6 +7,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import ProtectedError
 from django.test import TestCase
@@ -14,7 +15,7 @@ from django.urls import reverse
 
 from .creation import creer_referentiels
 from .donnees import DIPLOMES
-from .models import Diplome, Niveau, Site
+from .models import Diplome, Formation, Niveau, Site
 
 TOUS_LES_DIPLOMES = [nom for noms in DIPLOMES.values() for nom in noms]
 
@@ -138,3 +139,43 @@ class BackOfficeTests(TestCase):
         reponse = self.client.get(reverse("admin:referentiels_diplome_change", args=[sio.pk]))
         self.assertContains(reponse, "00000000-0000-4000-8000-000000000001")
         self.assertNotContains(reponse, 'name="legacy_id"')  # aucun champ de saisie
+
+
+class FormationTests(TestCase):
+    """Le parcours d'un membre : diplôme + site + promo."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.membre = creer_compte("ines")
+        cls.sio = Diplome.objects.get(nom="BTS SIO")
+        cls.dcg = Diplome.objects.get(nom="DCG")
+        cls.site = Site.objects.get(nom="ENC Bessières")
+
+    def formation(self, diplome, promo=2024):
+        return Formation(membre=self.membre, diplome=diplome, site=self.site, promo=promo)
+
+    def test_un_membre_peut_avoir_plusieurs_diplomes_donc_plusieurs_promos(self):
+        self.formation(self.sio, 2022).save()
+        self.formation(self.dcg, 2025).save()
+        promos = list(self.membre.formations.values_list("diplome__nom", "promo"))
+        self.assertEqual(promos, [("DCG", 2025), ("BTS SIO", 2022)])  # la plus récente d'abord
+
+    def test_un_meme_diplome_ne_compte_qu_une_fois_par_membre(self):
+        self.formation(self.sio, 2022).save()
+        with self.assertRaises(IntegrityError):
+            self.formation(self.sio, 2023).save()
+
+    def test_la_promo_doit_etre_une_annee_plausible(self):
+        with self.assertRaises(ValidationError):
+            self.formation(self.sio, promo=24).full_clean()
+        self.formation(self.sio, promo=2024).full_clean()  # pas d'erreur
+
+    def test_supprimer_le_membre_supprime_son_parcours(self):
+        self.formation(self.sio).save()
+        self.membre.delete()
+        self.assertEqual(Formation.objects.count(), 0)
+
+    def test_on_ne_peut_pas_supprimer_un_diplome_suivi_par_un_membre(self):
+        self.formation(self.sio).save()
+        with self.assertRaises(ProtectedError):
+            self.sio.delete()
