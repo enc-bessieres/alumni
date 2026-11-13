@@ -61,7 +61,11 @@ class DroitsTests(TestCase):
     def test_un_simple_membre_n_entre_pas_dans_le_back_office(self):
         self.client.force_login(creer("curieux@exemple.test"))
         reponse = self.client.get("/admin/")
-        self.assertRedirects(reponse, "/admin/login/?next=/admin/")
+        # Django le renvoie vers la connexion (302) ; avec le back-office des pages libres (#23),
+        # il reçoit une 403. Dans les deux cas, ce qui compte : il n'entre pas.
+        self.assertIn(reponse.status_code, (302, 403))
+        if reponse.status_code == 302:
+            self.assertTrue(reponse["Location"].startswith("/admin/login/"))
 
 
 class BackOfficeTests(TestCase):
