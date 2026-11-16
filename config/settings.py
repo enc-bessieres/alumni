@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accueil",
     "membres",  # Alex : comptes, profils, annuaire
+    "referentiels",  # Luc : sites, niveaux, diplômes
 ]
 
 MIDDLEWARE = [
