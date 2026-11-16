@@ -18,7 +18,6 @@ class MembreTests(TestCase):
         self.assertEqual(membre.email, "ines.martin@exemple.test")  # tout en minuscules
         self.assertTrue(membre.password.startswith("pbkdf2_sha256$"))  # jamais en clair
         self.assertEqual(membre.statut_inscription, Membre.StatutInscription.EN_ATTENTE)
-        self.assertEqual(membre.role, Membre.Role.MEMBRE)
         self.assertIsNotNone(membre.cree_le)  # date de création, posée automatiquement
         self.assertIsNone(membre.last_login)  # dernière connexion : jamais connecté
         self.assertEqual(str(membre), "Inès Martin")
@@ -66,10 +65,10 @@ class MembreTests(TestCase):
         membre = creer("importe@exemple.test", mot_de_passe=None)
         self.assertFalse(membre.has_usable_password())
 
-    def test_le_superutilisateur_est_administrateur_et_valide(self):
+    def test_le_superutilisateur_a_tous_les_droits_et_est_valide(self):
         admin = Membre.objects.create_superuser(
             "admin@exemple.test", "motdepasse-de-test", prenom="Admin", nom="Exemple"
         )
         self.assertTrue(admin.is_staff)
-        self.assertEqual(admin.role, Membre.Role.ADMINISTRATEUR)
+        self.assertTrue(admin.is_superuser)
         self.assertEqual(admin.statut_inscription, Membre.StatutInscription.VALIDEE)
