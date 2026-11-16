@@ -58,9 +58,7 @@ class BackOfficeTests(TestCase):
         mdp = "motdepasse-factice"
         identite = {"prenom": "Test", "nom": "Exemple"}
         cls.admin = utilisateurs.create_superuser("admin@exemple.test", mdp, **identite)
-        cls.equipe = utilisateurs.create_user(
-            "equipe@exemple.test", mdp, is_staff=True, role="validateur", **identite
-        )
+        cls.equipe = utilisateurs.create_user("equipe@exemple.test", mdp, is_staff=True, **identite)
         cls.membre = utilisateurs.create_user("membre@exemple.test", mdp, **identite)
         cls.liste = reverse("admin:pages_libres_page_changelist")
 
