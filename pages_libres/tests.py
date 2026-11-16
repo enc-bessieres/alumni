@@ -8,34 +8,6 @@ from .models import Page
 PAGES_DE_DEPART = ["a-propos", "mentions-legales", "cgu", "confidentialite", "charte-du-mentorat"]
 
 
-def creer_compte(nom, superutilisateur=False, **champs):
-    """
-    l'utilisateur par défaut de Django (identifiant) ou le modèle Membre de #17 (e-mail,
-    prénom, nom, rôle). Reprise de referentiels/tests.py.
-    """
-    Utilisateur = get_user_model()
-    valeurs = {
-        "username": nom,
-        "email": f"{nom}@exemple.test",
-        "prenom": nom.capitalize(),
-        "nom": "Exemple",
-    }
-    # Les champs obligatoires du modèle : l'identifiant de connexion, puis REQUIRED_FIELDS.
-    donnees = {
-        champ: valeurs[champ]
-        for champ in [Utilisateur.USERNAME_FIELD, *Utilisateur.REQUIRED_FIELDS]
-    }
-    # Les champs facultatifs, seulement s'ils existent : « role » n'existe qu'avec Membre.
-    existants = {f.name for f in Utilisateur._meta.get_fields()}
-    donnees.update({champ: v for champ, v in champs.items() if champ in existants})
-    creer = (
-        Utilisateur.objects.create_superuser
-        if superutilisateur
-        else Utilisateur.objects.create_user
-    )
-    return creer(password="motdepasse-factice", **donnees)
-
-
 class PagesLibresTests(TestCase):
     def test_l_adresse_d_une_page(self):
         self.assertEqual(reverse("pages_libres:detail", args=["a-propos"]), "/page/a-propos/")
@@ -82,9 +54,14 @@ class BackOfficeTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = creer_compte("admin", superutilisateur=True)
-        cls.equipe = creer_compte("equipe", is_staff=True, role="validateur")
-        cls.membre = creer_compte("membre")
+        utilisateurs = get_user_model().objects
+        mdp = "motdepasse-factice"
+        identite = {"prenom": "Test", "nom": "Exemple"}
+        cls.admin = utilisateurs.create_superuser("admin@exemple.test", mdp, **identite)
+        cls.equipe = utilisateurs.create_user(
+            "equipe@exemple.test", mdp, is_staff=True, role="validateur", **identite
+        )
+        cls.membre = utilisateurs.create_user("membre@exemple.test", mdp, **identite)
         cls.liste = reverse("admin:pages_libres_page_changelist")
 
     def test_l_administrateur_voit_les_pages(self):
@@ -134,8 +111,7 @@ class BackOfficeTests(TestCase):
         self.assertEqual(self.client.get(self.liste).status_code, 200)
 
     def test_un_membre_hors_equipe_peut_se_deconnecter(self):
-        membre = creer_compte("membre_deconnexion")
-        self.client.force_login(membre)
+        self.client.force_login(self.membre)
         reponse = self.client.post(reverse("admin:logout"))
         self.assertEqual(reponse.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
