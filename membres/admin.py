@@ -1,15 +1,33 @@
 from django.contrib import admin
+from django.contrib.admin.utils import unquote
 from django.contrib.auth.admin import UserAdmin
+from django.core.exceptions import PermissionDenied
 
+from .droits import peut_gerer_le_compte, peut_modifier_le_compte
 from .models import Membre
 
-# Champs qui donnent des droits : seul un compte qui a « gerer_les_droits » peut les modifier.
-CHAMPS_DES_DROITS = ["is_staff", "groups", "user_permissions"]
+# Ce qu'un validateur ne peut pas modifier : il ne touche qu'au statut de l'inscription.
+CHAMPS_DU_COMPTE = [
+    "email",
+    "civilite",
+    "prenom",
+    "nom",
+    "nom_de_naissance",
+    "categorie",
+    "is_active",
+    "is_staff",
+    "groups",
+]
+# Réservés aux superutilisateurs : un administrateur donne des groupes, pas des permissions.
+CHAMPS_DU_SUPERUTILISATEUR = ["is_superuser", "user_permissions"]
 
 
 @admin.register(Membre)
 class MembreAdmin(UserAdmin):
-    """Back-office des membres, fourni par Django. On ne fait que choisir les champs affichés."""
+    """
+    Back-office des membres, fourni par Django. On choisit les champs affichés, et on applique
+    les règles de membres/droits.py : on ne décide pas ici qui a le droit.
+    """
 
     list_display = ["nom", "prenom", "email", "categorie", "statut_inscription", "is_staff"]
     list_filter = ["statut_inscription", "categorie", "groups", "is_staff"]
@@ -36,14 +54,39 @@ class MembreAdmin(UserAdmin):
         ),
     ]
 
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        if obj is None or peut_gerer_le_compte(request.user, obj):
+            return fieldsets
+        # Sans ce droit, ni l'empreinte du mot de passe ni le lien pour le changer.
+        return [
+            (titre, {**options, "fields": [c for c in options["fields"] if c != "password"]})
+            for titre, options in fieldsets
+        ]
+
     def get_readonly_fields(self, request, obj=None):
-        # Sans ces verrous, un validateur (qui peut modifier une fiche pour valider une
-        # inscription) pourrait s'ajouter lui-même au groupe Administrateur.
         champs = list(super().get_readonly_fields(request, obj))
+        if not request.user.is_superuser:
+            champs += CHAMPS_DU_SUPERUTILISATEUR
+        if not peut_gerer_le_compte(request.user, obj):
+            champs += CHAMPS_DU_COMPTE
         if not request.user.has_perm("membres.valider_inscription"):
             champs.append("statut_inscription")
-        if not request.user.has_perm("membres.gerer_les_droits"):
-            champs += CHAMPS_DES_DROITS
-        if not request.user.is_superuser:
-            champs.append("is_superuser")
-        return champs
+        return list(dict.fromkeys(champs))  # sans doublon
+
+    def has_change_permission(self, request, obj=None):
+        if obj is not None and not peut_modifier_le_compte(request.user, obj):
+            return False
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        # Django la vérifie aussi pour chaque ligne de la suppression en masse.
+        if obj is not None and not peut_modifier_le_compte(request.user, obj):
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def user_change_password(self, request, id, form_url=""):
+        membre = self.get_object(request, unquote(id))
+        if membre is not None and not peut_gerer_le_compte(request.user, membre):
+            raise PermissionDenied
+        return super().user_change_password(request, id, form_url)

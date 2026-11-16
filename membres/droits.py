@@ -54,3 +54,20 @@ def creer_groupes(**kwargs):
     for nom, codes in GROUPES.items():
         groupe, _ = Group.objects.get_or_create(name=nom)
         groupe.permissions.set(permissions(codes))
+
+
+def peut_modifier_le_compte(utilisateur, membre):
+    """Seul un superutilisateur peut modifier ou supprimer le compte d'un superutilisateur."""
+    return utilisateur.is_superuser or not membre.is_superuser
+
+
+def peut_gerer_le_compte(utilisateur, membre=None):
+    """
+    Peut-on modifier l'identité, l'e-mail, le mot de passe ou les droits de ce compte ?
+    Il faut la permission « gerer_les_droits » (groupe Administrateur) : un validateur ne fait
+    que valider les inscriptions. Changer l'e-mail ou le mot de passe d'un compte, c'est
+    pouvoir s'en emparer.
+    """
+    if membre is not None and not peut_modifier_le_compte(utilisateur, membre):
+        return False
+    return utilisateur.has_perm("membres.gerer_les_droits")

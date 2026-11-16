@@ -64,18 +64,63 @@ class BackOfficeTests(TestCase):
         requete.user = utilisateur
         return site._registry[Membre].get_readonly_fields(requete)
 
-    def test_un_validateur_valide_mais_ne_touche_pas_aux_droits(self):
+    def test_un_validateur_ne_modifie_que_le_statut_de_l_inscription(self):
         verrouilles = self.champs_verrouilles(creer("valid@exemple.test", groupe="Validateur"))
         self.assertNotIn("statut_inscription", verrouilles)
-        for champ in ["groups", "is_staff", "user_permissions", "is_superuser"]:
+        for champ in ["email", "prenom", "is_active", "groups", "is_staff", "user_permissions"]:
             with self.subTest(champ=champ):
                 self.assertIn(champ, verrouilles)
 
-    def test_un_administrateur_donne_les_groupes_mais_pas_le_superutilisateur(self):
+    def test_un_validateur_valide_une_inscription(self):
+        self.client.force_login(creer("valid@exemple.test", groupe="Validateur"))
+        inscrit = creer("inscrit@exemple.test", statut_inscription="en_attente")
+        reponse = self.client.post(
+            f"/admin/membres/membre/{inscrit.pk}/change/", {"statut_inscription": "validee"}
+        )
+        self.assertRedirects(reponse, "/admin/membres/membre/")
+        inscrit.refresh_from_db()
+        self.assertEqual(inscrit.statut_inscription, Membre.StatutInscription.VALIDEE)
+
+    def test_un_validateur_ne_change_pas_le_mot_de_passe_d_un_compte(self):
+        self.client.force_login(creer("valid@exemple.test", groupe="Validateur"))
+        autre = creer("autre@exemple.test", groupe="Administrateur")
+        fiche = self.client.get(f"/admin/membres/membre/{autre.pk}/change/")
+        self.assertNotContains(fiche, "/password/")  # pas de lien vers le formulaire
+        page = self.client.get(f"/admin/membres/membre/{autre.pk}/password/")
+        self.assertEqual(page.status_code, 403)
+
+    def test_un_administrateur_donne_les_groupes_mais_pas_les_permissions(self):
         verrouilles = self.champs_verrouilles(creer("adm@exemple.test", groupe="Administrateur"))
         self.assertNotIn("groups", verrouilles)
         self.assertNotIn("is_staff", verrouilles)
         self.assertIn("is_superuser", verrouilles)
+        self.assertIn("user_permissions", verrouilles)
+
+    def test_un_administrateur_change_le_mot_de_passe_d_un_membre(self):
+        self.client.force_login(creer("adm@exemple.test", groupe="Administrateur"))
+        membre = creer("oubli@exemple.test")
+        page = self.client.get(f"/admin/membres/membre/{membre.pk}/password/")
+        self.assertEqual(page.status_code, 200)
+
+    def test_seul_un_superutilisateur_touche_au_compte_d_un_superutilisateur(self):
+        self.client.force_login(creer("adm@exemple.test", groupe="Administrateur"))
+        chef = Membre.objects.create_superuser(
+            "chef@exemple.test", "motdepasse-de-test", prenom="Chef", nom="Exemple"
+        )
+        fiche = f"/admin/membres/membre/{chef.pk}/"
+        # Il voit la fiche (droit de consultation), mais en lecture seule.
+        self.assertFalse(self.client.get(fiche + "change/").context["has_change_permission"])
+        reponse = self.client.post(fiche + "change/", {"email": "pirate@exemple.test"})
+        self.assertEqual(reponse.status_code, 403)
+        for page in ["password", "delete"]:
+            with self.subTest(page=page):
+                self.assertEqual(self.client.get(fiche + page + "/").status_code, 403)
+        # La suppression en masse depuis la liste est bloquée aussi.
+        self.client.post(
+            "/admin/membres/membre/",
+            {"action": "delete_selected", "_selected_action": [chef.pk], "post": "yes"},
+        )
+        self.assertTrue(Membre.objects.filter(pk=chef.pk).exists())
 
     def test_un_validateur_ne_peut_pas_se_donner_le_groupe_administrateur(self):
         validateur = creer("ambitieux@exemple.test", groupe="Validateur")
