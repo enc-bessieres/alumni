@@ -107,6 +107,11 @@ class Membre(AbstractBaseUser, PermissionsMixin):
             # ne peut pas créer deux comptes dont les e-mails ne diffèrent que par la casse.
             models.UniqueConstraint(Lower("email"), name="membre_email_unique_sans_casse"),
         ]
+        # Permissions propres au projet, regroupées par rôle dans membres/droits.py
+        permissions = [
+            ("valider_inscription", "Peut valider ou refuser une inscription"),
+            ("gerer_les_droits", "Peut modifier les groupes et l'accès au back-office"),
+        ]
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
