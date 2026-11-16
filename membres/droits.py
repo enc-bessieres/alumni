@@ -57,8 +57,18 @@ def creer_groupes(**kwargs):
 
 
 def peut_modifier_le_compte(utilisateur, membre):
-    """Seul un superutilisateur peut modifier ou supprimer le compte d'un superutilisateur."""
-    return utilisateur.is_superuser or not membre.is_superuser
+    """
+    Peut-on modifier ou supprimer ce compte (y compris le statut de son inscription) ?
+    - le compte d'un superutilisateur : seulement un superutilisateur ;
+    - le compte d'un membre de l'équipe (accès au back-office) : seulement avec
+      « gerer_les_droits ». Sinon un validateur pourrait refuser l'inscription d'un
+      administrateur, qui ne pourrait plus se connecter.
+    """
+    if membre.is_superuser:
+        return utilisateur.is_superuser
+    if membre.is_staff:
+        return utilisateur.has_perm("membres.gerer_les_droits")
+    return True
 
 
 def peut_gerer_le_compte(utilisateur, membre=None):

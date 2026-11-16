@@ -81,13 +81,35 @@ class BackOfficeTests(TestCase):
         inscrit.refresh_from_db()
         self.assertEqual(inscrit.statut_inscription, Membre.StatutInscription.VALIDEE)
 
-    def test_un_validateur_ne_change_pas_le_mot_de_passe_d_un_compte(self):
+    def test_un_validateur_ne_change_pas_le_mot_de_passe_d_un_membre(self):
         self.client.force_login(creer("valid@exemple.test", groupe="Validateur"))
-        autre = creer("autre@exemple.test", groupe="Administrateur")
-        fiche = self.client.get(f"/admin/membres/membre/{autre.pk}/change/")
+        membre = creer("membre@exemple.test")
+        fiche = self.client.get(f"/admin/membres/membre/{membre.pk}/change/")
         self.assertNotContains(fiche, "/password/")  # pas de lien vers le formulaire
-        page = self.client.get(f"/admin/membres/membre/{autre.pk}/password/")
+        page = self.client.get(f"/admin/membres/membre/{membre.pk}/password/")
         self.assertEqual(page.status_code, 403)
+
+    def test_un_validateur_ne_change_ni_l_e_mail_ni_l_activation_d_un_membre(self):
+        self.client.force_login(creer("valid@exemple.test", groupe="Validateur"))
+        membre = creer("membre@exemple.test", statut_inscription="en_attente")
+        self.client.post(
+            f"/admin/membres/membre/{membre.pk}/change/",
+            {"statut_inscription": "validee", "email": "pirate@exemple.test", "is_active": ""},
+        )
+        membre.refresh_from_db()
+        self.assertEqual(membre.statut_inscription, Membre.StatutInscription.VALIDEE)
+        self.assertEqual(membre.email, "membre@exemple.test")  # champ ignoré
+        self.assertTrue(membre.is_active)  # champ ignoré
+
+    def test_un_validateur_ne_modifie_pas_le_compte_d_un_membre_de_l_equipe(self):
+        self.client.force_login(creer("valid@exemple.test", groupe="Validateur"))
+        admin = creer("admin@exemple.test", groupe="Administrateur")
+        fiche = f"/admin/membres/membre/{admin.pk}/"
+        reponse = self.client.post(fiche + "change/", {"statut_inscription": "refusee"})
+        self.assertEqual(reponse.status_code, 403)
+        admin.refresh_from_db()
+        self.assertEqual(admin.statut_inscription, Membre.StatutInscription.VALIDEE)
+        self.assertEqual(self.client.get(fiche + "password/").status_code, 403)
 
     def test_un_administrateur_donne_les_groupes_mais_pas_les_permissions(self):
         verrouilles = self.champs_verrouilles(creer("adm@exemple.test", groupe="Administrateur"))
@@ -125,19 +147,12 @@ class BackOfficeTests(TestCase):
     def test_un_validateur_ne_peut_pas_se_donner_le_groupe_administrateur(self):
         validateur = creer("ambitieux@exemple.test", groupe="Validateur")
         self.client.force_login(validateur)
-        fiche = f"/admin/membres/membre/{validateur.pk}/change/"
-        reponse = self.client.get(fiche)
-        formulaire = reponse.context["adminform"].form
-        donnees = {
-            nom: formulaire.initial.get(nom, "") or ""
-            for nom in formulaire.fields
-            if nom not in ("password",)
-        }
-        donnees["groups"] = [Group.objects.get(name="Administrateur").pk]
-        reponse = self.client.post(fiche, donnees)
-        self.assertEqual(reponse.status_code, 302)  # la fiche est bien enregistrée…
-        validateur.refresh_from_db()  # … mais sans le groupe demandé
-        self.assertFalse(validateur.groups.filter(name="Administrateur").exists())
+        administrateur = Group.objects.get(name="Administrateur")
+        reponse = self.client.post(
+            f"/admin/membres/membre/{validateur.pk}/change/", {"groups": [administrateur.pk]}
+        )
+        self.assertEqual(reponse.status_code, 403)  # son compte est celui d'un membre de l'équipe
+        self.assertFalse(validateur.groups.filter(pk=administrateur.pk).exists())
 
     def test_seuls_les_comptes_du_back_office_y_ont_acces(self):
         # Le back-office de Django n'ouvre qu'aux comptes « accès au back-office » (is_staff).
