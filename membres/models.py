@@ -35,7 +35,6 @@ class MembreManager(BaseUserManager):
         champs.update(
             is_staff=True,
             is_superuser=True,
-            role=Membre.Role.ADMINISTRATEUR,
             statut_inscription=Membre.StatutInscription.VALIDEE,
         )
         champs.setdefault("categorie", Membre.Categorie.ADMINISTRATIF)
@@ -66,11 +65,6 @@ class Membre(AbstractBaseUser, PermissionsMixin):
         VALIDEE = "validee", "Validée"
         REFUSEE = "refusee", "Refusée"
 
-    class Role(models.TextChoices):
-        MEMBRE = "membre", "Membre"
-        VALIDATEUR = "validateur", "Validateur"
-        ADMINISTRATEUR = "administrateur", "Administrateur"
-
     # Identité
     civilite = models.CharField("civilité", max_length=10, choices=Civilite.choices, blank=True)
     prenom = models.CharField("prénom", max_length=150)
@@ -85,7 +79,6 @@ class Membre(AbstractBaseUser, PermissionsMixin):
         choices=StatutInscription.choices,
         default=StatutInscription.EN_ATTENTE,
     )
-    role = models.CharField("rôle", max_length=20, choices=Role.choices, default=Role.MEMBRE)
 
     # Identifiant (UUID) chez Datalumni : import rejouable sans doublon, anciens liens redirigés.
     legacy_id = models.UUIDField(
@@ -113,6 +106,11 @@ class Membre(AbstractBaseUser, PermissionsMixin):
             # Filet de sécurité dans la base : même un import qui contourne save() (bulk_create)
             # ne peut pas créer deux comptes dont les e-mails ne diffèrent que par la casse.
             models.UniqueConstraint(Lower("email"), name="membre_email_unique_sans_casse"),
+        ]
+        # Permissions propres au projet, regroupées par rôle dans membres/droits.py
+        permissions = [
+            ("valider_inscription", "Peut valider ou refuser une inscription"),
+            ("gerer_les_droits", "Peut modifier les groupes et l'accès au back-office"),
         ]
 
     def __str__(self):
