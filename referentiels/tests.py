@@ -5,47 +5,20 @@ La base de test est créée avec toutes les migrations, donc avec les données d
 
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.db import IntegrityError
 from django.db.models import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 
+from membres.models import Membre
+
 from .creation import creer_referentiels
 from .donnees import DIPLOMES
 from .models import Diplome, Niveau, Site
 
 TOUS_LES_DIPLOMES = [nom for noms in DIPLOMES.values() for nom in noms]
-
-
-def creer_compte(nom, superutilisateur=False, **champs):
-    """
-    Crée un compte de test avec ce qu'exige le modèle d'utilisateur, QUEL QU'IL SOIT :
-    l'utilisateur par défaut de Django (identifiant), ou le Membre d'Alex (e-mail, prénom, nom,
-    rôle, #17). Ces tests passent ainsi avant comme après la fusion de #17, sans retouche.
-    """
-    Utilisateur = get_user_model()
-    valeurs = {
-        "username": nom,
-        "email": f"{nom}@exemple.test",
-        "prenom": nom.capitalize(),
-        "nom": "Exemple",
-    }
-    # Les champs obligatoires du modèle : l'identifiant de connexion, puis REQUIRED_FIELDS.
-    donnees = {
-        champ: valeurs[champ]
-        for champ in [Utilisateur.USERNAME_FIELD, *Utilisateur.REQUIRED_FIELDS]
-    }
-    # Les champs facultatifs, seulement s'ils existent : « role » n'existe qu'avec Membre.
-    existants = {f.name for f in Utilisateur._meta.get_fields()}
-    donnees.update({champ: v for champ, v in champs.items() if champ in existants})
-    creer = (
-        Utilisateur.objects.create_superuser
-        if superutilisateur
-        else Utilisateur.objects.create_user
-    )
-    return creer(password="motdepasse-factice", **donnees)
+MOT_DE_PASSE = "motdepasse-de-test"
 
 
 class DonneesInitialesTests(TestCase):
@@ -97,11 +70,14 @@ class BackOfficeTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.admin = creer_compte("admin", superutilisateur=True)
-        # is_staff : l'accès au back-office aujourd'hui. role : ce qui le donnera avec la branche
-        # des droits d'Alex (alex/9-droits), où is_staff se déduit du rôle.
-        cls.equipe = creer_compte("equipe", is_staff=True, role="validateur")
-        cls.membre = creer_compte("membre")
+        # Le compte de connexion est le Membre : on se connecte avec son e-mail, sans
+        # identifiant, et le prénom et le nom sont obligatoires.
+        identite = {"prenom": "Test", "nom": "Exemple"}
+        cls.admin = Membre.objects.create_superuser("admin@exemple.test", MOT_DE_PASSE, **identite)
+        cls.equipe = Membre.objects.create_user(
+            "equipe@exemple.test", MOT_DE_PASSE, is_staff=True, **identite
+        )
+        cls.membre = Membre.objects.create_user("membre@exemple.test", MOT_DE_PASSE, **identite)
         cls.liste = reverse("admin:referentiels_diplome_changelist")
 
     def test_l_administrateur_voit_les_20_diplomes(self):
