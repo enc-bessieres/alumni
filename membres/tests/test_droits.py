@@ -94,14 +94,13 @@ class BackOfficeTests(TestCase):
         validateur.refresh_from_db()  # … mais sans le groupe demandé
         self.assertFalse(validateur.groups.filter(name="Administrateur").exists())
 
-    def test_un_simple_membre_n_entre_pas_dans_le_back_office(self):
-        self.client.force_login(creer("curieux@exemple.test"))
-        reponse = self.client.get("/admin/")
-        # Django le renvoie vers la connexion (302) ; avec le back-office des pages libres (#23),
-        # il reçoit une 403. Dans les deux cas, ce qui compte : il n'entre pas.
-        self.assertIn(reponse.status_code, (302, 403))
-        if reponse.status_code == 302:
-            self.assertTrue(reponse["Location"].startswith("/admin/login/"))
+    def test_seuls_les_comptes_du_back_office_y_ont_acces(self):
+        # Le back-office de Django n'ouvre qu'aux comptes « accès au back-office » (is_staff).
+        requete = RequestFactory().get("/admin/")
+        requete.user = creer("curieux@exemple.test")
+        self.assertFalse(site.has_permission(requete))
+        requete.user = creer("valide@exemple.test", groupe="Validateur")
+        self.assertTrue(site.has_permission(requete))
 
     def test_l_administrateur_cree_un_membre_dans_le_back_office(self):
         self.client.force_login(creer("admin@exemple.test", groupe="Administrateur"))
