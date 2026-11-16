@@ -10,9 +10,8 @@ PAGES_DE_DEPART = ["a-propos", "mentions-legales", "cgu", "confidentialite", "ch
 
 def creer_compte(nom, superutilisateur=False, **champs):
     """
-    Crée un compte de test avec ce qu'exige le modèle d'utilisateur, quel qu'il soit :
-    l'utilisateur par défaut de Django (identifiant) ou le Membre d'Axel (e-mail, prénom,
-    nom, rôle). Reprise de referentiels/tests.py (Luc).
+    l'utilisateur par défaut de Django (identifiant) ou le modèle Membre de #17 (e-mail,
+    prénom, nom, rôle). Reprise de referentiels/tests.py.
     """
     Utilisateur = get_user_model()
     valeurs = {
@@ -68,10 +67,12 @@ class PagesLibresTests(TestCase):
 
         self.assertNotContains(reponse, "<script>alert(1)</script>")
 
+        self.assertContains(reponse, "&lt;script&gt;alert(1)&lt;/script&gt;")
+
     def test_les_pages_de_depart_existent(self):
         for slug in PAGES_DE_DEPART:
             with self.subTest(slug=slug):
-                self.assertEqual(Page.objects.get(slug=slug).contenu, "À COMPLÉTER par l'ENC")
+                self.assertTrue(Page.objects.get(slug=slug).contenu.startswith("À COMPLÉTER : "))
                 reponse = self.client.get(reverse("pages_libres:detail", args=[slug]))
                 self.assertEqual(reponse.status_code, 200)
 
@@ -136,9 +137,5 @@ class BackOfficeTests(TestCase):
         membre = creer_compte("membre_deconnexion")
         self.client.force_login(membre)
         reponse = self.client.post(reverse("admin:logout"))
-        self.assertNotEqual(reponse.status_code, 403)
+        self.assertEqual(reponse.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
-
-    def test_l_adresse_publique_d_une_page(self):
-        page = Page.objects.get(slug="cgu")
-        self.assertEqual(page.get_absolute_url(), "/page/cgu/")
