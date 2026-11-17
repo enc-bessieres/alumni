@@ -128,13 +128,21 @@ Les briques du socle sont réparties ainsi :
 - **Steeve :** gabarit des pages (menu avec libellés, mise en page mobile d'abord, Tailwind), manifeste PWA.
 - **Marie Dominique :** back-office d'administration et pages libres (À propos, mentions légales, CGU).
 
+**État au mardi 17 novembre :** le socle est entièrement fusionné dans `main`, deux jours ouvrés après la date prévue. Les quatre briques sont livrées (16 pull requests fusionnées depuis le 10 novembre), il ne reste aucune pull request ouverte et les 125 tests passent. La parité par domaine commence le mercredi 18 novembre.
+
 ### Semaines 2 à 6
 
 | Semaine | Dates | Objectif |
 |---|---|---|
-| S2 – S4 | 16 nov. – 4 déc. | Parité par domaine ; fusions au fil de l'eau ; **démo chaque vendredi** |
+| S2 | 16 – 20 nov. | Fin du socle lundi et mardi, puis début de la parité par domaine. À livrer avant la démo du vendredi 20 : la connexion des faux membres (Luc) et l'éditeur de texte des pages (Marie Dominique) |
+| S3 – S4 | 23 nov. – 4 déc. | Parité par domaine |
 | S5 | 7 – 11 déc. | Fin de la parité, puis évolutions rapides : tri et regroupement de l'annuaire, PWA, partage |
 | S6 | 14 – 18 déc. | Recette croisée (chacun teste le domaine d'un autre), corrections, documentation, **démo finale** devant le chef de travaux |
+
+Le rythme de chaque semaine, depuis la semaine 2 :
+
+- **Mardi à 16 h 30 et vendredi à 11 h 30 :** séance de fusion. Une pull request relue et approuvée avant la séance est fusionnée pendant la séance.
+- **Vendredi à 15 h :** démo.
 
 ### Pendant ce temps
 
