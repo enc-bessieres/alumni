@@ -8,9 +8,16 @@ fiche du membre (champ « Groupes »), en cochant aussi « accès au back-office
 Les vues et le back-office se contentent de demander une permission (`has_perm`,
 `@permission_required`) : ils ne décident jamais eux-mêmes qui a le droit.
 
+À chaque `migrate`, les permissions de ces groupes sont remises exactement à la liste
+ci-dessous : une permission ajoutée ou retirée à la main dans le back-office est écrasée.
+Pour changer un rôle durablement, on modifie GROUPES, dans une PR.
+
 Pour un autre domaine (référentiels, pages libres…) : ajouter ses permissions ici, dans sa PR.
 """
 
+import warnings
+
+from django.apps import apps
 from django.contrib.auth.models import Group, Permission
 
 # Groupe -> permissions accordées ("application.code_de_la_permission").
@@ -29,6 +36,29 @@ GROUPES = {
         "membres.delete_membre",
         "membres.valider_inscription",
         "membres.gerer_les_droits",
+        # Référentiels (#18) : sites, niveaux et diplômes.
+        "referentiels.view_site",
+        "referentiels.add_site",
+        "referentiels.change_site",
+        "referentiels.delete_site",
+        "referentiels.view_niveau",
+        "referentiels.add_niveau",
+        "referentiels.change_niveau",
+        "referentiels.delete_niveau",
+        "referentiels.view_diplome",
+        "referentiels.add_diplome",
+        "referentiels.change_diplome",
+        "referentiels.delete_diplome",
+        # Parcours des membres (#31).
+        "referentiels.view_formation",
+        "referentiels.add_formation",
+        "referentiels.change_formation",
+        "referentiels.delete_formation",
+        # Pages libres (#23) : mentions légales, CGU…
+        "pages_libres.view_page",
+        "pages_libres.add_page",
+        "pages_libres.change_page",
+        "pages_libres.delete_page",
     ],
 }
 
@@ -42,13 +72,34 @@ def permissions(codes):
     return trouvees
 
 
-def creer_groupes(**kwargs):
+def codes_inconnus(codes):
+    """Les codes de GROUPES qui ne désignent aucune permission existante."""
+    return [code for code in sorted(codes) if not permissions([code])]
+
+
+def derniere_application():
+    """La dernière application à recevoir le signal post_migrate (celles qui ont des modèles)."""
+    return [config for config in apps.get_app_configs() if config.models_module][-1]
+
+
+def creer_groupes(app_config=None, **kwargs):
     """
-    Crée ou met à jour les groupes après `migrate` (signal post_migrate).
-    Django crée les permissions application par application : tant qu'elles n'existent
-    pas toutes, on attend le signal suivant.
+    Crée ou met à jour les groupes après `migrate` (signal post_migrate, envoyé une fois par
+    application). Django crée les permissions application par application : tant qu'elles
+    n'existent pas toutes, on attend le signal suivant.
+
+    Au dernier signal, toutes les permissions existent : un code encore introuvable est une
+    faute de frappe, et on le signale. Avant, on ne dit rien : sur une base existante, la
+    permission d'un nouveau modèle n'est pas encore créée, ce ne serait pas une erreur.
     """
     tous_les_codes = {code for codes in GROUPES.values() for code in codes}
+    if app_config is None or app_config == derniere_application():
+        for code in codes_inconnus(tous_les_codes):
+            warnings.warn(
+                f"membres/droits.py : la permission « {code} » n'existe pas (faute de frappe ?). "
+                "Les groupes ne sont pas mis à jour.",
+                stacklevel=2,
+            )
     if len(permissions(tous_les_codes)) < len(tous_les_codes):
         return
     for nom, codes in GROUPES.items():
@@ -60,13 +111,13 @@ def peut_modifier_le_compte(utilisateur, membre):
     """
     Peut-on modifier ou supprimer ce compte (y compris le statut de son inscription) ?
     - le compte d'un superutilisateur : seulement un superutilisateur ;
-    - le compte d'un membre de l'équipe (accès au back-office) : seulement avec
-      « gerer_les_droits ». Sinon un validateur pourrait refuser l'inscription d'un
-      administrateur, qui ne pourrait plus se connecter.
+    - le compte d'un membre de l'équipe (accès au back-office ou au moins un groupe) :
+      seulement avec « gerer_les_droits ». Sinon un validateur pourrait refuser l'inscription
+      d'un administrateur, qui ne pourrait plus se connecter.
     """
     if membre.is_superuser:
         return utilisateur.is_superuser
-    if membre.is_staff:
+    if membre.is_staff or membre.groups.exists():
         return utilisateur.has_perm("membres.gerer_les_droits")
     return True
 

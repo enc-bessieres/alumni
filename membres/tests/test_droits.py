@@ -1,3 +1,7 @@
+import warnings
+from unittest import mock
+
+from django.apps import apps
 from django.contrib.admin.sites import site
 from django.contrib.auth.models import Group, Permission
 from django.test import RequestFactory, TestCase
@@ -51,6 +55,48 @@ class GroupesTests(TestCase):
         membre = creer("membre@exemple.test")
         self.assertFalse(membre.has_perm("membres.valider_inscription"))
         self.assertFalse(membre.has_perm("membres.change_membre"))
+
+    def test_une_faute_de_frappe_dans_les_groupes_est_signalee(self):
+        groupes = {**droits.GROUPES, "Essai": ["membres.gerer_les_droitz", "membre.view_membre"]}
+        with mock.patch.object(droits, "GROUPES", groupes):
+            with warnings.catch_warnings(record=True) as alertes:
+                warnings.simplefilter("always")
+                droits.creer_groupes()
+        messages = " ".join(str(alerte.message) for alerte in alertes)
+        self.assertIn("membres.gerer_les_droitz", messages)  # application connue, code inconnu
+        self.assertIn("membre.view_membre", messages)  # application inconnue
+        self.assertFalse(Group.objects.filter(name="Essai").exists())
+
+    def test_aucune_alerte_avant_le_dernier_signal_de_migrate(self):
+        # Sur une base existante, la permission d'un nouveau modèle n'existe pas encore
+        # quand les premières applications reçoivent post_migrate : pas une faute de frappe.
+        groupes = {**droits.GROUPES, "Essai": ["referentiels.view_modele_a_venir"]}
+        with mock.patch.object(droits, "GROUPES", groupes):
+            with warnings.catch_warnings(record=True) as alertes:
+                warnings.simplefilter("always")
+                droits.creer_groupes(app_config=apps.get_app_config("admin"))
+        self.assertEqual(alertes, [])
+
+    def test_l_administrateur_gere_les_referentiels_et_les_pages_libres(self):
+        administrateur = creer("admin@exemple.test", groupe="Administrateur")
+        self.client.force_login(administrateur)
+        for modele, adresse in [
+            ("referentiels.change_site", "/admin/referentiels/site/"),
+            ("referentiels.change_niveau", "/admin/referentiels/niveau/"),
+            ("referentiels.change_diplome", "/admin/referentiels/diplome/"),
+            ("referentiels.change_formation", "/admin/referentiels/formation/"),
+            ("pages_libres.change_page", "/admin/pages_libres/page/"),
+        ]:
+            with self.subTest(modele=modele):
+                self.assertTrue(administrateur.has_perm(modele))
+                self.assertEqual(self.client.get(adresse).status_code, 200)
+
+    def test_un_validateur_n_a_pas_acces_aux_referentiels_ni_aux_pages(self):
+        validateur = creer("valid@exemple.test", groupe="Validateur")
+        self.client.force_login(validateur)
+        for adresse in ["/admin/referentiels/diplome/", "/admin/pages_libres/page/"]:
+            with self.subTest(adresse=adresse):
+                self.assertEqual(self.client.get(adresse).status_code, 403)
 
     def test_un_administrateur_gere_les_droits(self):
         administrateur = creer("admin@exemple.test", groupe="Administrateur")
@@ -123,6 +169,17 @@ class BackOfficeTests(TestCase):
         membre = creer("oubli@exemple.test")
         page = self.client.get(f"/admin/membres/membre/{membre.pk}/password/")
         self.assertEqual(page.status_code, 200)
+
+    def test_un_compte_avec_un_groupe_est_protege_meme_sans_acces_au_back_office(self):
+        self.client.force_login(creer("valid@exemple.test", groupe="Validateur"))
+        administrateur = creer("admin@exemple.test")
+        administrateur.groups.add(Group.objects.get(name="Administrateur"))  # sans is_staff
+        reponse = self.client.post(
+            f"/admin/membres/membre/{administrateur.pk}/change/", {"statut_inscription": "refusee"}
+        )
+        self.assertEqual(reponse.status_code, 403)
+        administrateur.refresh_from_db()
+        self.assertEqual(administrateur.statut_inscription, Membre.StatutInscription.VALIDEE)
 
     def test_seul_un_superutilisateur_touche_au_compte_d_un_superutilisateur(self):
         self.client.force_login(creer("adm@exemple.test", groupe="Administrateur"))

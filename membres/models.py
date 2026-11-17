@@ -110,7 +110,11 @@ class Membre(AbstractBaseUser, PermissionsMixin):
         # Permissions propres au projet, regroupées par rôle dans membres/droits.py
         permissions = [
             ("valider_inscription", "Peut valider ou refuser une inscription"),
-            ("gerer_les_droits", "Peut modifier les groupes et l'accès au back-office"),
+            (
+                "gerer_les_droits",
+                "Peut modifier les groupes, l'accès au back-office, l'e-mail et le mot de passe "
+                "des comptes",
+            ),
         ]
 
     def __str__(self):
