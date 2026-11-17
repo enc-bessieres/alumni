@@ -44,7 +44,7 @@ class PagesLibresTests(TestCase):
     def test_les_pages_de_depart_existent(self):
         for slug in PAGES_DE_DEPART:
             with self.subTest(slug=slug):
-                self.assertTrue(Page.objects.get(slug=slug).contenu.startswith("À COMPLÉTER : "))
+                self.assertTrue(Page.objects.get(slug=slug).contenu.startswith("<p>À COMPLÉTER : "))
                 reponse = self.client.get(reverse("pages_libres:detail", args=[slug]))
                 self.assertEqual(reponse.status_code, 200)
 
