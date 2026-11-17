@@ -2,11 +2,34 @@
 
 from django.db import migrations
 
+# Django crée les permissions manquantes mais ne renomme jamais celles qui existent déjà :
+# sur une base existante (recette, postes), on met le libellé à jour nous-mêmes.
+ANCIEN = "Peut modifier les groupes et l'accès au back-office"
+NOUVEAU = (
+    "Peut modifier les groupes, l'accès au back-office, l'e-mail et le mot de passe des comptes"
+)
+
+
+def renommer(apps, ancien, nouveau):
+    Permission = apps.get_model("auth", "Permission")
+    Permission.objects.filter(
+        content_type__app_label="membres", codename="gerer_les_droits", name=ancien
+    ).update(name=nouveau)
+
+
+def nouveau_libelle(apps, schema_editor):
+    renommer(apps, ANCIEN, NOUVEAU)
+
+
+def ancien_libelle(apps, schema_editor):
+    renommer(apps, NOUVEAU, ANCIEN)
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ("membres", "0003_permissions_du_projet"),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
@@ -24,4 +47,5 @@ class Migration(migrations.Migration):
                 "verbose_name": "membre",
             },
         ),
+        migrations.RunPython(nouveau_libelle, ancien_libelle),
     ]

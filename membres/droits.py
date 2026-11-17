@@ -49,6 +49,16 @@ GROUPES = {
         "referentiels.add_diplome",
         "referentiels.change_diplome",
         "referentiels.delete_diplome",
+        # Parcours des membres (#31).
+        "referentiels.view_formation",
+        "referentiels.add_formation",
+        "referentiels.change_formation",
+        "referentiels.delete_formation",
+        # Pages libres (#23) : mentions légales, CGU…
+        "pages_libres.view_page",
+        "pages_libres.add_page",
+        "pages_libres.change_page",
+        "pages_libres.delete_page",
     ],
 }
 
@@ -63,36 +73,33 @@ def permissions(codes):
 
 
 def codes_inconnus(codes):
-    """
-    Les codes qui ne désignent aucune permission alors qu'ils le devraient déjà : application
-    inconnue, ou application dont les permissions existent mais pas celle-ci. Ce sont des
-    fautes de frappe dans GROUPES.
-    """
-    applications = {config.label for config in apps.get_app_configs()}
-    inconnus = []
-    for code in sorted(codes):
-        app_label, codename = code.split(".")
-        de_l_application = Permission.objects.filter(content_type__app_label=app_label)
-        if app_label not in applications or (
-            de_l_application.exists() and not de_l_application.filter(codename=codename).exists()
-        ):
-            inconnus.append(code)
-    return inconnus
+    """Les codes de GROUPES qui ne désignent aucune permission existante."""
+    return [code for code in sorted(codes) if not permissions([code])]
 
 
-def creer_groupes(**kwargs):
+def derniere_application():
+    """La dernière application à recevoir le signal post_migrate (celles qui ont des modèles)."""
+    return [config for config in apps.get_app_configs() if config.models_module][-1]
+
+
+def creer_groupes(app_config=None, **kwargs):
     """
-    Crée ou met à jour les groupes après `migrate` (signal post_migrate).
-    Django crée les permissions application par application : tant qu'elles n'existent
-    pas toutes, on attend le signal suivant. Une faute de frappe, elle, est signalée.
+    Crée ou met à jour les groupes après `migrate` (signal post_migrate, envoyé une fois par
+    application). Django crée les permissions application par application : tant qu'elles
+    n'existent pas toutes, on attend le signal suivant.
+
+    Au dernier signal, toutes les permissions existent : un code encore introuvable est une
+    faute de frappe, et on le signale. Avant, on ne dit rien : sur une base existante, la
+    permission d'un nouveau modèle n'est pas encore créée, ce ne serait pas une erreur.
     """
     tous_les_codes = {code for codes in GROUPES.values() for code in codes}
-    for code in codes_inconnus(tous_les_codes):
-        warnings.warn(
-            f"membres/droits.py : la permission « {code} » n'existe pas (faute de frappe ?). "
-            "Les groupes ne sont pas mis à jour.",
-            stacklevel=2,
-        )
+    if app_config is None or app_config == derniere_application():
+        for code in codes_inconnus(tous_les_codes):
+            warnings.warn(
+                f"membres/droits.py : la permission « {code} » n'existe pas (faute de frappe ?). "
+                "Les groupes ne sont pas mis à jour.",
+                stacklevel=2,
+            )
     if len(permissions(tous_les_codes)) < len(tous_les_codes):
         return
     for nom, codes in GROUPES.items():

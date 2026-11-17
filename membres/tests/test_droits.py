@@ -1,6 +1,7 @@
 import warnings
 from unittest import mock
 
+from django.apps import apps
 from django.contrib.admin.sites import site
 from django.contrib.auth.models import Group, Permission
 from django.test import RequestFactory, TestCase
@@ -66,11 +67,36 @@ class GroupesTests(TestCase):
         self.assertIn("membre.view_membre", messages)  # application inconnue
         self.assertFalse(Group.objects.filter(name="Essai").exists())
 
-    def test_l_administrateur_gere_les_referentiels(self):
+    def test_aucune_alerte_avant_le_dernier_signal_de_migrate(self):
+        # Sur une base existante, la permission d'un nouveau modèle n'existe pas encore
+        # quand les premières applications reçoivent post_migrate : pas une faute de frappe.
+        groupes = {**droits.GROUPES, "Essai": ["referentiels.view_modele_a_venir"]}
+        with mock.patch.object(droits, "GROUPES", groupes):
+            with warnings.catch_warnings(record=True) as alertes:
+                warnings.simplefilter("always")
+                droits.creer_groupes(app_config=apps.get_app_config("admin"))
+        self.assertEqual(alertes, [])
+
+    def test_l_administrateur_gere_les_referentiels_et_les_pages_libres(self):
         administrateur = creer("admin@exemple.test", groupe="Administrateur")
-        self.assertTrue(administrateur.has_perm("referentiels.change_diplome"))
         self.client.force_login(administrateur)
-        self.assertEqual(self.client.get("/admin/referentiels/diplome/").status_code, 200)
+        for modele, adresse in [
+            ("referentiels.change_site", "/admin/referentiels/site/"),
+            ("referentiels.change_niveau", "/admin/referentiels/niveau/"),
+            ("referentiels.change_diplome", "/admin/referentiels/diplome/"),
+            ("referentiels.change_formation", "/admin/referentiels/formation/"),
+            ("pages_libres.change_page", "/admin/pages_libres/page/"),
+        ]:
+            with self.subTest(modele=modele):
+                self.assertTrue(administrateur.has_perm(modele))
+                self.assertEqual(self.client.get(adresse).status_code, 200)
+
+    def test_un_validateur_n_a_pas_acces_aux_referentiels_ni_aux_pages(self):
+        validateur = creer("valid@exemple.test", groupe="Validateur")
+        self.client.force_login(validateur)
+        for adresse in ["/admin/referentiels/diplome/", "/admin/pages_libres/page/"]:
+            with self.subTest(adresse=adresse):
+                self.assertEqual(self.client.get(adresse).status_code, 403)
 
     def test_un_administrateur_gere_les_droits(self):
         administrateur = creer("admin@exemple.test", groupe="Administrateur")
