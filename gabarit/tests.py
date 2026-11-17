@@ -209,20 +209,25 @@ class ApplicationInstallableTests(TestCase):
 
 
 class MessagesTests(SimpleTestCase):
-    def afficher_la_page(self, *textes):
+    def afficher_la_page(self, *textes, niveau=messages.SUCCESS):
         requete = RequestFactory().get("/")
         requete.user = AnonymousUser()
         # Le stockage des messages, que le middleware de Django installe sur chaque requête.
         requete._messages = CookieStorage(requete)
         for texte in textes:
-            messages.success(requete, texte)
+            messages.add_message(requete, niveau, texte)
         return render_to_string("base.html", request=requete)
 
     def test_les_messages_s_affichent_dans_le_gabarit(self):
         html = self.afficher_la_page("Vous êtes déconnecté.")
 
         self.assertIn('<ul class="messages" role="status">', html)
-        self.assertIn("<li>Vous êtes déconnecté.</li>", html)
+        self.assertIn('<li class="message message--success">Vous êtes déconnecté.</li>', html)
+
+    def test_une_erreur_ne_s_affiche_pas_comme_un_succes(self):
+        html = self.afficher_la_page("Mot de passe incorrect.", niveau=messages.ERROR)
+
+        self.assertIn('<li class="message message--error">Mot de passe incorrect.</li>', html)
 
     def test_sans_message_rien_ne_s_affiche(self):
         html = self.afficher_la_page()
