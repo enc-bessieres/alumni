@@ -33,7 +33,7 @@ Dans un second terminal, pendant que `docker compose up` tourne :
 | Pour… | Commande |
 |---|---|
 | Lancer les tests | `docker compose exec web python manage.py test` |
-| Créer un compte administrateur | `docker compose exec web python manage.py createsuperuser` |
+| Créer un compte administrateur | `docker compose exec web python manage.py createsuperuser` (ce compte se connecte par `/admin/` ; pour `/compte/login/`, son adresse doit d'abord être marquée vérifiée dans le back-office, rubrique « Comptes » → « Adresses e-mail ») |
 | Créer les migrations après avoir modifié un modèle | `docker compose exec web python manage.py makemigrations` |
 | Appliquer les migrations | `docker compose exec web python manage.py migrate` |
 | Charger les fausses données | `docker compose exec web python manage.py charger_donnees_dev` |

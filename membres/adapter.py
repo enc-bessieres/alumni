@@ -1,4 +1,7 @@
 from allauth.account.adapter import DefaultAccountAdapter
+
+# API interne d'allauth (module « internal ») : elle peut changer sans prévenir.
+# À vérifier en premier lors d'une mise à jour de django-allauth.
 from allauth.account.internal.stagekit import clear_login
 from django.contrib import messages
 from django.shortcuts import redirect
