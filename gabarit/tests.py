@@ -57,6 +57,8 @@ class MenuTests(TestCase):
 
     def test_les_pages_provisoires_affichent_bientot_disponible(self):
         for page in pages_provisoires:
+            if page.name in ("profil", "parametres"):
+                continue  # réservées aux membres connectés : voir test_pages_privees.py
             with self.subTest(page=page.name):
                 reponse = self.client.get(reverse(f"gabarit:{page.name}"))
 
