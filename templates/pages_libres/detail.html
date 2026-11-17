@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block titre %}{{ page.titre }} – Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+<h1>{{ page.titre }}</h1>
+{{ page.contenu|linebreaks }}
+<p><small>Dernière modification : {{ page.modifiee_le|date:"j F Y" }}</small></p>
+{% endblock %}
