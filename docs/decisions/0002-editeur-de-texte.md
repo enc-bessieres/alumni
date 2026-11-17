@@ -1,35 +1,31 @@
-# 0001 — Django + HTMX
+# 0002 — Éditeur de texte pour les contenus
 
-**Date :** lundi 9 novembre 2026
+**Date :** lundi 16 novembre 2026
 **Statut :** décidée
 
 ## Contexte
 
-Quatre options ont été comparées dans [05-choix-technique.md](../05-choix-technique.md) : Next.js + Payload, Nuxt + Django REST, Django + HTMX, Symfony. Le site doit être en production en mars 2027, puis maintenu par Timothée et les promos suivantes.
+Les pages libres, et plus tard le blog, les événements et les offres, ont besoin de mise en forme : titres, gras, listes, liens. Aujourd'hui, le contenu est saisi et affiché en texte brut : le HTML est échappé pour se protéger contre le XSS, donc aucune mise en forme n'est possible.
 
 ## Décision
 
-**Django + HTMX**, dans un seul programme Python, avec PostgreSQL et Docker.
+Utiliser l'éditeur de texte **django-prose-editor**, avec le nettoyage du HTML par **nh3**.
 
 | Élément | Version |
 |---|---|
-| Python | 3.13 |
-| Django | 5.2 LTS (maintenu jusqu'en avril 2028) |
-| PostgreSQL | 17 |
-| HTMX | 2 |
-
-Les versions restent figées jusqu'après la bascule.
+| django-prose-editor (option `[sanitize]`) | ~=0.28.0 |
+| nh3 | installé par l'option `[sanitize]` |
 
 ## Raisons
 
-1. **Les mots de passe Datalumni passent sans code.** Ils sont au format Django (`pbkdf2_sha256$…`) : on les copie dans le champ `password` et Django les vérifie au login.
-2. **Le framework fournit l'essentiel :** back-office d'administration, connexion, droits, formulaires, migrations. En 6 semaines, c'est ce qui permet d'atteindre la parité.
-3. **Un seul langage et une seule base de code**, qu'on déploie en un seul conteneur.
-4. **La maintenance :** une version LTS, un framework stable depuis 20 ans, facile à reprendre par les promos suivantes.
+1. Le site s'adresse à un public large : alumni, étudiants, enseignants, recruteurs. Le Markdown ou les balises HTML demandent d'apprendre des symboles, ce qui serait un frein. Un éditeur avec des boutons ne demande rien à apprendre, comme dans le prototype de 2026.
+2. Avec django-prose-editor, la liste des mises en forme autorisées est déclarée une seule fois : elle sert à la fois aux boutons de l'éditeur et au nettoyage du HTML par nh3. Avec les autres éditeurs, il faut tenir deux listes à la main, et c'est là que naissent les failles XSS.
+3. Il est fait pour Django, maintenu activement, sous licence BSD, et son JavaScript est livré dans le paquet, sans npm ni CDN.
+4. Les autres éditeurs ont été écartés : CKEditor 5 et TinyMCE (licence GPL ou payante, plus lourds), Quill et Summernote (abandonnés), Trix (un seul niveau de titre), Editor.js (stocke du JSON au lieu du HTML).
 
 ## Ce que ça implique
 
-- **Le prototype de 2026** (Next.js + Payload) n'est pas repris tel quel. On reprend ses écrans, ses parcours et ses choix d'interface, et on les réécrit en Django. Axel, Luc et Steeve connaissent déjà ces fonctions : ils savent ce qu'il faut construire.
-- **Le chat en direct** garde la technique du prototype : des *Server-Sent Events* (SSE), une connexion que le serveur garde ouverte pour envoyer chaque nouveau message. Django les sert avec une vue asynchrone, sous un serveur ASGI (Uvicorn). PostgreSQL signale chaque nouveau message (`LISTEN/NOTIFY`), ce qui évite d'interroger la base en boucle. HTMX a une extension SSE pour afficher les messages. Il n'y a pas de Redis ni de Django Channels à installer.
-- **Google et LinkedIn** passent par `django-allauth`, en semaine 2.
-- **Les tests** utilisent le lanceur de Django (`manage.py test`).
+- Une application `texte_riche` déclare une seule fois le champ `ChampTexteRiche` et les mises en forme autorisées. Le blog, les événements et les offres l'utiliseront aussi.
+- Le nettoyage se fait quand un formulaire est validé, pas à l'enregistrement. Les migrations de données et l'import Datalumni doivent donc appeler `nettoyer()`.
+- L'affichage utilise `|safe`, ce qui n'est acceptable que parce que le contenu a été nettoyé avant.
+- Limites : un seul mainteneur, et une version 0.x dont l'interface peut changer. C'est acceptable, car le contenu est stocké en HTML standard dans un champ texte ordinaire : si la bibliothèque disparaît, les données restent lisibles et on peut changer d'éditeur sans rien convertir. La version est figée avec `~=0.28.0`.
