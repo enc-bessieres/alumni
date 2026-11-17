@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block titre %}Accès refusé — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+<h1>Accès refusé</h1>
+<p>Vous n'avez pas accès à cette page.</p>
+{% if not user.is_authenticated %}
+  <p><a href="{{ url_connexion }}?next={{ request.path|urlencode }}">Se connecter</a></p>
+{% endif %}
+<p><a href="{% url 'accueil:index' %}">Revenir à l'accueil</a></p>
+{% endblock %}

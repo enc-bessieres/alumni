@@ -64,7 +64,7 @@ summary {
   list-style: none;
 }
 
-/* Safari affiche sinon un petit triangle devant « Plus ». */
+/* Safari affiche sinon un petit triangle devant « Plus » et la zone membre. */
 summary::-webkit-details-marker {
   display: none;
 }
@@ -94,11 +94,41 @@ summary::-webkit-details-marker {
   font-weight: 400;
 }
 
-/* Menu déroulant « Plus » */
+.se-connecter {
+  color: var(--sur-bordeaux);
+  font-weight: 600;
+  /* Ne jamais couper « Se connecter » sur deux lignes, même sur un petit écran. */
+  white-space: nowrap;
+}
+
+/* Zone membre */
+.zone-membre {
+  position: relative;
+}
+
+.zone-membre summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.initiales {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--sur-bordeaux);
+  color: var(--bordeaux);
+  font-size: var(--taille-mini);
+  font-weight: 700;
+}
+
+/* Menus déroulants : zone membre et « Plus » */
+.zone-membre ul,
 .plus ul {
   position: absolute;
-  right: 0.5rem;
-  bottom: calc(var(--hauteur-barre-mobile) + 0.25rem);
   z-index: 5;
   min-width: 12rem;
   padding: 0.5rem 0;
@@ -108,12 +138,29 @@ summary::-webkit-details-marker {
   box-shadow: var(--ombre);
 }
 
+.zone-membre ul {
+  top: 2.75rem;
+  right: 0;
+}
+
+.plus ul {
+  right: 0.5rem;
+  bottom: calc(var(--hauteur-barre-mobile) + 0.25rem);
+}
+
+.zone-membre a,
+.zone-membre button,
 .plus a {
   display: block;
+  width: 100%;
   padding: 0.5rem 1rem;
+  border: 0;
+  background: none;
   color: var(--texte);
+  font: inherit;
   text-align: left;
   text-decoration: none;
+  cursor: pointer;
 }
 
 /* Contenu */
