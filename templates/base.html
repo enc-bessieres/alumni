@@ -10,15 +10,52 @@
 {# Le jeton CSRF est envoyé avec chaque requête HTMX (POST, PUT, DELETE). #}
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <header class="entete">
-    <a class="marque" href="{% url 'accueil:index' %}">Alumni ENC Bessières</a>
+    <a class="marque" href="{% url 'accueil:index' %}">
+      <span class="logo">À COMPLÉTER : logo</span>
+      <span>Alumni ENC Bessières</span>
+    </a>
   </header>
 
-  <main class="contenu">
-    {% block contenu %}{% endblock %}
-  </main>
+  <div class="mise-en-page">
+    {# Ordinateur : le menu complet dans la colonne de gauche. #}
+    <nav class="menu-lateral" aria-label="Menu principal">
+      <ul>
+        {% for entree in menu %}
+          <li><a href="{{ entree.url }}"{% if entree.actif %} aria-current="page"{% endif %}>{{ entree.libelle }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+
+    <main class="contenu">
+      {% block contenu %}{% endblock %}
+    </main>
+  </div>
 
   <footer class="pied">
-    <p>À COMPLÉTER : adresses des deux sites et liens vers les pages légales (issue #11).</p>
+    <div class="sites">
+      <p><strong>ENC Bessières</strong><br>À COMPLÉTER : adresse</p>
+      <p><strong>ENC Bessières Apprentissage</strong><br>À COMPLÉTER : adresse</p>
+    </div>
+    <p>À COMPLÉTER : liens vers les mentions légales, les CGU et la confidentialité (issue #12).</p>
   </footer>
+
+  {# Mobile : barre fixe en bas, 4 entrées puis « Plus » pour les autres. #}
+  <nav class="barre-mobile" aria-label="Menu principal">
+    <ul>
+      {% for entree in menu_mobile %}
+        <li><a href="{{ entree.url }}"{% if entree.actif %} aria-current="page"{% endif %}>{{ entree.libelle }}</a></li>
+      {% endfor %}
+      <li>
+        <details class="plus">
+          <summary>Plus</summary>
+          <ul>
+            {% for entree in menu_plus %}
+              <li><a href="{{ entree.url }}"{% if entree.actif %} aria-current="page"{% endif %}>{{ entree.libelle }}</a></li>
+            {% endfor %}
+          </ul>
+        </details>
+      </li>
+    </ul>
+  </nav>
 </body>
 </html>

@@ -9,4 +9,5 @@ urlpatterns = [
     path("compte/", include("allauth.urls")),
     path("page/", include("pages_libres.urls")),
     path("", include("accueil.urls")),
+    path("", include("gabarit.urls")),
 ]
