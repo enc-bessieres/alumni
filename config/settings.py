@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "gabarit",  # Steeve : gabarit des pages, menu, application installable
     "django_prose_editor",
     "texte_riche",
+    "blog",
 ]
 
 MIDDLEWARE = [
