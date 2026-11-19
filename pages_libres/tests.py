@@ -39,6 +39,14 @@ class PagesLibresTests(TestCase):
                 reponse = self.client.get(reverse("pages_libres:detail", args=[slug]))
                 self.assertEqual(reponse.status_code, 200)
 
+    def test_l_enregistrement_direct_est_aussi_nettoye(self):
+        page = Page.objects.create(
+            titre="X", slug="x", contenu="<p>Texte</p><script>alert(1)</script>", publiee=True
+        )
+        page.refresh_from_db()
+        self.assertNotIn("<script", page.contenu)
+        self.assertIn("Texte", page.contenu)
+
 
 class BackOfficeTests(TestCase):
     """Back-office réservé à l'équipe ; un non-administrateur connecté reçoit une 403."""

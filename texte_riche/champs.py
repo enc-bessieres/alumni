@@ -28,3 +28,10 @@ class ChampTexteRiche(ProseEditorField):
         kwargs.setdefault("extensions", EXTENSIONS)
         kwargs.setdefault("sanitize", True)
         super().__init__(*args, **kwargs)
+
+    def pre_save(self, model_instance, add):
+        # Nettoie aussi à chaque enregistrement, même sans formulaire
+        # (import, Modele.objects.create…) : |safe reste toujours sûr.
+        valeur = nettoyer(getattr(model_instance, self.attname) or "")
+        setattr(model_instance, self.attname, valeur)
+        return valeur
