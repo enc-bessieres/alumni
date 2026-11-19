@@ -47,6 +47,17 @@ class PagesLibresTests(TestCase):
         self.assertNotIn("<script", page.contenu)
         self.assertIn("Texte", page.contenu)
 
+    def test_la_page_publique_affiche_le_html_nettoye(self):
+        Page.objects.create(
+            titre="X",
+            slug="x",
+            contenu="<h2>Titre</h2><script>alert(1)</script>",
+            publiee=True,
+        )
+        reponse = self.client.get(reverse("pages_libres:detail", args=["x"]))
+        self.assertContains(reponse, "<h2>Titre</h2>")
+        self.assertNotContains(reponse, "<script>alert(1)</script>")
+
 
 class BackOfficeTests(TestCase):
     """Back-office réservé à l'équipe ; un non-administrateur connecté reçoit une 403."""

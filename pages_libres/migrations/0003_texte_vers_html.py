@@ -9,7 +9,22 @@ paragraphes <p>), puis on le nettoie avec la même liste que l'éditeur.
 from django.db import migrations
 from django.utils.html import linebreaks
 
-from texte_riche.champs import nettoyer
+from django_prose_editor.fields import create_sanitizer
+
+# Liste recopiée de texte_riche/champs.py et figée ici : une migration doit toujours
+# donner le même résultat, même si la liste de l'éditeur change plus tard.
+EXTENSIONS = {
+    "Heading": {"levels": [2, 3]},
+    "Bold": True,
+    "Italic": True,
+    "BulletList": True,
+    "OrderedList": True,
+    "ListItem": True,
+    "Blockquote": True,
+    "Link": {"enableTarget": False, "protocols": ["http", "https", "mailto"]},
+}
+
+nettoyer = create_sanitizer(EXTENSIONS)
 
 
 def texte_vers_html(apps, schema_editor):
