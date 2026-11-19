@@ -4,6 +4,7 @@ Ces tests n'ont pas besoin de la base de données.
 """
 
 import json
+from collections import defaultdict
 from dataclasses import replace
 
 from django.contrib.auth.hashers import PBKDF2PasswordHasher, check_password
@@ -21,6 +22,21 @@ def annees(m):
     return [g["timeline"]["annee"] for g in m["groupes"] if g["timeline"]]
 
 
+def sans_mot_de_passe(m):
+    return m["password"].startswith("!")
+
+
+def nom(m):
+    return f"{m['metadata']['prenom']} {m['metadata']['nom']}"
+
+
+def diplomes(m):
+    """Les diplômes et promos d'un membre, sous une forme comparable."""
+    return sorted(
+        f"{g['groupe_uuid']}/{g['timeline']['annee']}" for g in m["groupes"] if g["timeline"]
+    )
+
+
 class ExportFacticeTests(SimpleTestCase):
     @classmethod
     def setUpClass(cls):
@@ -30,6 +46,13 @@ class ExportFacticeTests(SimpleTestCase):
 
     def compter(self, condition):
         return sum(1 for m in self.membres if condition(m))
+
+    def regrouper(self, cle):
+        """Range les membres par clé et garde les groupes de plus d'un membre."""
+        groupes = defaultdict(list)
+        for m in self.membres:
+            groupes[cle(m)].append(m)
+        return [g for g in groupes.values() if len(g) > 1]
 
     # --- L'export dans son ensemble ------------------------------------------------------
 
@@ -47,13 +70,9 @@ class ExportFacticeTests(SimpleTestCase):
         self.assertEqual(self.compter(lambda m: m["origine"] == "import"), 784)
 
     def test_adresses_toutes_en_test_et_toutes_differentes(self):
-        adresses = [m["email"] for m in self.membres]
-        self.assertTrue(all(a.endswith("@exemple.test") for a in adresses))  # règle 1
+        adresses = [m["email"] for m in self.membres if m["email"]]  # 5 membres n'en ont pas
+        self.assertTrue(all(a.endswith(".test") for a in adresses))  # règle 1 : personne de réel
         self.assertEqual(len(set(adresses)), len(adresses))
-
-    def test_deux_membres_ne_portent_jamais_le_meme_nom_par_hasard(self):
-        noms = [(m["metadata"]["prenom"], m["metadata"]["nom"]) for m in self.membres]
-        self.assertEqual(len(set(noms)), len(noms))
 
     def test_uuid_uniques_et_appartenances_vers_des_groupes_existants(self):
         uuids = [o["uuid"] for o in self.export["groupes"] + self.membres]
@@ -85,17 +104,73 @@ class ExportFacticeTests(SimpleTestCase):
 
     def test_plusieurs_diplomes_le_second_trois_ans_plus_tard(self):
         plusieurs = [m for m in self.membres if len(annees(m)) > 1]
-        self.assertEqual(len(plusieurs), 120)
+        # 120 au départ ; les doublons recopient les diplômes, les homonymes en changent.
+        self.assertGreaterEqual(len(plusieurs), 100)
         self.assertTrue(all(second == premier + 3 for premier, second in map(annees, plusieurs)))
 
-    # --- Les mots de passe --------------------------------------------------------------
+    # --- Les profils et les mots de passe -----------------------------------------------
+
+    def test_imite_les_profils_peu_remplis_de_la_plateforme_actuelle(self):
+        # Issue #10 : 24 % de photos, 28 % d'expériences, 53 % de villes avec coordonnées.
+        self.assertEqual(self.compter(lambda m: m["metadata"]["photo"]), round(1300 * 0.24))
+        self.assertEqual(self.compter(lambda m: m["experiences"]), round(1300 * 0.28))
+        lieux = [m["metadata"]["localisation"] for m in self.membres]
+        lieux = [lieu for lieu in lieux if lieu]
+        self.assertEqual(len(lieux), round(1300 * 0.53))
+        self.assertTrue(all(isinstance(lieu["lat"], float) for lieu in lieux))
+        photos = [m["metadata"]["photo"] for m in self.membres if m["metadata"]["photo"]]
+        self.assertTrue(all(".exemple.test/" in p for p in photos))  # aucune vraie adresse
 
     def test_le_hasher_de_django_donne_la_meme_empreinte_que_django(self):
         empreinte = PBKDF2PasswordHasher().encode("rapide-pour-test", "selCourt", 1000)
         self.assertEqual(empreinte, EMPREINTE_DJANGO)
 
     def test_mots_de_passe_relus_par_django(self):
-        empreinte = self.membres[0]["password"]
+        empreinte = next(m["password"] for m in self.membres if not sans_mot_de_passe(m))
         self.assertTrue(empreinte.startswith("pbkdf2_sha256$1000$"))
         self.assertTrue(check_password("motdepasse-factice", empreinte))
         self.assertFalse(check_password("autre-chose", empreinte))
+
+    # --- Les cas difficiles (docs/06-points-durs.md, § 1) -------------------------------
+
+    def test_450_importes_jamais_actives_dont_40_emails_morts_et_5_sans_email(self):
+        inactifs = [m for m in self.membres if sans_mot_de_passe(m) and not m["liaisons"]]
+        self.assertEqual(len(inactifs), 450)
+        self.assertTrue(all(m["origine"] == "import" for m in inactifs))
+        self.assertTrue(all(m["derniere_connexion"] is None for m in inactifs))
+        self.assertEqual(sum(1 for m in inactifs if m["email"].endswith("@mort.exemple.test")), 40)
+        self.assertEqual(sum(1 for m in inactifs if m["email"] == ""), 5)
+
+    def test_comptes_google_et_linkedin(self):
+        def seulement(fournisseur):
+            return self.compter(
+                lambda m: (
+                    sans_mot_de_passe(m)
+                    and [liaison["fournisseur"] for liaison in m["liaisons"]] == [fournisseur]
+                )
+            )
+
+        self.assertEqual(seulement("google"), 30)
+        self.assertEqual(seulement("linkedin"), 10)
+        self.assertEqual(self.compter(lambda m: not sans_mot_de_passe(m) and m["liaisons"]), 60)
+
+    def test_25_doublons_meme_nom_memes_diplomes_un_importe_un_inscrit(self):
+        paires = self.regrouper(lambda m: (nom(m), *diplomes(m)))
+        self.assertEqual(len(paires), 25)
+        for a, b in paires:
+            self.assertNotEqual(a["email"], b["email"])
+            self.assertEqual(sorted([a["origine"], b["origine"]]), ["import", "inscription"])
+
+    def test_5_homonymes_qui_ne_sont_pas_des_doublons(self):
+        meme_nom = self.regrouper(nom)
+        # Seuls les doublons et les homonymes voulus portent le même nom, jamais par hasard.
+        self.assertEqual(len(meme_nom), 25 + 5)
+        self.assertEqual(sum(1 for a, b in meme_nom if diplomes(a) != diplomes(b)), 5)
+
+    def test_inscriptions_en_attente_et_refusees_absentes_de_l_annuaire(self):
+        def masques(statut):
+            return self.compter(lambda m: m["statut"] == statut and not m["visible_annuaire"])
+
+        self.assertEqual(masques("en_attente"), 10)
+        self.assertEqual(masques("refuse"), 5)
+        self.assertEqual(self.compter(lambda m: m["statut"] != "accepte"), 15)

@@ -8,6 +8,7 @@ format arrive, on adapte ce fichier et la lecture de l'import, pas le reste.
 Même graine = même export, au caractère près : deux migrations à blanc sont comparables.
 """
 
+import copy
 import random
 import unicodedata
 import uuid
@@ -47,6 +48,21 @@ class ConfigExport:
     masques: int = 78
     importes: int = 784
     plusieurs_diplomes: int = 120
+    # Les défauts de la plateforme actuelle (issue #10, docs/01 § 2) : peu de profils remplis.
+    part_photo: float = 0.24
+    part_experience: float = 0.28
+    part_localisation: float = 0.53
+    # Les cas difficiles (docs/06-points-durs.md, § 1). Un membre n'a qu'un seul cas.
+    jamais_actives: int = 450
+    emails_morts: int = 40  # parmi les jamais activés
+    sans_email: int = 5  # parmi les jamais activés
+    google_seulement: int = 30
+    linkedin_seulement: int = 10
+    google_en_plus: int = 60
+    doublons: int = 25
+    homonymes: int = 5
+    en_attente: int = 10
+    refuses: int = 5
     promo_min: int = 1990
     promo_max: int = 2026
     # 1 000 000 chez Django 5.2 : trop lent pour 1 300 comptes. Django lit ce nombre dans
@@ -61,6 +77,43 @@ PRENOMS = [
     "Emma", "Lucas", "Aïcha", "Louis", "Camille", "Karim", "Jade", "Maxime", "Fatou", "Antoine",
     "Léa", "Rayan", "Manon", "Thomas", "Nour", "Julien", "Zoé", "Bilal", "Clara", "Adrien",
     "Mei", "Romain", "Sofia", "Enzo", "Amina", "Victor", "Élise", "Samir", "Anaïs", "Paul",
+]  # fmt: skip
+
+
+def commune(nom, departement, region, pays, lat, lng):
+    return {
+        "commune": nom,
+        "departement": departement,
+        "region": region,
+        "pays": pays,
+        "lat": lat,
+        "lng": lng,
+    }
+
+
+COMMUNES = [
+    commune("Paris", "75", "Île-de-France", "France", 48.8835, 2.3219),
+    commune("Clichy", "92", "Île-de-France", "France", 48.9045, 2.306),
+    commune("Saint-Denis", "93", "Île-de-France", "France", 48.9362, 2.3574),
+    commune("Versailles", "78", "Île-de-France", "France", 48.8049, 2.1204),
+    commune("Lyon", "69", "Auvergne-Rhône-Alpes", "France", 45.764, 4.8357),
+    commune("Lille", "59", "Hauts-de-France", "France", 50.6292, 3.0573),
+    commune("Bordeaux", "33", "Nouvelle-Aquitaine", "France", 44.8378, -0.5792),
+    commune("Montréal", None, None, "Canada", 45.5019, -73.5674),
+    commune("Casablanca", None, None, "Maroc", 33.5731, -7.5898),
+]
+# Des employeurs visiblement inventés, pour qu'aucun ne soit pris pour une vraie entreprise.
+ORGANISATIONS = [
+    "Cabinet Exemple Audit", "Banque Fictive du Nord", "Exemple Assurances", "Studio Factice",
+    "Logistique Exemple", "Agence Imaginaire", "Mairie d'Exempleville", "Hôtel Fictif",
+]  # fmt: skip
+POSTES = [
+    "Comptable", "Assistant de gestion", "Chargé de clientèle", "Développeur", "Commercial",
+    "Contrôleur de gestion", "Auditeur", "Chargé de communication", "Conseiller en assurance",
+]  # fmt: skip
+SECTEURS = [
+    "Comptabilité", "Banque", "Assurance", "Informatique", "Commerce", "Communication",
+    "Transport", "Tourisme", "Fonction publique",
 ]  # fmt: skip
 NOMS = [
     "Martin", "Benali", "Nguyen", "Diallo", "Lefèvre", "Moreau", "Haddad", "Petit", "Rousseau",
@@ -99,6 +152,19 @@ def generer_export_factice(config=CONFIG_PAR_DEFAUT, mot_de_passe="motdepasse-fa
     def moment_entre(debut, fin):
         return debut + (fin - debut) * h.random()
 
+    def experience():
+        debut = h.randint(config.promo_min, config.promo_max - 1)
+        en_cours = h.random() < 0.4
+        return {
+            "intitule": h.choice(POSTES),
+            "organisation": h.choice(ORGANISATIONS),
+            "debut": debut,
+            "fin": None if en_cours else min(config.promo_max, debut + h.randint(1, 6)),
+            "poste_actuel": en_cours,
+            "secteur": h.choice(SECTEURS),
+            "lieu": h.choice(COMMUNES)["commune"],
+        }
+
     # 1. Les groupes, avec les mêmes noms que referentiels/donnees.py.
     groupes = []
 
@@ -119,8 +185,8 @@ def generer_export_factice(config=CONFIG_PAR_DEFAUT, mot_de_passe="motdepasse-fa
     categories = [c for c, n in config.visibles.items() for _ in range(n)]
     nb_visibles = len(categories)
     categories += ["Alumni"] * config.masques
-    # Chaque couple prénom + nom ne sert qu'une fois : deux membres ne se ressemblent pas par
-    # hasard (les doublons et homonymes voulus arrivent avec les cas difficiles).
+    # Chaque couple prénom + nom ne sert qu'une fois : seuls les doublons et homonymes voulus
+    # (étape 5) se ressemblent.
     identites = [(prenom, nom) for prenom in PRENOMS for nom in NOMS]
     h.shuffle(identites)
     if len(categories) > len(identites):
@@ -169,6 +235,20 @@ def generer_export_factice(config=CONFIG_PAR_DEFAUT, mot_de_passe="motdepasse-fa
             }
         )
 
+    # Peu de profils remplis, comme aujourd'hui : exactement 24 %, 28 % et 53 % des membres.
+    def part(proportion):
+        return h.sample(range(len(membres)), round(len(membres) * proportion))
+
+    for i in part(config.part_photo):
+        # Une adresse en .test : le site affichera les initiales, comme pour un membre sans photo.
+        membres[i]["metadata"]["photo"] = (
+            f"https://media.exemple.test/photos/{membres[i]['uuid']}.jpg"
+        )
+    for i in part(config.part_experience):
+        membres[i]["experiences"] = [experience() for _ in range(h.randint(1, 3))]
+    for i in part(config.part_localisation):
+        membres[i]["metadata"]["localisation"] = dict(h.choice(COMMUNES))
+
     # 3. L'origine : la vague d'import d'avril 2025, le reste inscrit seul.
     for i in h.sample(range(len(membres)), config.importes):
         m = membres[i]
@@ -184,5 +264,89 @@ def generer_export_factice(config=CONFIG_PAR_DEFAUT, mot_de_passe="motdepasse-fa
     poursuivants = [m for m in membres if m["categorie"] == "Alumni" and promo(m) <= 2023]
     for m in h.sample(poursuivants, config.plusieurs_diplomes):
         m["groupes"].append({"groupe_uuid": dcg["uuid"], "timeline": {"annee": promo(m) + 3}})
+
+    # 5. Les cas difficiles de docs/06-points-durs.md, § 1. Un membre n'a qu'un seul cas.
+    pris = set()
+
+    def tirer(condition, n):
+        """Tire n membres (leurs numéros) qui vérifient la condition et n'ont pas encore de cas."""
+        candidats = [i for i, m in enumerate(membres) if i not in pris and condition(m, i)]
+        if len(candidats) < n:
+            raise ValueError(f"Configuration impossible : il manque {n - len(candidats)} membres")
+        choisis = h.sample(candidats, n)
+        pris.update(choisis)
+        return choisis
+
+    def inutilisable():
+        return "!" + texte(40)  # ce que Django écrit quand il n'y a pas de mot de passe
+
+    def importe(m, i):
+        return m["origine"] == "import"
+
+    def inscrit(m, i):
+        return m["origine"] == "inscription"
+
+    def alumni(m, i):
+        return m["categorie"] == "Alumni"
+
+    def masque_inscrit(m, i):
+        return i >= nb_visibles and inscrit(m, i)
+
+    # Importés jamais activés : pas de mot de passe, jamais connectés. Certains ont une adresse
+    # morte (convention du factice : le vrai export ne le dira pas) ou pas d'adresse du tout.
+    for k, i in enumerate(tirer(importe, config.jamais_actives)):
+        m = membres[i]
+        m.update(password=inutilisable(), derniere_connexion=None, email_verifie=False)
+        m["consentements"]["cgu_acceptees_le"] = None
+        if k < config.emails_morts:
+            m["email"] = m["email"].replace("@exemple.test", "@mort.exemple.test")
+        elif k < config.emails_morts + config.sans_email:
+            m["email"] = ""
+
+    for i in tirer(masque_inscrit, config.en_attente):
+        membres[i]["statut"] = "en_attente"
+    for i in tirer(masque_inscrit, config.refuses):
+        membres[i]["statut"] = "refuse"
+
+    def google():
+        return {"fournisseur": "google", "sub": texte(21, "0123456789")}
+
+    def linkedin():
+        return {"fournisseur": "linkedin", "sub": texte(10)}
+
+    for i in tirer(inscrit, config.google_seulement):
+        membres[i].update(password=inutilisable(), liaisons=[google()])
+    for i in tirer(inscrit, config.linkedin_seulement):
+        membres[i].update(password=inutilisable(), liaisons=[linkedin()])
+    for i in tirer(inscrit, config.google_en_plus):
+        membres[i]["liaisons"].append(google())
+
+    # Doublon : une personne importée s'est réinscrite seule, avec une autre adresse.
+    originaux = tirer(lambda m, i: importe(m, i) and alumni(m, i), config.doublons)
+    copies = tirer(lambda m, i: inscrit(m, i) and alumni(m, i) and i < nb_visibles, config.doublons)
+    for i_original, i_copie in zip(originaux, copies, strict=True):
+        original, copie = membres[i_original], membres[i_copie]
+        prenom, nom = original["metadata"]["prenom"], original["metadata"]["nom"]
+        copie["metadata"].update(prenom=prenom, nom=nom)
+        copie["email"] = adresse(prenom, nom, i_copie + 1)
+        copie["groupes"] = copy.deepcopy(original["groupes"])
+
+    # Homonyme : même nom, mais un autre diplôme. Ce n'est PAS un doublon.
+    portent_le_nom = tirer(alumni, config.homonymes)
+    homonymes = tirer(alumni, config.homonymes)
+    for i_autre, i_homonyme in zip(portent_le_nom, homonymes, strict=True):
+        autre, homonyme = membres[i_autre], membres[i_homonyme]
+        prenom, nom = autre["metadata"]["prenom"], autre["metadata"]["nom"]
+        homonyme["metadata"].update(prenom=prenom, nom=nom)
+        homonyme["email"] = adresse(prenom, nom, i_homonyme + 1)
+        ses_diplomes = {g["groupe_uuid"] for g in autre["groupes"]}
+        autre_diplome = h.choice([d for d in diplomes if d["uuid"] not in ses_diplomes])
+        homonyme["groupes"] = [
+            homonyme["groupes"][0],  # son site
+            {
+                "groupe_uuid": autre_diplome["uuid"],
+                "timeline": {"annee": h.randint(config.promo_min, config.promo_max)},
+            },
+        ]
 
     return {"format": FORMAT, "groupes": groupes, "membres": membres}
