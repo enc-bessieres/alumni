@@ -198,6 +198,60 @@ summary::-webkit-details-marker {
   background: var(--erreur-clair);
 }
 
+/* Texte riche des pages libres (éditeur de texte, issue #12).
+   Mises en forme autorisées par texte_riche/champs.py. */
+.contenu-riche {
+  max-width: 65ch;
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+.contenu-riche h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.5rem;
+}
+
+.contenu-riche h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.contenu-riche p,
+.contenu-riche ul,
+.contenu-riche ol {
+  margin: 0 0 1rem;
+}
+
+.contenu-riche ul,
+.contenu-riche ol {
+  padding-left: 1.5rem;
+}
+
+.contenu-riche li + li {
+  margin-top: 0.25rem;
+}
+
+.contenu-riche li > p {
+  margin: 0;
+}
+
+.contenu-riche blockquote {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1rem;
+  border-left: 4px solid var(--bordeaux);
+  border-radius: var(--rayon);
+  background: var(--bordeaux-clair);
+  color: var(--texte-doux);
+}
+
+.contenu-riche blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.contenu-riche a {
+  text-underline-offset: 0.15em;
+}
+
 /* Pied de page */
 .pied {
   padding: 1rem;
