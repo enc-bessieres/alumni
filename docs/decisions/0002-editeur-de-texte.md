@@ -26,6 +26,6 @@ Utiliser l'éditeur de texte **django-prose-editor**, avec le nettoyage du HTML 
 ## Ce que ça implique
 
 - Une application `texte_riche` déclare une seule fois le champ `ChampTexteRiche` et les mises en forme autorisées. Le blog, les événements et les offres l'utiliseront aussi.
-- Le nettoyage se fait quand un formulaire est validé, pas à l'enregistrement. Les migrations de données et l'import Datalumni doivent donc appeler `nettoyer()`.
+- Le champ nettoie le HTML à la validation des formulaires, et aussi juste avant chaque enregistrement (pre_save) : un import ou un Modele.objects.create(...) est donc protégé. Seules les migrations de données, qui utilisent des modèles « historiques » sans ce champ, doivent appeler nettoyer() elles-mêmes.
 - L'affichage utilise `|safe`, ce qui n'est acceptable que parce que le contenu a été nettoyé avant.
 - Limites : un seul mainteneur, et une version 0.x dont l'interface peut changer. C'est acceptable, car le contenu est stocké en HTML standard dans un champ texte ordinaire : si la bibliothèque disparaît, les données restent lisibles et on peut changer d'éditeur sans rien convertir. La version est figée avec `~=0.28.0`.
