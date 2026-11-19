@@ -80,6 +80,16 @@ class Membre(AbstractBaseUser, PermissionsMixin):
         default=StatutInscription.EN_ATTENTE,
     )
 
+    # Privé par défaut (règle 5) : un membre n'apparaît dans l'annuaire que s'il l'a choisi.
+    # L'annuaire montre alors son nom, sa catégorie et ses diplômes, jamais son e-mail.
+    visible_dans_annuaire = models.BooleanField(
+        "visible dans l'annuaire",
+        default=False,
+        help_text=(
+            "Choisi par le membre : nom, catégorie et diplômes visibles des membres validés."
+        ),
+    )
+
     # Identifiant (UUID) chez Datalumni : import rejouable sans doublon, anciens liens redirigés.
     legacy_id = models.UUIDField(
         "identifiant Datalumni", null=True, blank=True, unique=True, editable=False

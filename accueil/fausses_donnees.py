@@ -113,6 +113,9 @@ def generer_membres(nombre=NOMBRE_PAR_DEFAUT, graine=2026):
                 # Le numéro rend chaque adresse unique, même si deux membres ont le même nom.
                 "email": f"{en_ascii(prenom)}.{en_ascii(nom)}.{numero}@exemple.test",
                 "categorie": categorie,
+                # 8 membres sur 1222 masqués de l'annuaire, pour voir que le choix est respecté.
+                # Calculé sur le numéro, pas tiré au hasard : les autres membres ne changent pas.
+                "visible_dans_annuaire": numero % 150 != 0,
                 "parcours": parcours,  # devient des Formation dans charger_donnees_dev
             }
         )
