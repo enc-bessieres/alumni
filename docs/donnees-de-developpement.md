@@ -24,6 +24,7 @@ docker compose exec web python manage.py charger_donnees_dev
 - `--nombre 50` pour en créer moins, dans les mêmes proportions ; `--graine 7` pour un autre tirage, tout aussi reproductible.
 - Promos de **1990 à 2026** sur les 20 diplômes ; 2027 ou 2028 pour les étudiants ; environ un alumni sur cinq a un second diplôme, obtenu 1 à 3 ans après le premier. Les enseignants, l'équipe, les candidats et le recruteur n'ont pas de parcours.
 - Adresses de la forme `prenom.nom.12@exemple.test` uniquement : `.test` est un domaine réservé, aucun e-mail ne peut partir vers une vraie personne.
+- **Connexion** : chaque faux membre a une adresse vérifiée, il se connecte directement par http://localhost:8000/compte/login/.
 - **Mot de passe commun** de tous les faux membres : le réglage `MOT_DE_PASSE_DONNEES_DEV` de `config/settings.py`, lu dans le fichier `.env` (valeur factice dans `.env.example`).
 
 **Rejouable :** la relancer remet la base dans le même état. Elle efface les faux membres (et leurs formations), puis les recrée à l'identique. Les comptes créés à la main (`createsuperuser`, back-office) ne sont jamais touchés, car leur adresse n'a pas le numéro final. À l'inverse, un faux membre passé dans l'équipe est effacé comme les autres : pour tester des droits, utilise un compte créé à la main.
@@ -46,6 +47,7 @@ docker compose exec web python manage.py charger_donnees_dev
 | Les tests | `OK` |
 | Les deux lancements de `charger_donnees_dev` | `… faux membres supprimés, 1222 créés` les deux fois, jamais le double |
 | http://localhost:8000/admin/ › Référentiels › Diplômes | 20 diplômes, filtre par niveau |
+| http://localhost:8000/compte/login/ avec `ines.dupont.1@exemple.test` et le mot de passe commun | Connecté, renvoyé vers l'accueil |
 | Référentiels › Formations, filtre « BTS SIO » | Les anciens du BTS SIO, avec leur site et leur promo |
 | Référentiels › Niveaux › BTS › Supprimer | « Impossible de supprimer niveau » et la liste des diplômes BTS (ne rien valider) |
 
@@ -61,4 +63,3 @@ docker compose exec web python manage.py charger_donnees_dev
 - Photos (24 %), expériences (28 %) et villes avec coordonnées (53 %) : elles attendent les champs du profil du membre (#9).
 - ATS est rangé en Prépa : à confirmer.
 - L'export au **format Datalumni**, avec les cas difficiles (comptes jamais activés, doublons, homonymes, comptes Google seulement), arrive avec l'import des membres.
-- Les faux membres ne peuvent pas encore se connecter par `/compte/login/` : django-allauth (#28) demande une adresse vérifiée. Elle leur sera donnée dans une PR suivante.
