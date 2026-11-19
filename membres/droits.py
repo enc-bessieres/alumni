@@ -64,6 +64,12 @@ GROUPES = {
         "pages_libres.add_page",
         "pages_libres.change_page",
         "pages_libres.delete_page",
+        # Mentorat (Steeve) : les sujets, et la consultation des profils de mentorat.
+        "mentorat.view_sujet",
+        "mentorat.add_sujet",
+        "mentorat.change_sujet",
+        "mentorat.delete_sujet",
+        "mentorat.view_profilmentorat",
     ],
 }
 

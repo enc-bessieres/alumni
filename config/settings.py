@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "django_prose_editor",
     "texte_riche",
     "datalumni",
+    "mentorat",  # Steeve : mentorat
 ]
 
 MIDDLEWARE = [
