@@ -36,6 +36,15 @@
     </nav>
 
     <main class="contenu">
+      {# Messages de Django (connexion réussie, déconnexion…) : affichés une fois, puis effacés. #}
+      {% if messages %}
+        <ul class="messages" role="status">
+          {# level_tag vaut success, error, warning ou info : le style dépend du niveau. #}
+          {% for message in messages %}
+            <li class="message message--{{ message.level_tag }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
       {% block contenu %}{% endblock %}
     </main>
   </div>
@@ -45,7 +54,15 @@
       <p><strong>ENC Bessières</strong><br>À COMPLÉTER : adresse</p>
       <p><strong>ENC Bessières Apprentissage</strong><br>À COMPLÉTER : adresse</p>
     </div>
-    <p>À COMPLÉTER : liens vers les mentions légales, les CGU et la confidentialité (issue #12).</p>
+    {% if liens_du_pied %}
+      <nav class="liens-du-pied" aria-label="Informations légales">
+        <ul>
+          {% for lien in liens_du_pied %}<li><a href="{{ lien.url }}">{{ lien.libelle }}</a></li>{% endfor %}
+        </ul>
+      </nav>
+    {% else %}
+      <p>À COMPLÉTER : liens vers les mentions légales, les CGU et la confidentialité (issue #12).</p>
+    {% endif %}
   </footer>
 
   {# Mobile : barre fixe en bas, 4 entrées puis « Plus » pour les autres. #}

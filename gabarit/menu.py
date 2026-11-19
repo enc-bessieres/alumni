@@ -29,3 +29,20 @@ MENU = [
 
 # Nombre d'entrées dans la barre du bas sur mobile ; les autres vont dans « Plus ».
 NB_ENTREES_MOBILE = 4
+
+
+@dataclass(frozen=True)
+class LienDuPied:
+    libelle: str
+    slug: str
+
+
+# Liens du pied de page vers les pages libres de Marie-Dominique (issue #12).
+# Chaque slug est celui d'une page créée par sa migration « pages de départ ».
+PIED_DE_PAGE = [
+    LienDuPied("À propos", "a-propos"),
+    LienDuPied("Mentions légales", "mentions-legales"),
+    LienDuPied("CGU", "cgu"),
+    LienDuPied("Politique de confidentialité", "confidentialite"),
+    LienDuPied("Charte du mentorat", "charte-du-mentorat"),
+]

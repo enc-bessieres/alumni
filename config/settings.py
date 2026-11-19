@@ -66,6 +66,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "gabarit.context_processors.menu",
                 "gabarit.context_processors.compte",
+                "gabarit.context_processors.pied_de_page",
             ],
             "loaders": _LOADERS,
         },
@@ -133,3 +134,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "mailpit")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "1025"))
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "alumni@bessieres-alumni.org")
+
+# Mot de passe commun des faux membres créés par charger_donnees_dev (développement uniquement :
+# la commande refuse de tourner sans DJANGO_DEBUG=1).
+MOT_DE_PASSE_DONNEES_DEV = os.environ.get("MOT_DE_PASSE_DONNEES_DEV", "motdepasse-factice")

@@ -133,6 +133,7 @@ footer { color: var(--muted); font-size: 0.88rem; }
     <span><b>Relations institutionnelles et Datalumni</b> Philippe Chenut, DDFPT</span>
     <span><b>Stage</b> 9 nov. – 18 déc. 2026</span>
     <span><b>Relevé</b> 8 novembre 2026</span>
+    <span><b>Calendrier mis à jour</b> 17 novembre 2026</span>
   </div>
 </div></div>
 
@@ -253,36 +254,50 @@ footer { color: var(--muted); font-size: 0.88rem; }
     <section id="calendrier">
       <h2>Calendrier du stage</h2>
       <p class="lede">Du lundi 9 novembre au vendredi 18 décembre 2026, à temps plein. Aucun socle n'est prêt : la première semaine sert à le construire ensemble. Le mercredi 11 novembre est férié.</p>
+      <div class="callout"><strong>Où on en est, le mardi 17 novembre :</strong> le socle est entièrement fusionné dans <code>main</code>, deux jours ouvrés après la date prévue.
+        <ul>
+          <li>Les quatre briques sont livrées : 16 pull requests fusionnées depuis le 10 novembre.</li>
+          <li>Il ne reste aucune pull request ouverte, et les 125 tests passent.</li>
+          <li>La parité par domaine commence donc le mercredi 18 novembre.</li>
+        </ul>
+      </div>
       <h3>Semaine 1 : démarrage et socle</h3>
       <div class="tbl"><table>
         <thead><tr><th>Jour</th><th>Matin</th><th>Après-midi</th></tr></thead>
         <tbody>
           <tr><td class="num">Lun. 9</td><td>Présentation du projet ; vérification des postes ; chacun découvre son domaine (plateforme actuelle et prototype 2026)</td><td>Mini-tâche de 2 heures dans l'option technique qui tente chacun ; <strong>décision à 17 h</strong></td></tr>
-          <tr><td class="num">Mar. 10, jeu. 12, ven. 13</td><td colspan="2">Socle, une brique chacun. Vendredi après-midi : socle fusionné et première démo.</td></tr>
+          <tr><td class="num">Mar. 10, jeu. 12, ven. 13</td><td colspan="2">Socle, une brique chacun. Prévu : socle fusionné le vendredi après-midi et première démo.</td></tr>
+          <tr><td class="num">Lun. 16, mar. 17</td><td colspan="2"><span class="pill ok">Fait</span> Fin du socle : relectures croisées et fusions. Socle complet dans <code>main</code> le mardi 17.</td></tr>
         </tbody>
       </table></div>
       <p class="prose">Les quatre briques du socle :</p>
       <ul class="prose">
-        <li><strong>Axel :</strong> modèle Membre, connexion par e-mail et mot de passe, rôles.</li>
-        <li><strong>Luc :</strong> référentiels (sites, diplômes, promos) et générateur de fausses données au format Datalumni.</li>
-        <li><strong>Steeve :</strong> gabarit des pages, menu avec libellés, mise en page mobile d'abord, manifeste de l'application installable.</li>
-        <li><strong>Marie Dominique :</strong> administration et pages libres (À propos, mentions légales, CGU).</li>
+        <li><strong>Axel :</strong> modèle Membre, connexion par e-mail et mot de passe, rôles. <span class="pill ok">Fusionné</span> Avec en plus le mot de passe oublié.</li>
+        <li><strong>Luc :</strong> référentiels (sites, diplômes, promos) et générateur de fausses données. <span class="pill ok">Fusionné</span> 1222 faux membres, répartis comme l'annuaire actuel ; l'export au format Datalumni viendra avec l'import.</li>
+        <li><strong>Steeve :</strong> gabarit des pages, menu avec libellés, mise en page mobile d'abord, manifeste de l'application installable. <span class="pill ok">Fusionné</span></li>
+        <li><strong>Marie Dominique :</strong> administration et pages libres (À propos, mentions légales, CGU). <span class="pill ok">Fusionné</span></li>
       </ul>
       <h3>Semaines 2 à 6</h3>
       <div class="tbl"><table>
         <thead><tr><th>Semaine</th><th>Dates</th><th>Objectif</th></tr></thead>
         <tbody>
-          <tr><td class="num">S2 – S4</td><td class="num">16 nov. – 4 déc.</td><td>Parité par domaine, fusions au fil de l'eau, démo chaque vendredi</td></tr>
+          <tr><td class="num">S2</td><td class="num">16 – 20 nov.</td><td>Fin du socle lundi et mardi, puis début de la parité par domaine. À livrer avant la démo du vendredi 20 : la connexion des faux membres (Luc) et l'éditeur de texte des pages (Marie Dominique)</td></tr>
+          <tr><td class="num">S3 – S4</td><td class="num">23 nov. – 4 déc.</td><td>Parité par domaine</td></tr>
           <tr><td class="num">S5</td><td class="num">7 – 11 déc.</td><td>Fin de la parité, puis tri et regroupement de l'annuaire, version mobile, partage</td></tr>
           <tr><td class="num">S6</td><td class="num">14 – 18 déc.</td><td>Chacun teste le domaine d'un autre ; corrections, documentation, démo finale devant le chef de travaux</td></tr>
         </tbody>
       </table></div>
+      <p class="prose">Le rythme de chaque semaine, depuis la semaine 2 :</p>
+      <ul class="prose">
+        <li><strong>Mardi à 16 h 30 et vendredi à 11 h 30 :</strong> séance de fusion. Une pull request relue et approuvée avant la séance est fusionnée pendant la séance.</li>
+        <li><strong>Vendredi à 15 h :</strong> démo.</li>
+      </ul>
       <h3>Pendant ce temps</h3>
       <div class="tbl"><table>
         <thead><tr><th>Philippe : Datalumni et contacts institutionnels</th><th>Timothée : technique</th></tr></thead>
         <tbody>
           <tr><td><strong>Lundi 9 :</strong> valider la création de l'organisation GitHub de l'ENC ; récupérer un <strong>accès administrateur Datalumni</strong>, pour voir tout le contenu, les exports et l'enquête d'insertion</td><td><strong>Lundi 9 :</strong> organisation GitHub, dépôt, tâches de la semaine</td></tr>
-          <tr><td><strong>Lundi 9 :</strong> envoyer la demande d'export à Datalumni</td><td><strong>Semaine 1 :</strong> protection de la branche principale, fusion du socle, mise en ligne de la recette</td></tr>
+          <tr><td><strong>Lundi 9 :</strong> envoyer la demande d'export à Datalumni</td><td><strong>Semaine 1 :</strong> protection de la branche principale et fusion du socle <span class="pill ok">Fait le 17 nov.</span> ; mise en ligne de la recette</td></tr>
           <tr><td><strong>Semaine 1 :</strong> savoir qui possède le domaine, et qui administre la page LinkedIn de l'école</td><td><strong>Avant S2 :</strong> applications Google et LinkedIn de développement</td></tr>
           <tr><td><strong>En continu :</strong> relances Datalumni, DPO, direction</td><td><strong>Dès réception de l'échantillon :</strong> données anonymisées pour l'équipe</td></tr>
         </tbody>

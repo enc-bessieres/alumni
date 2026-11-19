@@ -50,6 +50,7 @@ L'intégration continue (GitHub Actions) lance le style, les migrations et les t
 - [Prérequis et méthode](docs/04-prerequis.md)
 - [Choix technique](docs/05-choix-technique.md)
 - [Points durs de l'intégration](docs/06-points-durs.md)
+- [Référentiels et fausses données de développement](docs/donnees-de-developpement.md)
 - [Comment contribuer](CONTRIBUTING.md)
 
 ## Règles
