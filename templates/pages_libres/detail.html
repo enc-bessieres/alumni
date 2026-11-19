@@ -4,6 +4,7 @@
 
 {% block contenu %}
 <h1>{{ page.titre }}</h1>
-{{ page.contenu|linebreaks }}
+{# |safe est sans danger ici : le contenu est nettoyé par nh3 (application texte_riche) avant d'être enregistré. #}
+<div class="contenu-riche">{{ page.contenu|safe }}</div>
 <p><small>Dernière modification : {{ page.modifiee_le|date:"j F Y" }}</small></p>
 {% endblock %}
