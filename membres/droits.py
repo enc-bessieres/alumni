@@ -16,9 +16,14 @@ Pour un autre domaine (référentiels, pages libres…) : ajouter ses permission
 """
 
 import warnings
+from functools import wraps
 
 from django.apps import apps
 from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.views import redirect_to_login
+from django.core.exceptions import PermissionDenied
+
+from .models import Membre
 
 # Groupe -> permissions accordées ("application.code_de_la_permission").
 GROUPES = {
@@ -132,3 +137,33 @@ def peut_gerer_le_compte(utilisateur, membre=None):
     if membre is not None and not peut_modifier_le_compte(utilisateur, membre):
         return False
     return utilisateur.has_perm("membres.gerer_les_droits")
+
+
+def est_membre_valide(utilisateur):
+    """
+    Peut-on voir ce qui est réservé aux membres (annuaire, puis profils) ? Il faut être
+    connecté, avec un compte actif et une inscription validée (décision de l'issue #9).
+    """
+    return (
+        utilisateur.is_authenticated
+        and utilisateur.is_active
+        and utilisateur.statut_inscription == Membre.StatutInscription.VALIDEE
+    )
+
+
+def reserve_aux_membres_valides(vue):
+    """
+    Décorateur des vues réservées aux membres validés :
+    - visiteur non connecté : page de connexion, puis retour à la page demandée ;
+    - connecté mais pas validé (inscription refusée après sa connexion…) : page 403.
+    """
+
+    @wraps(vue)
+    def vue_protegee(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path())
+        if not est_membre_valide(request.user):
+            raise PermissionDenied
+        return vue(request, *args, **kwargs)
+
+    return vue_protegee

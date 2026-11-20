@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block titre %}Annuaire — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <h1>Annuaire</h1>
+
+  {# Sans JavaScript, c'est un formulaire GET ordinaire (bouton « Rechercher »). #}
+  {# Avec HTMX, la liste se met à jour pendant la saisie, et l'adresse suit les filtres. #}
+  <form class="filtres" method="get" action="{% url 'membres:annuaire' %}" role="search"
+        hx-get="{% url 'membres:annuaire' %}" hx-trigger="input delay:300ms, submit"
+        hx-target="#resultats" hx-push-url="true" hx-sync="this:replace">
+    {% for champ in formulaire %}
+      <p class="filtre filtre--{{ champ.name }}">
+        {{ champ.label_tag }}
+        {{ champ }}
+      </p>
+    {% endfor %}
+    <p><button type="submit">Rechercher</button></p>
+  </form>
+
+  <div id="resultats">
+    {% include "membres/_resultats.html" %}
+  </div>
+{% endblock %}

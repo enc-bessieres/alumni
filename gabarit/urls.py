@@ -12,7 +12,6 @@ from . import views
 app_name = "gabarit"
 
 urlpatterns = [
-    path("annuaire/", views.bientot, {"titre": "Annuaire"}, name="annuaire"),
     path("mentorat/", views.bientot, {"titre": "Mentorat"}, name="mentorat"),
     path("groupes/", views.bientot, {"titre": "Groupes"}, name="groupes"),
     path("actualites/", views.bientot, {"titre": "Actualités"}, name="actualites"),

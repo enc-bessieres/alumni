@@ -32,21 +32,31 @@ class PagesLibresTests(TestCase):
 
         self.assertEqual(reponse.status_code, 404)
 
-    def test_le_html_saisi_est_echappe(self):
-        Page.objects.create(titre="X", slug="x", contenu="<script>alert(1)</script>", publiee=True)
-
-        reponse = self.client.get(reverse("pages_libres:detail", args=["x"]))
-
-        self.assertNotContains(reponse, "<script>alert(1)</script>")
-
-        self.assertContains(reponse, "&lt;script&gt;alert(1)&lt;/script&gt;")
-
     def test_les_pages_de_depart_existent(self):
         for slug in PAGES_DE_DEPART:
             with self.subTest(slug=slug):
-                self.assertTrue(Page.objects.get(slug=slug).contenu.startswith("À COMPLÉTER : "))
+                self.assertTrue(Page.objects.get(slug=slug).contenu.startswith("<p>À COMPLÉTER : "))
                 reponse = self.client.get(reverse("pages_libres:detail", args=[slug]))
                 self.assertEqual(reponse.status_code, 200)
+
+    def test_l_enregistrement_direct_est_aussi_nettoye(self):
+        page = Page.objects.create(
+            titre="X", slug="x", contenu="<p>Texte</p><script>alert(1)</script>", publiee=True
+        )
+        page.refresh_from_db()
+        self.assertNotIn("<script", page.contenu)
+        self.assertIn("Texte", page.contenu)
+
+    def test_la_page_publique_affiche_le_html_nettoye(self):
+        Page.objects.create(
+            titre="X",
+            slug="x",
+            contenu="<h2>Titre</h2><script>alert(1)</script>",
+            publiee=True,
+        )
+        reponse = self.client.get(reverse("pages_libres:detail", args=["x"]))
+        self.assertContains(reponse, "<h2>Titre</h2>")
+        self.assertNotContains(reponse, "<script>alert(1)</script>")
 
 
 class BackOfficeTests(TestCase):
@@ -113,3 +123,35 @@ class BackOfficeTests(TestCase):
         reponse = self.client.post(reverse("admin:logout"))
         self.assertEqual(reponse.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_le_formulaire_supprime_le_html_dangereux(self):
+        self.client.force_login(self.admin)
+        contenu = (
+            "<p>Bonjour</p><script>alert(1)</script>"
+            '<p onclick="alert(2)">Clic</p>'
+            '<p><a href="javascript:alert(3)">Piège</a></p>'
+        )
+        self.client.post(
+            reverse("admin:pages_libres_page_add"),
+            {"titre": "Test", "slug": "test", "contenu": contenu, "publiee": "on"},
+        )
+        page = Page.objects.get(slug="test")
+        self.assertNotIn("<script", page.contenu)
+        self.assertNotIn("onclick", page.contenu)
+        self.assertNotIn("javascript:", page.contenu)
+        self.assertIn("Bonjour", page.contenu)
+
+    def test_le_formulaire_garde_la_mise_en_forme_autorisee(self):
+        self.client.force_login(self.admin)
+        contenu = (
+            "<h2>Nos rencontres</h2>"
+            '<p><strong>Important</strong> : <a href="https://exemple.test">le site</a></p>'
+        )
+        self.client.post(
+            reverse("admin:pages_libres_page_add"),
+            {"titre": "Test", "slug": "test", "contenu": contenu, "publiee": "on"},
+        )
+        page = Page.objects.get(slug="test")
+        self.assertIn("<h2>Nos rencontres</h2>", page.contenu)
+        self.assertIn("<strong>Important</strong>", page.contenu)
+        self.assertIn('href="https://exemple.test"', page.contenu)

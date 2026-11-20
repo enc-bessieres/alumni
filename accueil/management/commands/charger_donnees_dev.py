@@ -11,8 +11,10 @@ dans l'équipe est effacé comme les autres : les droits se donnent à un compte
 
 Tous les faux membres ont le même mot de passe, connu de l'équipe : le réglage
 MOT_DE_PASSE_DONNEES_DEV de config/settings.py, lu dans le fichier .env (voir .env.example).
+Leur adresse est marquée vérifiée : ils se connectent directement par /compte/login/.
 """
 
+from allauth.account.models import EmailAddress
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -53,7 +55,7 @@ class Command(BaseCommand):
         # donc un faux compte oublié ici ferait échouer la création (e-mail déjà pris).
         faux = Membre.objects.filter(email__regex=FAUSSES_ADRESSES)
         supprimes = faux.count()
-        faux.delete()  # leurs formations partent avec eux (on_delete=CASCADE)
+        faux.delete()  # leurs formations et leurs adresses partent avec eux (CASCADE)
 
         # Le hachage est volontairement lent (~0,5 s) : on le calcule une seule fois et on
         # donne la même empreinte à tous les faux membres, au lieu d'attendre 10 minutes.
@@ -63,6 +65,7 @@ class Command(BaseCommand):
         diplomes = {d.nom: d for d in Diplome.objects.all()}
         sites = {s.nom: s for s in Site.objects.all()}
         membres = generer_membres(options["nombre"], options["graine"])
+        adresses = []
         for donnees in membres:
             parcours = donnees.pop("parcours")  # ce n'est pas un champ du Membre
             membre = Membre.objects.create(
@@ -79,6 +82,12 @@ class Command(BaseCommand):
                 )
                 for etape in parcours
             )
+            # La connexion (django-allauth) demande une adresse vérifiée : sans cette ligne,
+            # le faux membre serait renvoyé vers « vérifiez votre adresse ».
+            adresses.append(
+                EmailAddress(user=membre, email=membre.email, verified=True, primary=True)
+            )
+        EmailAddress.objects.bulk_create(adresses)  # une seule requête pour toutes les adresses
 
         self.stdout.write(
             self.style.SUCCESS(

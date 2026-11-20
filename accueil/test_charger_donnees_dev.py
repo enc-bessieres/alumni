@@ -2,6 +2,7 @@
 
 from io import StringIO
 
+from allauth.account.models import EmailAddress
 from django.contrib.auth import authenticate
 from django.core.management import CommandError, call_command
 from django.test import TestCase, override_settings
@@ -85,6 +86,21 @@ class ChargerDonneesDevTests(TestCase):
         self.assertEqual(
             authenticate(email=un_membre.email, password=MOT_DE_PASSE_DE_TEST), un_membre
         )
+
+    def test_un_faux_membre_se_connecte_par_la_page_de_connexion(self):
+        charger("--nombre", "3")
+        membre = Membre.objects.first()
+        reponse = self.client.post(
+            "/compte/login/", {"login": membre.email, "password": MOT_DE_PASSE_DE_TEST}
+        )
+        self.assertRedirects(reponse, "/", fetch_redirect_response=False)
+        self.assertEqual(int(self.client.session["_auth_user_id"]), membre.pk)
+
+    def test_chaque_faux_membre_a_une_seule_adresse_verifiee_meme_apres_relance(self):
+        charger("--nombre", "5")
+        charger("--nombre", "5")
+        self.assertEqual(EmailAddress.objects.count(), 5)
+        self.assertEqual(EmailAddress.objects.filter(verified=True, primary=True).count(), 5)
 
     def test_les_referentiels_sont_deja_la_grace_a_la_migration(self):
         charger("--nombre", "1")

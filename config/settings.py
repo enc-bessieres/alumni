@@ -20,6 +20,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Fonctions propres à PostgreSQL, dont la recherche sans accents de l'annuaire (unaccent)
+    "django.contrib.postgres",
     # Connexion, mot de passe oublié, puis Google et LinkedIn (django-allauth)
     "allauth",
     "allauth.account",
@@ -28,6 +30,8 @@ INSTALLED_APPS = [
     "referentiels",  # Luc : sites, niveaux, diplômes
     "pages_libres",
     "gabarit",  # Steeve : gabarit des pages, menu, application installable
+    "django_prose_editor",
+    "texte_riche",
     "datalumni",
 ]
 
