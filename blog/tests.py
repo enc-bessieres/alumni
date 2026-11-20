@@ -38,3 +38,12 @@ class ArticlesPublicsTests(TestCase):
         Article.objects.all().delete()
         reponse = self.client.get(reverse("blog:liste"))
         self.assertContains(reponse, "Aucun article pour l'instant.")
+
+    def test_le_contenu_d_un_article_est_nettoye(self):
+        article = Article.objects.create(
+            titre="Piège",
+            slug="piege",
+            contenu="<p>Texte</p><script>alert(1)</script>",
+        )
+        article.refresh_from_db()
+        self.assertNotIn("<script", article.contenu)
