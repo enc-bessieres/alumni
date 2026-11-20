@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block titre %}Actualités - Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+<h1>Actualités</h1>
+{% for article in articles %}
+  <article>
+    <h2><a href="{{ article.get_absolute_url }}">{{ article.titre }}</a></h2>
+    <p><small>{{ article.publie_le|date:"j F Y" }}</small></p>
+    {% if article.resume %}<p>{{ article.resume }}</p>{% endif %}
+  </article>
+{% empty %}
+  <p>Aucun article pour l'instant.</p>
+{% endfor %}
+{% endblock %}
