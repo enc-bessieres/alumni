@@ -93,3 +93,56 @@ class EcrireUnArticleTests(TestCase):
         self.client.force_login(self.membre)
         self.envoyer(statut="publie")
         self.assertEqual(Article.objects.get().statut, Article.Statut.EN_ATTENTE)
+
+
+class ValidationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        utilisateurs = get_user_model().objects
+        mdp = "motdepasse-factice"
+        identite = {"prenom": "Test", "nom": "Exemple"}
+        cls.admin = utilisateurs.create_superuser("admin@exemple.test", mdp, **identite)
+        cls.membre = utilisateurs.create_user("membre@exemple.test", mdp, **identite)
+        cls.liste_admin = reverse("admin:blog_article_changelist")
+
+    def creer_article(self):
+        return Article.objects.create(
+            titre="En attente",
+            slug="en-attente",
+            contenu="<p>Texte</p>",
+            statut=Article.Statut.EN_ATTENTE,
+        )
+
+    def lancer_action(self, action, article):
+        return self.client.post(
+            self.liste_admin, {"action": action, "_selected_action": [article.pk]}
+        )
+
+    def test_publier_remplit_la_date_de_publication(self):
+        article = self.creer_article()
+        article.statut = Article.Statut.PUBLIE
+        article.save()
+        self.assertIsNotNone(article.publie_le)
+
+    def test_l_equipe_publie_depuis_l_admin(self):
+        article = self.creer_article()
+        self.client.force_login(self.admin)
+        self.lancer_action("publier", article)
+        article.refresh_from_db()
+        self.assertEqual(article.statut, Article.Statut.PUBLIE)
+        self.assertIsNotNone(article.publie_le)
+
+    def test_l_equipe_refuse_depuis_l_admin(self):
+        article = self.creer_article()
+        self.client.force_login(self.admin)
+        self.lancer_action("refuser", article)
+        article.refresh_from_db()
+        self.assertEqual(article.statut, Article.Statut.REFUSE)
+
+    def test_un_membre_hors_equipe_ne_peut_pas_valider(self):
+        article = self.creer_article()
+        self.client.force_login(self.membre)
+        reponse = self.lancer_action("publier", article)
+        self.assertEqual(reponse.status_code, 403)
+        article.refresh_from_db()
+        self.assertEqual(article.statut, Article.Statut.EN_ATTENTE)

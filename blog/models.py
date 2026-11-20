@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 from texte_riche.champs import ChampTexteRiche
 
@@ -40,6 +41,11 @@ class Article(models.Model):
 
     def __str__(self):
         return self.titre
+
+    def save(self, *args, **kwargs):
+        if self.statut == self.Statut.PUBLIE and self.publie_le is None:
+            self.publie_le = timezone.now()
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("blog:detail", args=[self.slug])
