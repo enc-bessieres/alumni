@@ -1,59 +1,120 @@
 /* Feuille de style du site.
    Mobile d'abord : les règles de base visent le téléphone,
-   celles pour ordinateur sont dans le @media à la fin. */
+   celles pour tablette et ordinateur sont dans les @media en fin de fichier.
+   Inspirée du clone du site alumni réalisé l'an dernier : en-tête blanc, menu en
+   majuscules, cartes blanches arrondies, boutons bordeaux. */
 
-/* Couleurs et typographie : définies ici, une seule fois. */
+/* Couleurs, typographie et mouvements : définis ici, une seule fois. */
 :root {
+  /* Relevés sur le logo du site enc-bessieres.org ; à confirmer avec la charte graphique. */
   --bordeaux: #55001f;
+  --bordeaux-survol: #750030;
   --bordeaux-fonce: #370028;
-  --bordeaux-clair: #f5e6ea;
+  --bordeaux-clair: #f7e9ed;
+  --orange-enc: #f39200;
 
   --succes: #1e7b34;
   --succes-clair: #e7f4ea;
   --erreur: #b3261e;
   --erreur-clair: #fdecea;
 
-  --texte: #1d2433;
-  --texte-doux: #5b6272;
+  --texte: #1f2430;
+  --texte-doux: #5f6573;
   --fond: #ffffff;
+  --fond-page: #f7f6f7;
+  --fond-translucide: rgb(255 255 255 / 90%);
+  --bordure: #e8e4e6;
+  --bordure-forte: #cfc6ca;
   --sur-bordeaux: #ffffff;
-  --bordure: #e2e4ea;
-  --ombre: 0 0.5rem 1.5rem rgb(0 0 0 / 15%);
+  --ombre-carte: 0 1px 2px rgb(31 36 48 / 6%);
+  --ombre-bouton: 0 4px 12px -4px rgb(85 0 31 / 45%);
+  --ombre: 0 18px 40px -12px rgb(55 0 40 / 28%);
+  /* Halo autour du champ en cours de saisie. */
+  --anneau: 0 0 0 4px rgb(85 0 31 / 14%);
 
   --police: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --taille-texte: 1rem;
   --taille-petite: 0.875rem;
-  --taille-mini: 0.8rem;
-  --interligne: 1.5;
+  --taille-menu: 0.8125rem;
+  --taille-mini: 0.75rem;
+  --interligne: 1.6;
+  --largeur-lecture: 46rem;
+  --largeur-site: 80rem;
 
-  --rayon: 0.5rem;
-  --hauteur-barre-mobile: 3.75rem;
+  --rayon: 0.75rem;
+  --rayon-grand: 1.5rem;
+  --hauteur-barre-mobile: 4rem;
+  --duree: 200ms;
+  --courbe: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
+  /* Le pied de page reste en bas de l'écran, même quand la page est courte. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
-  /* Laisse la place à la barre du bas sur mobile. */
-  padding-bottom: var(--hauteur-barre-mobile);
+  /* Laisse la place à la barre du bas sur mobile, et à la barre d'accueil de l'iPhone. */
+  padding-bottom: calc(var(--hauteur-barre-mobile) + env(safe-area-inset-bottom));
   font-family: var(--police);
   font-size: var(--taille-texte);
   line-height: var(--interligne);
   color: var(--texte);
-  background: var(--fond);
+  background: var(--fond-page);
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3 {
-  line-height: 1.2;
-  color: var(--bordeaux-fonce);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 0.25rem 0 1rem;
+  color: var(--bordeaux);
+  font-size: clamp(1.875rem, 1.3rem + 2.4vw, 2.75rem);
+  font-weight: 900;
+}
+
+h2 {
+  margin: 2rem 0 0.75rem;
+  color: var(--texte);
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+p {
+  max-width: var(--largeur-lecture);
 }
 
 a {
   color: var(--bordeaux);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Contour visible pour la navigation au clavier. */
+:focus-visible {
+  outline: 3px solid var(--bordeaux);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
 }
 
 /* Listes des menus : sans puces ni marges. Les listes du contenu des pages gardent les leurs. */
@@ -74,69 +135,194 @@ summary::-webkit-details-marker {
   display: none;
 }
 
-/* En-tête */
+/* Lien « Aller au contenu » : caché jusqu'à ce qu'on y arrive au clavier. */
+.evitement {
+  position: absolute;
+  top: -4rem;
+  left: 1rem;
+  z-index: 20;
+  padding: 0.5rem 1rem;
+  border-radius: var(--rayon);
+  background: var(--bordeaux);
+  color: var(--sur-bordeaux);
+  font-weight: 700;
+  box-shadow: var(--ombre);
+  transition: top var(--duree) var(--courbe);
+}
+
+.evitement:focus {
+  top: 1rem;
+}
+
+/* Bouton principal : bordeaux, arrondi, en majuscules. Il se soulève au survol. */
+.bouton,
+.se-connecter,
+.contenu form:not(.filtres) button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--rayon);
+  background: var(--bordeaux);
+  color: var(--sur-bordeaux);
+  font-size: var(--taille-mini);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+  box-shadow: var(--ombre-bouton);
+  /* Ne jamais couper un bouton sur deux lignes, même sur un petit écran. */
+  white-space: nowrap;
+  transition:
+    background-color var(--duree),
+    box-shadow var(--duree),
+    transform var(--duree) var(--courbe);
+}
+
+.bouton:hover,
+.se-connecter:hover,
+.contenu form:not(.filtres) button:hover {
+  background: var(--bordeaux-survol);
+  transform: translateY(-2px);
+  box-shadow: var(--ombre);
+}
+
+.bouton:active,
+.se-connecter:active,
+.contenu form:not(.filtres) button:active {
+  transform: scale(0.96);
+}
+
+/* En-tête blanc : reste visible pendant le défilement. */
 .entete {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--bordure);
+  background: var(--fond);
+  box-shadow: var(--ombre-carte);
+}
+
+/* Signature : le filet orange et bordeaux de l'école, tout en haut de la page. */
+.entete::before {
+  content: "";
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, var(--orange-enc), var(--bordeaux) 60%, var(--bordeaux-fonce));
+}
+
+.entete-haut {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem;
-  background: var(--bordeaux);
-  color: var(--sur-bordeaux);
+  max-width: var(--largeur-site);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
 }
 
 .marque {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--sur-bordeaux);
-  font-weight: 700;
+  gap: 0.25rem 0.75rem;
+  min-width: 0;
+  color: var(--bordeaux);
+  font-size: 1.125rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   text-decoration: none;
+  transition: transform var(--duree) var(--courbe);
 }
 
-.logo {
-  font-size: 0.75rem;
-  font-weight: 400;
+.marque:active {
+  transform: scale(0.98);
 }
 
-.se-connecter {
-  color: var(--sur-bordeaux);
-  font-weight: 600;
-  /* Ne jamais couper « Se connecter » sur deux lignes, même sur un petit écran. */
+/* Sur un petit écran, le nom passe sous le logo plutôt que d'être coupé en plusieurs lignes. */
+.nom-du-site {
   white-space: nowrap;
 }
 
-/* Zone membre */
+/* Le pointillé signale un emplacement à compléter. */
+.logo {
+  flex: none;
+  padding: 0.125rem 0.5rem;
+  border: 1px dashed var(--bordure-forte);
+  border-radius: 0.375rem;
+  color: var(--texte-doux);
+  font-size: var(--taille-mini);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.se-connecter {
+  flex: none;
+  padding: 0.625rem 1rem;
+}
+
+/* Zone membre : initiales dans un rond cerclé de bordeaux, nom en majuscules. */
 .zone-membre {
   position: relative;
+  flex: none;
 }
 
 .zone-membre summary {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+  border-radius: var(--rayon);
+  color: var(--texte);
+  font-size: var(--taille-menu);
+  font-weight: 900;
+  text-transform: uppercase;
   white-space: nowrap;
+  transition: background-color var(--duree);
+}
+
+.zone-membre summary:hover,
+.zone-membre[open] summary {
+  background: var(--bordeaux-clair);
+}
+
+/* Petit chevron qui se retourne quand le menu est ouvert. */
+.zone-membre summary::after,
+.plus summary::after {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.6;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--duree) var(--courbe);
+}
+
+.zone-membre[open] summary::after {
+  transform: translateY(2px) rotate(225deg);
 }
 
 .initiales {
   display: inline-grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid var(--fond);
   border-radius: 50%;
-  background: var(--sur-bordeaux);
-  color: var(--bordeaux);
+  background: var(--bordeaux);
+  color: var(--sur-bordeaux);
   font-size: var(--taille-mini);
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: 0 0 0 2px var(--bordeaux);
 }
 
-/* Menus déroulants : zone membre et « Plus » */
+/* Menus déroulants : zone membre et « Plus ». Ils s'ouvrent avec une courte animation. */
 .zone-membre ul,
 .plus ul {
   position: absolute;
-  z-index: 5;
-  min-width: 12rem;
-  padding: 0.5rem 0;
+  z-index: 15;
+  min-width: 13rem;
+  padding: 0.375rem;
   border: 1px solid var(--bordure);
   border-radius: var(--rayon);
   background: var(--fond);
@@ -144,13 +330,17 @@ summary::-webkit-details-marker {
 }
 
 .zone-membre ul {
-  top: 2.75rem;
+  top: calc(100% + 0.5rem);
   right: 0;
+  transform-origin: top right;
+  animation: ouverture-bas var(--duree) var(--courbe);
 }
 
 .plus ul {
   right: 0.5rem;
-  bottom: calc(var(--hauteur-barre-mobile) + 0.25rem);
+  bottom: calc(100% + 0.5rem);
+  transform-origin: bottom right;
+  animation: ouverture-haut var(--duree) var(--courbe);
 }
 
 .zone-membre a,
@@ -158,33 +348,135 @@ summary::-webkit-details-marker {
 .plus a {
   display: block;
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 0.75rem;
   border: 0;
+  border-radius: 0.5rem;
   background: none;
   color: var(--texte);
   font: inherit;
+  font-size: var(--taille-petite);
+  font-weight: 600;
   text-align: left;
   text-decoration: none;
+  text-transform: none;
   cursor: pointer;
+  transition:
+    background-color var(--duree),
+    color var(--duree);
 }
 
-/* Contenu */
+.zone-membre a:hover,
+.plus a:hover {
+  background: var(--bordeaux-clair);
+  color: var(--bordeaux);
+}
+
+/* Déconnexion : séparée des autres entrées, en rouge. */
+.zone-membre li:has(form) {
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--bordure);
+}
+
+.zone-membre button {
+  color: var(--erreur);
+  font-weight: 700;
+}
+
+.zone-membre button:hover {
+  background: var(--erreur-clair);
+}
+
+@keyframes ouverture-bas {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem) scale(0.97);
+  }
+}
+
+@keyframes ouverture-haut {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem) scale(0.97);
+  }
+}
+
+/* Menu principal en haut : caché sur mobile et tablette, où la barre du bas le remplace. */
+.menu-principal {
+  display: none;
+}
+
+/* Contenu : centré, sur la même largeur que l'en-tête. */
 .contenu {
-  padding: 1rem;
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--largeur-site);
+  margin: 0 auto;
+  padding: 1.75rem 1rem 3rem;
+}
+
+/* Arrivée de la page : le contenu monte en fondu, un bloc après l'autre. */
+.contenu > * {
+  animation: monter 550ms var(--courbe) both;
+}
+
+.contenu > :nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.contenu > :nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.contenu > :nth-child(n + 4) {
+  animation-delay: 210ms;
+}
+
+@keyframes monter {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
 }
 
 /* Messages de Django (connexion réussie, déconnexion…) */
 .messages {
-  margin: 0 0 1rem;
+  display: grid;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
   padding: 0;
   list-style: none;
 }
 
 .messages li {
-  padding: 0.75rem 1rem;
+  max-width: var(--largeur-lecture);
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--bordure);
   border-left: 4px solid var(--bordeaux);
   border-radius: var(--rayon);
-  background: var(--bordeaux-clair);
+  background: var(--fond);
+  color: var(--texte);
+  font-weight: 600;
+  box-shadow: var(--ombre-carte);
+}
+
+/* Page « Bientôt disponible » : une carte blanche et un bouton pour revenir à l'accueil. */
+.bientot {
+  max-width: var(--largeur-lecture);
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-grand);
+  background: var(--fond);
+  box-shadow: var(--ombre-carte);
+}
+
+.bientot h1 {
+  margin-top: 0;
+}
+
+.bientot p:first-of-type {
+  color: var(--texte-doux);
+  font-weight: 500;
 }
 
 /* Le niveau du message se voit : vert pour un succès, rouge pour une erreur. */
@@ -196,6 +488,10 @@ summary::-webkit-details-marker {
 .message--error {
   border-left-color: var(--erreur);
   background: var(--erreur-clair);
+}
+
+.bientot .bouton {
+  margin-top: 0.5rem;
 }
 
 /* Texte riche des pages libres (éditeur de texte, issue #12).
@@ -252,12 +548,25 @@ summary::-webkit-details-marker {
   text-underline-offset: 0.15em;
 }
 
-/* Pied de page */
+/* Pied de page : blanc et centré. */
 .pied {
-  padding: 1rem;
+  padding: 2rem 1rem 1.5rem;
   border-top: 1px solid var(--bordure);
+  background: var(--fond);
   color: var(--texte-doux);
   font-size: var(--taille-petite);
+  text-align: center;
+}
+
+.pied > * {
+  max-width: 48rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.pied strong {
+  color: var(--texte);
+  font-weight: 800;
 }
 
 .sites {
@@ -265,51 +574,184 @@ summary::-webkit-details-marker {
   gap: 1rem;
 }
 
+.sites p {
+  margin: 0;
+}
+
+.liens-du-pied {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bordure);
+}
+
 .liens-du-pied ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
 }
 
-/* Menus : la colonne de gauche est cachée sur mobile. */
-.menu-lateral {
-  display: none;
-}
-
-.menu-lateral a,
-.barre-mobile a,
-.barre-mobile summary {
-  color: var(--texte);
+.liens-du-pied a {
+  color: var(--texte-doux);
+  font-weight: 600;
   text-decoration: none;
+  transition: color var(--duree);
 }
 
-[aria-current="page"] {
+.liens-du-pied a:hover {
   color: var(--bordeaux);
+}
+
+/* Formulaires des pages (connexion, mot de passe, préférences…) : une carte blanche, un champ
+   sous l'autre. Les filtres de l'annuaire gardent leur propre mise en page, sur une ligne. */
+.contenu form:not(.filtres) {
+  max-width: 32rem;
+  padding: 1.5rem;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-grand);
+  background: var(--fond);
+  box-shadow: var(--ombre-carte);
+}
+
+.contenu form:not(.filtres) > :is(p, div, fieldset) {
+  margin: 0 0 1.25rem;
+}
+
+.contenu form:not(.filtres) label,
+.contenu form legend {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: var(--texte);
+  font-size: var(--taille-petite);
   font-weight: 700;
 }
 
-/* Barre du bas sur mobile */
-.barre-mobile {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: var(--hauteur-barre-mobile);
-  border-top: 1px solid var(--bordure);
+.contenu form fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Les champs de saisie : grands, arrondis, faciles à toucher sur un téléphone. */
+.contenu form:not(.filtres)
+  :is(input:not([type="checkbox"], [type="radio"], [type="hidden"]), select, textarea) {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon);
   background: var(--fond);
+  color: var(--texte);
+  font: inherit;
+  transition:
+    border-color var(--duree),
+    box-shadow var(--duree);
 }
 
-.barre-mobile > ul {
+.contenu form textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.contenu form ::placeholder {
+  color: var(--texte-doux);
+}
+
+/* Le champ en cours de saisie : bordure bordeaux et halo, pour tous les formulaires. */
+.contenu form :is(input, select, textarea):focus {
+  border-color: var(--bordeaux);
+  outline: none;
+  box-shadow: var(--anneau);
+}
+
+/* Cases à cocher et boutons radio : à la couleur du site, la case avant son libellé. */
+.contenu form input:is([type="checkbox"], [type="radio"]) {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  accent-color: var(--bordeaux);
+}
+
+.contenu form p:has(> input[type="checkbox"]) {
   display: flex;
-  height: 100%;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.625rem;
 }
 
-.barre-mobile > ul > li {
-  display: grid;
-  flex: 1;
-  place-items: center;
-  font-size: var(--taille-mini);
-  text-align: center;
+.contenu form p:has(> input[type="checkbox"]) label {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Une option à choisir (rôle, sujets…) : une ligne cliquable, entourée quand elle est cochée. */
+.contenu form:not(.filtres) label:has(> input:is([type="checkbox"], [type="radio"])) {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0 0 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color var(--duree),
+    background-color var(--duree);
+}
+
+.contenu form:not(.filtres) label:has(> input:is([type="checkbox"], [type="radio"])):hover {
+  border-color: var(--bordure-forte);
+}
+
+.contenu form:not(.filtres) label:has(> :checked) {
+  border-color: var(--bordeaux);
+  background: var(--bordeaux-clair);
+}
+
+/* Aide sous un champ (« Mot de passe oublié ? », règles du mot de passe…). */
+.contenu form :is(.helptext, small) {
+  display: block;
+  margin-top: 0.375rem;
+  color: var(--texte-doux);
+  font-size: var(--taille-petite);
+}
+
+/* Erreurs : en rouge, sous le champ concerné ou en haut du formulaire. */
+.contenu form .errorlist {
+  margin: 0.375rem 0 0;
+  padding: 0;
+  color: var(--erreur);
+  font-size: var(--taille-petite);
+  font-weight: 600;
+  list-style: none;
+}
+
+.contenu form .errorlist.nonfield {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--erreur);
+  border-radius: var(--rayon);
+  background: var(--erreur-clair);
+}
+
+.contenu form :is(input, select, textarea)[aria-invalid="true"],
+.contenu form:not(.filtres) :is(input, select, textarea)[aria-invalid="true"] {
+  border-color: var(--erreur);
+}
+
+/* Le bouton d'envoi prend toute la largeur sur téléphone. */
+.contenu form:not(.filtres) button[type="submit"] {
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+}
+
+.contenu form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Annuaire (membres) : filtres, puis une fiche par membre. */
@@ -341,15 +783,22 @@ summary::-webkit-details-marker {
 .filtres button {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-forte);
   border-radius: var(--rayon);
+  background: var(--fond);
   font: inherit;
 }
 
+/* Le bouton « Rechercher » a l'allure des autres boutons du site. */
 .filtres button {
   border-color: var(--bordeaux);
   color: var(--sur-bordeaux);
   background: var(--bordeaux);
+  font-size: var(--taille-mini);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .nombre-de-resultats {
@@ -363,10 +812,13 @@ summary::-webkit-details-marker {
   list-style: none;
 }
 
+/* Une carte blanche par membre, comme les autres cartes du site. */
 .fiche {
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   border: 1px solid var(--bordure);
   border-radius: var(--rayon);
+  background: var(--fond);
+  box-shadow: var(--ombre-carte);
 }
 
 .fiche p {
@@ -374,7 +826,8 @@ summary::-webkit-details-marker {
 }
 
 .fiche-nom {
-  font-weight: 700;
+  color: var(--bordeaux);
+  font-weight: 800;
 }
 
 .fiche-categorie,
@@ -396,41 +849,123 @@ summary::-webkit-details-marker {
   margin-top: 1rem;
 }
 
-/* Ordinateur : menu à gauche, plus de barre en bas. */
+/* Barre du bas sur mobile : fond translucide, comme sur les applications du téléphone. */
+.barre-mobile {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--bordure);
+  background: var(--fond-translucide);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.barre-mobile > ul {
+  display: flex;
+  height: var(--hauteur-barre-mobile);
+}
+
+.barre-mobile > ul > li {
+  display: flex;
+  flex: 1;
+}
+
+.plus {
+  display: flex;
+  width: 100%;
+}
+
+.barre-mobile > ul > li > a,
+.barre-mobile summary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 100%;
+  color: var(--texte-doux);
+  font-size: var(--taille-mini);
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    color var(--duree),
+    background-color var(--duree);
+}
+
+.barre-mobile > ul > li > a:active,
+.barre-mobile summary:active {
+  background: var(--bordeaux-clair);
+}
+
+/* « Plus » ouvre son menu vers le haut : le chevron pointe vers le haut, puis vers le bas. */
+.plus summary::after {
+  transform: translateY(2px) rotate(225deg);
+}
+
+.plus[open] summary::after {
+  transform: translateY(-2px) rotate(45deg);
+}
+
+/* Indicateur de la page active : un trait bordeaux en haut de l'entrée. */
+.barre-mobile > ul > li > a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 25%;
+  left: 25%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--bordeaux);
+  transform: scaleX(0);
+  transition: transform var(--duree) var(--courbe);
+}
+
+.barre-mobile [aria-current="page"],
+.plus[open] summary {
+  color: var(--bordeaux);
+  font-weight: 800;
+}
+
+.barre-mobile > ul > li > a[aria-current="page"]::before {
+  transform: scaleX(1);
+}
+
+.plus [aria-current="page"] {
+  background: var(--bordeaux-clair);
+}
+
+/* Tablette : plus d'air, les deux sites côte à côte dans le pied de page. */
 @media (min-width: 48rem) {
-  body {
-    padding-bottom: 0;
+  .entete-haut {
+    padding: 1rem 1.5rem;
   }
 
-  .barre-mobile {
-    display: none;
+  .marque {
+    font-size: 1.25rem;
   }
 
-  .mise-en-page {
-    display: grid;
-    grid-template-columns: 14rem 1fr;
-  }
-
-  .menu-lateral {
-    display: block;
-    padding: 1rem;
-    border-right: 1px solid var(--bordure);
-  }
-
-  .menu-lateral a {
-    display: block;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--rayon);
-  }
-
-  .menu-lateral [aria-current="page"] {
-    background: var(--bordeaux-clair);
-  }
-
-  /* Le texte garde une largeur lisible, aligné à gauche à côté du menu. */
   .contenu {
-    max-width: 60rem;
-    padding: 1.5rem 2rem;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .bientot {
+    padding: 2.5rem 2.25rem;
+  }
+
+  .contenu form:not(.filtres) {
+    padding: 2rem;
+  }
+
+  .contenu form:not(.filtres) button[type="submit"] {
+    width: auto;
+  }
+
+  .pied {
+    padding: 2.5rem 1.5rem 2rem;
   }
 
   .sites {
@@ -450,5 +985,81 @@ summary::-webkit-details-marker {
 
   .annuaire {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Ordinateur : le menu complet passe dans l'en-tête, plus de barre en bas. */
+@media (min-width: 64rem) {
+  body {
+    padding-bottom: 0;
+  }
+
+  .barre-mobile {
+    display: none;
+  }
+
+  .menu-principal {
+    display: block;
+    border-top: 1px solid var(--bordure);
+  }
+
+  .menu-principal ul {
+    display: flex;
+    gap: 2rem;
+    max-width: var(--largeur-site);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .menu-principal a {
+    position: relative;
+    display: block;
+    padding: 0.875rem 0;
+    color: var(--texte-doux);
+    font-size: var(--taille-menu);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color var(--duree);
+  }
+
+  .menu-principal a:hover,
+  .menu-principal [aria-current="page"] {
+    color: var(--bordeaux);
+  }
+
+  /* Trait bordeaux sous l'entrée : il glisse au survol et reste sous la page active. */
+  .menu-principal a::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--bordeaux);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duree) var(--courbe);
+  }
+
+  .menu-principal a:hover::after,
+  .menu-principal [aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+}
+
+/* Réglage « réduire les animations » de l'appareil : on les coupe toutes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
   }
 }
