@@ -21,7 +21,7 @@ MENU = [
     Entree("Annuaire", "membres:annuaire"),
     Entree("Mentorat", "gabarit:mentorat"),
     Entree("Groupes", "gabarit:groupes"),
-    Entree("Actualités", "gabarit:actualites"),
+    Entree("Actualités", "blog:liste"),
     Entree("Événements", "gabarit:evenements"),
     Entree("Emplois & stages", "gabarit:emplois"),
     Entree("Ressources", "gabarit:ressources"),
