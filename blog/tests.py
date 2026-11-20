@@ -99,3 +99,48 @@ class BackOfficeTests(TestCase):
         )
         article.refresh_from_db()
         self.assertNotIn("<script", article.contenu)
+
+
+class EcrireUnArticleTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.membre = get_user_model().objects.create_user(
+            "membre@exemple.test", "motdepasse-factice", prenom="Test", nom="Exemple"
+        )
+        cls.adresse = reverse("blog:ecrire")
+
+    def envoyer(self, **donnees):
+        valeurs = {"titre": "Mon article", "resume": "", "contenu": "<p>Bonjour</p>"}
+        valeurs.update(donnees)
+        return self.client.post(self.adresse, valeurs)
+
+    def test_un_visiteur_est_renvoye_vers_la_connexion(self):
+        reponse = self.client.get(self.adresse)
+        self.assertEqual(reponse.status_code, 302)
+        self.assertIn("next=/blog/ecrire/", reponse.url)
+
+    def test_un_membre_envoie_un_article_en_attente(self):
+        self.client.force_login(self.membre)
+        self.envoyer()
+        article = Article.objects.get()
+        self.assertEqual(article.statut, Article.Statut.EN_ATTENTE)
+        self.assertEqual(article.auteur, self.membre)
+        self.assertEqual(article.slug, "mon-article")
+
+    def test_un_article_envoye_n_est_pas_visible_du_public(self):
+        self.client.force_login(self.membre)
+        self.envoyer()
+        reponse = self.client.get(reverse("blog:liste"))
+        self.assertNotContains(reponse, "Mon article")
+
+    def test_deux_titres_identiques_donnent_deux_adresses(self):
+        self.client.force_login(self.membre)
+        self.envoyer()
+        self.envoyer()
+        adresses = sorted(Article.objects.values_list("slug", flat=True))
+        self.assertEqual(adresses, ["mon-article", "mon-article-2"])
+
+    def test_un_membre_ne_peut_pas_publier_lui_meme(self):
+        self.client.force_login(self.membre)
+        self.envoyer(statut="publie")
+        self.assertEqual(Article.objects.get().statut, Article.Statut.EN_ATTENTE)
