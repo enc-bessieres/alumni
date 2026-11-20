@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block titre %}{{ article.titre }} - Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+<h1>{{ article.titre }}</h1>
+<p><small>Publié le {{ article.publie_le|date:"j F Y" }}</small></p>
+{# |safe est sans danger ici : le contenu est nettoyé par nh3 (application texte_riche) avant d'être enregistré. #}
+<div class="contenu-riche">{{ article.contenu|safe }}</div>
+<p><a href="{% url 'blog:liste' %}">Tous les articles</a></p>
+{% endblock %}
