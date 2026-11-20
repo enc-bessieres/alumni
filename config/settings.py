@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "referentiels",  # Luc : sites, niveaux, diplômes
     "pages_libres",
     "gabarit",  # Steeve : gabarit des pages, menu, application installable
+    "django_prose_editor",
+    "texte_riche",
 ]
 
 MIDDLEWARE = [

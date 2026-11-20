@@ -1,13 +1,15 @@
 from django.db import models
 from django.urls import reverse
 
+from texte_riche.champs import ChampTexteRiche
+
 
 class Page(models.Model):
     """Une page éditable dans le back-office : À propos, mentions légales, CGU…"""
 
     titre = models.CharField("titre", max_length=200)
     slug = models.SlugField("adresse", unique=True, help_text="Exemple : mentions-legales")
-    contenu = models.TextField("contenu")
+    contenu = ChampTexteRiche("contenu")
     publiee = models.BooleanField("publiée", default=False)
     modifiee_le = models.DateTimeField("dernière modification", auto_now=True)
 
