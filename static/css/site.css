@@ -312,6 +312,90 @@ summary::-webkit-details-marker {
   text-align: center;
 }
 
+/* Annuaire (membres) : filtres, puis une fiche par membre. */
+.filtres {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Sur téléphone : la recherche et le bouton sur toute la largeur, les filtres deux par deux. */
+.filtre--q,
+.filtres p:last-child {
+  grid-column: 1 / -1;
+}
+
+.filtres p {
+  margin: 0;
+}
+
+.filtres label {
+  display: block;
+  font-size: var(--taille-petite);
+  color: var(--texte-doux);
+}
+
+.filtres input,
+.filtres select,
+.filtres button {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  font: inherit;
+}
+
+.filtres button {
+  border-color: var(--bordeaux);
+  color: var(--sur-bordeaux);
+  background: var(--bordeaux);
+}
+
+.nombre-de-resultats {
+  color: var(--texte-doux);
+}
+
+.annuaire {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.fiche {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+
+.fiche p {
+  margin: 0;
+}
+
+.fiche-nom {
+  font-weight: 700;
+}
+
+.fiche-categorie,
+.fiche-formations {
+  color: var(--texte-doux);
+  font-size: var(--taille-petite);
+}
+
+.fiche-formations {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
 /* Ordinateur : menu à gauche, plus de barre en bas. */
 @media (min-width: 48rem) {
   body {
@@ -350,6 +434,21 @@ summary::-webkit-details-marker {
   }
 
   .sites {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Annuaire : les filtres sur une ligne, les fiches sur deux colonnes. */
+  .filtres {
+    grid-template-columns: 2fr repeat(4, 1fr) auto;
+    align-items: end;
+  }
+
+  .filtre--q,
+  .filtres p:last-child {
+    grid-column: auto;
+  }
+
+  .annuaire {
     grid-template-columns: 1fr 1fr;
   }
 }

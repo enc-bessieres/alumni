@@ -8,6 +8,7 @@ urlpatterns = [
     # Connexion, déconnexion, mot de passe oublié… fournis par django-allauth.
     path("compte/", include("allauth.urls")),
     path("page/", include("pages_libres.urls")),
+    path("annuaire/", include("membres.urls")),
     path("", include("accueil.urls")),
     path("", include("gabarit.urls")),
 ]

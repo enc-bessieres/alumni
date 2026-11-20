@@ -33,7 +33,8 @@ class MembreAdmin(UserAdmin):
     list_filter = ["statut_inscription", "categorie", "groups", "is_staff"]
     search_fields = ["nom", "prenom", "nom_de_naissance", "email"]
     ordering = ["nom", "prenom"]
-    readonly_fields = ["legacy_id", "last_login", "cree_le"]
+    # visible_dans_annuaire est le choix du membre : l'équipe le voit, mais ne le change pas.
+    readonly_fields = ["legacy_id", "last_login", "cree_le", "visible_dans_annuaire"]
     filter_horizontal = ["groups", "user_permissions"]
 
     fieldsets = [
@@ -42,7 +43,7 @@ class MembreAdmin(UserAdmin):
             "Identité",
             {"fields": ["civilite", "prenom", "nom", "nom_de_naissance", "categorie"]},
         ),
-        ("Inscription", {"fields": ["statut_inscription", "is_active"]}),
+        ("Inscription", {"fields": ["statut_inscription", "is_active", "visible_dans_annuaire"]}),
         # Le rôle = les groupes (Validateur, Administrateur), définis dans membres/droits.py.
         ("Rôle et droits", {"fields": ["groups", "is_staff", "is_superuser", "user_permissions"]}),
         ("Suivi", {"fields": ["legacy_id", "cree_le", "last_login"]}),

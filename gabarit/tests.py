@@ -49,10 +49,11 @@ class MenuTests(TestCase):
         self.assertContains(reponse, "<summary>Plus</summary>")
 
     def test_l_entree_de_la_page_courante_est_active(self):
-        reponse = self.client.get(reverse("gabarit:annuaire"))
+        # Une page provisoire publique : l'annuaire, lui, demande d'être connecté.
+        reponse = self.client.get(reverse("gabarit:mentorat"))
 
         actives = [e["libelle"] for e in reponse.context["menu"] if e["actif"]]
-        self.assertEqual(actives, ["Annuaire"])
+        self.assertEqual(actives, ["Mentorat"])
         self.assertContains(reponse, 'aria-current="page"')
 
     def test_seules_les_listes_des_menus_perdent_leurs_puces(self):

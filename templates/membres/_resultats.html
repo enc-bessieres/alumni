@@ -1,0 +1,40 @@
+{# La liste de l'annuaire : incluse dans la page, ou renvoyée seule à HTMX. #}
+<p class="nombre-de-resultats" aria-live="polite">
+  {% with total=page.paginator.count %}{{ total }} membre{{ total|pluralize }}{% endwith %}
+</p>
+
+{% if page.object_list %}
+  <ul class="annuaire">
+    {% for membre in page.object_list %}
+      <li class="fiche">
+        <p class="fiche-nom">{{ membre.prenom }} {{ membre.nom }}</p>
+        <p class="fiche-categorie">{{ membre.get_categorie_display }}</p>
+        {% if membre.formations.all %}
+          <ul class="fiche-formations">
+            {% for formation in membre.formations.all %}
+              <li>{{ formation.diplome }}, promo {{ formation.promo }} — {{ formation.site }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aucun membre ne correspond à votre recherche.</p>
+{% endif %}
+
+{% if page.has_other_pages %}
+  <nav class="pagination" aria-label="Pages de l'annuaire">
+    {% if page.has_previous %}
+      <a href="{{ lien_page }}{{ page.previous_page_number }}"
+         hx-get="{{ lien_page }}{{ page.previous_page_number }}"
+         hx-target="#resultats" hx-push-url="true">Page précédente</a>
+    {% endif %}
+    <span>Page {{ page.number }} sur {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}
+      <a href="{{ lien_page }}{{ page.next_page_number }}"
+         hx-get="{{ lien_page }}{{ page.next_page_number }}"
+         hx-target="#resultats" hx-push-url="true">Page suivante</a>
+    {% endif %}
+  </nav>
+{% endif %}

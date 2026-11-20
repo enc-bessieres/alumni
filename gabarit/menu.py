@@ -18,7 +18,7 @@ class Entree:
 
 MENU = [
     Entree("Accueil", "accueil:index"),
-    Entree("Annuaire", "gabarit:annuaire"),
+    Entree("Annuaire", "membres:annuaire"),
     Entree("Mentorat", "gabarit:mentorat"),
     Entree("Groupes", "gabarit:groupes"),
     Entree("Actualités", "gabarit:actualites"),
