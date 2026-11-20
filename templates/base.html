@@ -17,37 +17,38 @@
 </head>
 {# Le jeton CSRF est envoyé avec chaque requête HTMX (POST, PUT, DELETE). #}
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  <header class="entete">
-    <a class="marque" href="{% url 'accueil:index' %}">
-      <span class="logo">À COMPLÉTER : logo</span>
-      <span>Alumni ENC Bessières</span>
-    </a>
-    {% include "gabarit/zone_membre.html" %}
-  </header>
+  <a class="evitement" href="#contenu">Aller au contenu</a>
 
-  <div class="mise-en-page">
-    {# Ordinateur : le menu complet dans la colonne de gauche. #}
-    <nav class="menu-lateral" aria-label="Menu principal">
+  <header class="entete">
+    <div class="entete-haut">
+      <a class="marque" href="{% url 'accueil:index' %}">
+        <span class="logo">À COMPLÉTER : logo</span>
+        <span class="nom-du-site">Alumni ENC Bessières</span>
+      </a>
+      {% include "gabarit/zone_membre.html" %}
+    </div>
+    {# Ordinateur : le menu complet sous le logo. Mobile : la barre du bas le remplace. #}
+    <nav class="menu-principal" aria-label="Menu principal">
       <ul>
         {% for entree in menu %}
           <li><a href="{{ entree.url }}"{% if entree.actif %} aria-current="page"{% endif %}>{{ entree.libelle }}</a></li>
         {% endfor %}
       </ul>
     </nav>
+  </header>
 
-    <main class="contenu">
-      {# Messages de Django (connexion réussie, déconnexion…) : affichés une fois, puis effacés. #}
-      {% if messages %}
-        <ul class="messages" role="status">
-          {# level_tag vaut success, error, warning ou info : le style dépend du niveau. #}
-          {% for message in messages %}
-            <li class="message message--{{ message.level_tag }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      {% block contenu %}{% endblock %}
-    </main>
-  </div>
+  <main id="contenu" class="contenu">
+    {# Messages de Django (connexion réussie, déconnexion…) : affichés une fois, puis effacés. #}
+    {% if messages %}
+      <ul class="messages" role="status">
+        {# level_tag vaut success, error, warning ou info : le style dépend du niveau. #}
+        {% for message in messages %}
+          <li class="message message--{{ message.level_tag }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% block contenu %}{% endblock %}
+  </main>
 
   <footer class="pied">
     <div class="sites">
