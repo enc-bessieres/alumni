@@ -25,8 +25,7 @@ class Article(models.Model):
         REFUSE = "refuse", "Refusé"
 
     statut = models.CharField(
-        "statut", max_length=20, choices=Statut.choices,
-        default=Statut.BROUILLON
+        "statut", max_length=20, choices=Statut.choices, default=Statut.BROUILLON
     )
     publie_le = models.DateTimeField("publié le", null=True, blank=True)
     cree_le = models.DateTimeField("créé le", auto_now_add=True)
