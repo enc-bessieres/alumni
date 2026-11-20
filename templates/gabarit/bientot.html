@@ -3,6 +3,9 @@
 {% block titre %}{{ titre }} — Alumni ENC Bessières{% endblock %}
 
 {% block contenu %}
-  <h1>{{ titre }}</h1>
-  <p>Bientôt disponible.</p>
+  <div class="bientot">
+    <h1>{{ titre }}</h1>
+    <p>Bientôt disponible.</p>
+    <p><a class="bouton" href="{% url 'accueil:index' %}">Revenir à l'accueil</a></p>
+  </div>
 {% endblock %}

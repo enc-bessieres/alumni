@@ -1,6 +1,6 @@
 """Le menu du site, défini à un seul endroit.
 
-Le gabarit l'affiche deux fois : dans la colonne de gauche sur ordinateur,
+Le gabarit l'affiche deux fois : dans l'en-tête sur ordinateur,
 et dans la barre du bas sur mobile (les 4 premières entrées, puis « Plus »).
 
 Quand un domaine livre sa vraie page, il remplace ici le nom d'adresse

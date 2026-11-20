@@ -27,6 +27,19 @@ class GabaritCommunTests(TestCase):
         self.assertContains(reponse, '<a class="marque" href="/">')
         self.assertContains(reponse, "Alumni ENC Bessières")
 
+    def test_le_menu_d_ordinateur_est_dans_l_en_tete(self):
+        reponse = self.client.get("/")
+        html = reponse.content.decode()
+        entete = html[html.index('<header class="entete">') : html.index("</header>")]
+        self.assertIn('<nav class="menu-principal" aria-label="Menu principal">', entete)
+        self.assertIn("Ressources", entete)
+
+    def test_un_lien_permet_d_aller_directement_au_contenu(self):
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertContains(reponse, '<a class="evitement" href="#contenu">Aller au contenu</a>')
+        self.assertContains(reponse, '<main id="contenu" class="contenu">')
+
     def test_le_pied_de_page_cite_les_deux_sites(self):
         reponse = self.client.get(reverse("accueil:index"))
 
@@ -70,6 +83,7 @@ class MenuTests(TestCase):
                 reponse = self.client.get(reverse(f"gabarit:{page.name}"))
 
                 self.assertContains(reponse, "Bientôt disponible.")
+                self.assertContains(reponse, "Revenir à l'accueil")
 
 
 class FauxMembre:
