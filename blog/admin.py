@@ -9,6 +9,7 @@ class ArticleAdmin(admin.ModelAdmin):
     list_filter = ["statut"]
     search_fields = ["titre", "contenu"]
     prepopulated_fields = {"slug": ["titre"]}
+    autocomplete_fields = ["auteur"]
 
     def save_model(self, request, obj, form, change):
         if obj.auteur is None:

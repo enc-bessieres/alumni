@@ -41,6 +41,15 @@ class ArticlesPublicsTests(TestCase):
         reponse = self.client.get(reverse("blog:liste"))
         self.assertContains(reponse, "Aucun article pour l'instant.")
 
+    def test_un_article_en_attente_ou_refuse_donne_une_404(self):
+        for statut in [Article.Statut.EN_ATTENTE, Article.Statut.REFUSE]:
+            with self.subTest(statut=statut):
+                Article.objects.create(
+                    titre="Cache", slug=statut, contenu="<p>Cache</p>", statut=statut
+                )
+                reponse = self.client.get(reverse("blog:detail", args=[statut]))
+                self.assertEqual(reponse.status_code, 404)
+
 
 class BackOfficeTests(TestCase):
     @classmethod
@@ -64,3 +73,21 @@ class BackOfficeTests(TestCase):
             titre="X", slug="x", contenu="<p>X</p>", statut=Article.Statut.PUBLIE
         )
         self.assertIsNotNone(article.publie_le)
+
+    def test_l_auteur_se_remplit_tout_seul_dans_l_admin(self):
+        self.client.force_login(self.administrateur)
+        self.client.post(
+            reverse("admin:blog_article_add"),
+            {
+                "titre": "Par l'admin",
+                "slug": "par-l-admin",
+                "resume": "",
+                "contenu": "<p>Texte</p>",
+                "auteur": "",
+                "statut": Article.Statut.BROUILLON,
+                "publie_le_0": "",
+                "publie_le_1": "",
+            },
+        )
+        article = Article.objects.get(slug="par-l-admin")
+        self.assertEqual(article.auteur, self.administrateur)
