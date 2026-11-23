@@ -9,3 +9,8 @@ class ArticleAdmin(admin.ModelAdmin):
     list_filter = ["statut"]
     search_fields = ["titre", "contenu"]
     prepopulated_fields = {"slug": ["titre"]}
+
+    def save_model(self, request, obj, form, change):
+        if obj.auteur is None:
+            obj.auteur = request.user
+        super().save_model(request, obj, form, change)

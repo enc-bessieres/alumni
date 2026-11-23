@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -38,3 +40,27 @@ class ArticlesPublicsTests(TestCase):
         Article.objects.all().delete()
         reponse = self.client.get(reverse("blog:liste"))
         self.assertContains(reponse, "Aucun article pour l'instant.")
+
+
+class BackOfficeTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.administrateur = get_user_model().objects.create_user(
+            "administrateur@exemple.test",
+            "motdepasse-factice",
+            prenom="Test",
+            nom="Exemple",
+            is_staff=True,
+        )
+        cls.administrateur.groups.add(Group.objects.get(name="Administrateur"))
+
+    def test_un_administrateur_voit_les_articles(self):
+        self.client.force_login(self.administrateur)
+        reponse = self.client.get(reverse("admin:blog_article_changelist"))
+        self.assertEqual(reponse.status_code, 200)
+
+    def test_publier_remplit_la_date_de_publication(self):
+        article = Article.objects.create(
+            titre="X", slug="x", contenu="<p>X</p>", statut=Article.Statut.PUBLIE
+        )
+        self.assertIsNotNone(article.publie_le)
