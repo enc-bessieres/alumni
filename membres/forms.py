@@ -2,7 +2,7 @@ from django import forms
 
 from referentiels.models import Diplome, Formation, Site
 
-from .models import Membre
+from .models import Experience, Membre
 
 
 class FiltresAnnuaire(forms.Form):
@@ -64,3 +64,18 @@ class ParametresForm(forms.ModelForm):
             ),
             "linkedin": forms.URLInput(attrs={"aria-describedby": "id_linkedin_aide"}),
         }
+
+
+# Le parcours : toutes les expériences du membre dans un seul formulaire, plus une ligne vide pour
+# en ajouter une. Le jeu de formulaires est lié au membre connecté : il ne peut ni voir ni
+# modifier les expériences d'un autre, même en trafiquant les identifiants envoyés.
+ParcoursFormSet = forms.inlineformset_factory(
+    Membre,
+    Experience,
+    fields=["intitule", "organisation", "secteur", "lieu", "debut", "fin"],
+    extra=1,
+    can_delete=True,
+    can_delete_extra=False,  # pas de case « Supprimer » sur la ligne vide
+    max_num=20,
+    validate_max=True,
+)

@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
-from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.functions import Lower
 from django.utils import timezone
@@ -167,3 +168,51 @@ class Membre(AbstractBaseUser, PermissionsMixin):
         # À chaque enregistrement, d'où qu'il vienne : formulaire, import, shell.
         self.email = self.__class__.objects.normalize_email(self.email)
         super().save(*args, **kwargs)
+
+
+def annee_maximum():
+    """Une date de fin peut être prévue l'an prochain (contrat qui se termine), pas au-delà."""
+    return timezone.now().year + 1
+
+
+class Experience(models.Model):
+    """
+    Une ligne du parcours d'un membre : un poste dans une organisation, d'une année à une autre.
+    Mêmes champs que les expériences de l'export Datalumni (docs/migration/export-factice.md) :
+    l'import pourra les reprendre telles quelles.
+    """
+
+    membre = models.ForeignKey(
+        Membre, on_delete=models.CASCADE, related_name="experiences", verbose_name="membre"
+    )
+    intitule = models.CharField("poste", max_length=150)
+    organisation = models.CharField("entreprise ou organisation", max_length=150)
+    secteur = models.CharField("secteur", max_length=100, blank=True)
+    lieu = models.CharField("ville", max_length=100, blank=True)
+    debut = models.PositiveSmallIntegerField("année de début", validators=[MinValueValidator(1950)])
+    # Vide : c'est le poste actuel.
+    fin = models.PositiveSmallIntegerField(
+        "année de fin", null=True, blank=True, help_text="Laissez vide pour le poste actuel."
+    )
+
+    class Meta:
+        verbose_name = "expérience"
+        # Le poste actuel d'abord (fin vide), puis du plus récent au plus ancien.
+        ordering = [models.F("fin").desc(nulls_first=True), "-debut"]
+
+    def __str__(self):
+        return f"{self.intitule} — {self.organisation}"
+
+    @property
+    def poste_actuel(self):
+        return self.fin is None
+
+    def clean(self):
+        super().clean()
+        if self.debut and self.debut > timezone.now().year:
+            raise ValidationError({"debut": "L'année de début ne peut pas être dans le futur."})
+        if self.fin is not None:
+            if self.fin > annee_maximum():
+                raise ValidationError({"fin": "L'année de fin est trop loin dans le futur."})
+            if self.debut and self.fin < self.debut:
+                raise ValidationError({"fin": "L'année de fin est avant l'année de début."})

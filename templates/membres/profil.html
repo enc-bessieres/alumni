@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block titre %}Profil — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <h1>Mon profil</h1>
+
+  <p>
+    Votre parcours apparaît sur <a href="{% url 'membres:fiche' user.pk %}">votre fiche</a>,
+    visible des membres validés.
+  </p>
+
+  <form class="parcours-formulaire" method="post" action="{% url 'membres:profil' %}" novalidate>
+    {% csrf_token %}
+    {{ parcours.management_form }}
+    {{ parcours.non_form_errors }}
+
+    {% for experience in parcours %}
+      <fieldset>
+        <legend>
+          {% if experience.instance.pk %}{{ experience.instance }}{% else %}Ajouter une expérience{% endif %}
+        </legend>
+        {{ experience.id }}
+        {{ experience.non_field_errors }}
+        {% for champ in experience.visible_fields %}
+          {% include "membres/_champ.html" %}
+        {% endfor %}
+      </fieldset>
+    {% endfor %}
+
+    <p><button type="submit">Enregistrer</button></p>
+  </form>
+{% endblock %}

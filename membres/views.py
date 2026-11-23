@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 from referentiels.models import Formation
 
 from .droits import reserve_aux_membres_valides
-from .forms import FiltresAnnuaire, ParametresForm
+from .forms import FiltresAnnuaire, ParametresForm, ParcoursFormSet
 from .models import Membre
 
 MEMBRES_PAR_PAGE = 25
@@ -93,7 +93,9 @@ def fiche(request, pk):
         membres = Membre.objects.all()
     else:
         membres = membres_de_l_annuaire()
-    membre = get_object_or_404(membres.prefetch_related(formations_completes()), pk=pk)
+    membre = get_object_or_404(
+        membres.prefetch_related(formations_completes(), "experiences"), pk=pk
+    )
     return render(request, "membres/fiche.html", {"membre": membre})
 
 
@@ -113,3 +115,16 @@ def parametres(request):
         # Redirection après l'envoi : recharger la page ne renvoie pas le formulaire.
         return redirect("membres:parametres")
     return render(request, "membres/parametres.html", {"formulaire": formulaire})
+
+
+@require_http_methods(["GET", "POST"])
+@reserve_aux_membres_valides
+def profil(request):
+    """Le membre complète son parcours. Comme Paramètres : toujours son propre compte."""
+    donnees = request.POST if request.method == "POST" else None
+    parcours = ParcoursFormSet(donnees, instance=request.user, prefix="parcours")
+    if parcours.is_bound and parcours.is_valid():
+        parcours.save()
+        messages.success(request, "Votre parcours est enregistré.")
+        return redirect("membres:profil")
+    return render(request, "membres/profil.html", {"parcours": parcours})

@@ -6,7 +6,7 @@
       <span>{{ user.get_short_name|default:user.get_username }}</span>
     </summary>
     <ul>
-      <li><a href="{% url 'gabarit:profil' %}">Profil</a></li>
+      <li><a href="{% url 'membres:profil' %}">Profil</a></li>
       <li><a href="{% url 'membres:parametres' %}">Paramètres</a></li>
       {% if url_deconnexion %}
         <li>

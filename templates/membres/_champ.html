@@ -6,5 +6,7 @@
     <label for="{{ champ.id_for_label }}">{{ champ.label }}</label> {{ champ }}
   {% endif %}
 </p>
-<p class="aide" id="{{ champ.id_for_label }}_aide">{{ champ.help_text }}</p>
+{% if champ.help_text %}
+  <p class="aide" id="{{ champ.id_for_label }}_aide">{{ champ.help_text }}</p>
+{% endif %}
 {{ champ.errors }}

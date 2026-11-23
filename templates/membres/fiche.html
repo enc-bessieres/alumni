@@ -27,6 +27,21 @@
       </ul>
     {% endif %}
 
+    {% if membre.experiences.all %}
+      <h2>Parcours</h2>
+      <ul class="parcours">
+        {% for experience in membre.experiences.all %}
+          <li>
+            <strong>{{ experience.intitule }}</strong>, {{ experience.organisation }}
+            ({{ experience.debut }} – {% if experience.poste_actuel %}aujourd'hui{% else %}{{ experience.fin }}{% endif %})
+            {% if experience.secteur or experience.lieu %}
+              <br><span class="fiche-categorie">{{ experience.secteur }}{% if experience.secteur and experience.lieu %} · {% endif %}{{ experience.lieu }}</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
     {# Chaque contact n'apparaît que si le membre l'a choisi dans ses paramètres. #}
     {% if membre.email_visible or membre.linkedin %}
       <h2>Contact</h2>
