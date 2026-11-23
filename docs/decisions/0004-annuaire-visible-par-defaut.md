@@ -1,13 +1,13 @@
 # 0004 — Annuaire : membres visibles par défaut
 
 **Date :** lundi 23 novembre 2026
-**Statut :** proposée (à valider par M. Robert, et à faire relire par le DPO avec les pages légales)
+**Statut :** décidée (proposée par M. Robert à la démo et validée à l'oral) ; pages légales à faire relire par le DPO
 
 ## Contexte
 
 Avec l'annuaire (#41), un membre n'y apparaissait que s'il cochait « Apparaître dans l'annuaire » dans Paramètres (#51) : c'était l'application stricte de la règle 5 d'AGENTS.md (« toute donnée personnelle est privée par défaut »).
 
-À la démo du lundi 23 novembre, l'équipe a retenu l'inverse : un annuaire vide tant que chacun n'est pas allé cocher une case ne remplit pas son rôle, qui est de retrouver ses anciens camarades. C'est aussi ce que fait Datalumni aujourd'hui : l'annuaire montre 1214 membres, et seuls quelques-uns s'en sont retirés (docs/01-audit-existant.md).
+À la démo du lundi 23 novembre, M. Robert a proposé l'inverse, et l'équipe l'a retenu : un annuaire vide tant que chacun n'est pas allé cocher une case ne remplit pas son rôle, qui est de retrouver ses anciens camarades. C'est aussi ce que fait Datalumni aujourd'hui : l'annuaire montre 1214 membres, et seuls quelques-uns s'en sont retirés (docs/01-audit-existant.md).
 
 ## Décision
 
