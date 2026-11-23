@@ -1,17 +1,13 @@
 """
-Liste noire des mots interdits dans les articles (décision de #43).
+Charge la liste de départ des mots interdits (décision de #43).
 
-La recherche ignore les majuscules et les accents, et ne cherche que des mots entiers :
-un mot interdit caché dans un mot plus long n'est pas bloqué.
+Liste générée par une IA, à relire et compléter par l'ENC dans le back-office.
+Elle est recopiée ici et figée : une migration doit toujours donner le même résultat.
 """
 
-import re
-import unicodedata
+from django.db import migrations
 
-from django.utils.html import strip_tags
-
-# À COMPLÉTER : liste de mots générée par une IA, à valider par l'ENC.
-MOTS_INTERDITS = [
+MOTS = [
     "abruti",
     "andouille",
     "andouille de merde",
@@ -116,13 +112,13 @@ MOTS_INTERDITS = [
 ]
 
 
-def normaliser(texte):
-    """Met le texte en minuscules et retire les accents : « Éte » devient « ete »."""
-    sans_accents = unicodedata.normalize("NFKD", texte).encode("ascii", "ignore").decode()
-    return sans_accents.lower()
+def charger(apps, schema_editor):
+    MotInterdit = apps.get_model("moderation", "MotInterdit")
+    for mot in MOTS:
+        MotInterdit.objects.get_or_create(mot=mot.strip().lower())
 
 
-def mots_trouves(texte):
-    """Les mots de la liste noire présents dans le texte (HTML accepté)."""
-    texte = normaliser(strip_tags(texte))
-    return [mot for mot in MOTS_INTERDITS if re.search(rf"\b{re.escape(normaliser(mot))}\b", texte)]
+class Migration(migrations.Migration):
+    dependencies = [("moderation", "0001_initial")]
+
+    operations = [migrations.RunPython(charger, migrations.RunPython.noop)]

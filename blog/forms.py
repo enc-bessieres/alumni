@@ -1,7 +1,8 @@
 from django import forms
 
+from moderation.filtres import mots_trouves
+
 from .models import Article
-from .moderation import mots_trouves
 
 
 class ArticleForm(forms.ModelForm):

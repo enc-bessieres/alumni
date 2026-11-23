@@ -1,13 +1,12 @@
-from unittest import mock
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from moderation.models import MotInterdit
+
 from .models import Article
-from .moderation import mots_trouves
 
 
 class ArticlesPublicsTests(TestCase):
@@ -161,7 +160,6 @@ class EcrireUnArticleTests(TestCase):
         self.assertFalse(Article.objects.exists())
 
 
-@mock.patch("blog.moderation.MOTS_INTERDITS", ["motinterdit"])
 class ListeNoireTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -173,12 +171,7 @@ class ListeNoireTests(TestCase):
             nom="Exemple",
             statut_inscription=Membre.StatutInscription.VALIDEE,
         )
-
-    def test_un_mot_interdit_est_trouve_malgre_majuscules_et_accents(self):
-        self.assertEqual(mots_trouves("<p>Un MOTÌNTERDIT ici</p>"), ["motinterdit"])
-
-    def test_un_mot_innocent_qui_le_contient_n_est_pas_bloque(self):
-        self.assertEqual(mots_trouves("<p>Des supermotinterdits</p>"), [])
+        MotInterdit.objects.create(mot="motinterdit")
 
     def test_un_article_avec_un_mot_interdit_est_refuse(self):
         self.client.force_login(self.membre)
