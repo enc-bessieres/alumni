@@ -125,19 +125,21 @@ class EcrireUnArticleTests(TestCase):
         self.assertEqual(reponse.status_code, 302)
         self.assertIn("next=/blog/ecrire/", reponse.url)
 
-    def test_un_membre_envoie_un_article_en_attente(self):
+    def test_un_membre_publie_un_article(self):
         self.client.force_login(self.membre)
         self.envoyer()
         article = Article.objects.get()
-        self.assertEqual(article.statut, Article.Statut.EN_ATTENTE)
+        self.assertEqual(article.statut, Article.Statut.PUBLIE)
+        self.assertIsNotNone(article.publie_le)
         self.assertEqual(article.auteur, self.membre)
         self.assertEqual(article.slug, "mon-article")
 
-    def test_un_article_envoye_n_est_pas_visible_du_public(self):
+    def test_un_article_envoye_est_visible_du_public(self):
         self.client.force_login(self.membre)
         self.envoyer()
+        self.client.logout()
         reponse = self.client.get(reverse("blog:liste"))
-        self.assertNotContains(reponse, "Mon article")
+        self.assertContains(reponse, "Mon article")
 
     def test_deux_titres_identiques_donnent_deux_adresses(self):
         self.client.force_login(self.membre)
@@ -145,11 +147,6 @@ class EcrireUnArticleTests(TestCase):
         self.envoyer()
         adresses = sorted(Article.objects.values_list("slug", flat=True))
         self.assertEqual(adresses, ["mon-article", "mon-article-2"])
-
-    def test_un_membre_ne_peut_pas_publier_lui_meme(self):
-        self.client.force_login(self.membre)
-        self.envoyer(statut="publie")
-        self.assertEqual(Article.objects.get().statut, Article.Statut.EN_ATTENTE)
 
     def test_un_membre_non_valide_ne_peut_pas_ecrire(self):
         non_valide = get_user_model().objects.create_user(

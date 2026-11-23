@@ -36,13 +36,11 @@ def ecrire(request):
         if formulaire.is_valid():
             article = formulaire.save(commit=False)
             article.auteur = request.user
-            article.statut = Article.Statut.EN_ATTENTE
+            article.statut = Article.Statut.PUBLIE
             article.slug = adresse_unique(article.titre)
             article.save()
-            messages.success(
-                request, "Merci ! Votre article sera publié après validation par l'équipe."
-            )
-            return redirect("blog:liste")
+            messages.success(request, "Merci ! Votre article est publié.")
+            return redirect(article)
     else:
         formulaire = ArticleForm()
     return render(request, "blog/ecrire.html", {"formulaire": formulaire})

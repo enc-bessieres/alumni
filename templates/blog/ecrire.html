@@ -4,7 +4,7 @@
 
 {% block contenu %}
 <h1>Écrire un article</h1>
-<p>Votre article sera publié après validation par l'équipe.</p>
+<p>Votre article sera visible par tous dès son envoi.</p>
 <form method="post">
   {% csrf_token %}
   {{ formulaire.media }}
