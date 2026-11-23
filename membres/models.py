@@ -88,11 +88,12 @@ class Membre(AbstractBaseUser, PermissionsMixin):
         default=StatutInscription.EN_ATTENTE,
     )
 
-    # Privé par défaut (règle 5) : un membre n'apparaît dans l'annuaire que s'il l'a choisi.
-    # L'annuaire montre alors son nom, sa catégorie et ses diplômes, jamais son e-mail.
+    # Visible par défaut, comme chez Datalumni (décision docs/decisions/0004) : le membre peut se
+    # retirer de l'annuaire dans Paramètres. L'annuaire montre son nom, sa catégorie et ses
+    # diplômes, jamais son e-mail (qui reste privé par défaut : email_visible).
     visible_dans_annuaire = models.BooleanField(
         "visible dans l'annuaire",
-        default=False,
+        default=True,
         help_text=(
             "Choisi par le membre : nom, catégorie et diplômes visibles des membres validés."
         ),

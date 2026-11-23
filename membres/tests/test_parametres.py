@@ -48,12 +48,13 @@ class ParametresTests(TestCase):
         self.membre = creer()
         self.client.force_login(self.membre)
 
-    def test_les_cases_sont_decochees_par_defaut(self):
+    def test_visible_dans_l_annuaire_par_defaut_mais_e_mail_cache(self):
+        # Décision 0004 : présent dans l'annuaire par défaut ; l'e-mail reste privé par défaut.
         reponse = self.client.get(PARAMETRES)
 
-        self.assertContains(reponse, '<input type="checkbox" name="visible_dans_annuaire"')
-        self.assertContains(reponse, '<input type="checkbox" name="email_visible"')
-        self.assertNotContains(reponse, "checked")
+        formulaire = reponse.context["formulaire"]
+        self.assertTrue(formulaire["visible_dans_annuaire"].value())  # case cochée
+        self.assertFalse(formulaire["email_visible"].value())  # case décochée
 
     def test_cocher_la_case_rend_visible_dans_l_annuaire(self):
         reponse = self.client.post(PARAMETRES, {"visible_dans_annuaire": "on"}, follow=True)
@@ -102,7 +103,7 @@ class ParametresTests(TestCase):
     def test_on_ne_modifie_que_son_propre_compte(self):
         autre = creer("Hugo", "Lefevre")
 
-        self.client.post(PARAMETRES, {"visible_dans_annuaire": "on"})
+        self.client.post(PARAMETRES, {})  # se retirer de l'annuaire
 
         autre.refresh_from_db()
-        self.assertFalse(autre.visible_dans_annuaire)
+        self.assertTrue(autre.visible_dans_annuaire)

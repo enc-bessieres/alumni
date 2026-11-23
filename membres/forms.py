@@ -48,8 +48,8 @@ class ParametresForm(forms.ModelForm):
         }
         help_texts = {
             "visible_dans_annuaire": (
-                "Les membres validés verront votre nom, votre catégorie et vos diplômes. "
-                "Jamais votre adresse e-mail."
+                "Les membres validés voient votre nom, votre catégorie et vos diplômes, jamais "
+                "votre adresse e-mail. Décochez pour ne plus apparaître dans l'annuaire."
             ),
             "email_visible": "Seuls les membres validés voient votre fiche.",
             "linkedin": "Facultatif. Par exemple https://www.linkedin.com/in/prenom-nom/",
