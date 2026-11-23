@@ -40,6 +40,8 @@ Issue assignée  →  branche  →  commits  →  pull request
 | Marie Dominique | Luc |
 | Axel | Luc |
 | Luc | Axel |
+| Sidouane | Vera |
+| Vera | Sidouane |
 
 ## Ce que vérifie le relecteur
 

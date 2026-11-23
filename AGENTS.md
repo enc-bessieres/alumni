@@ -6,7 +6,7 @@ Ce fichier donne le contexte du projet à toute IA de développement. L'équipe 
 
 Remplacer la plateforme alumni louée par l'ENC Bessières à **Datalumni** (https://www.bessieres-alumni.org/) par une plateforme appartenant à l'établissement. La bascule est prévue **avant le 25 mars 2027**.
 
-- **Équipe :** quatre étudiants de BTS SIO SLAM, en stage du 9 novembre au 18 décembre 2026.
+- **Équipe :** quatre étudiants de BTS SIO SLAM, en stage du 9 novembre au 18 décembre 2026. Deux étudiantes, Sidouane et Vera, les rejoignent du 25 novembre au 18 décembre.
 - **Responsable technique :** Timothée Robert, enseignant. Il intègre, relit, fusionne et déploie.
 - **Relations institutionnelles :** Philippe Chenut, DDFPT. Il porte les échanges avec Datalumni, la direction et le DPO.
 - **Public du site :** environ 1300 membres. Ce sont des alumni, des étudiants, des enseignants, l'équipe administrative, des candidats et des recruteurs.
