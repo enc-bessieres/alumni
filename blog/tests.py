@@ -91,6 +91,7 @@ class BackOfficeTests(TestCase):
         )
         article = Article.objects.get(slug="par-l-admin")
         self.assertEqual(article.auteur, self.administrateur)
+
     def test_le_contenu_d_un_article_est_nettoye(self):
         article = Article.objects.create(
             titre="Piège",
