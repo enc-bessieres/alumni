@@ -1,0 +1,10 @@
+{# Un champ des paramètres : la case ou la zone de saisie, son libellé, son aide et ses erreurs. #}
+<p class="{% if champ.widget_type == 'checkbox' %}case-a-cocher{% else %}champ{% endif %}">
+  {% if champ.widget_type == 'checkbox' %}
+    {{ champ }} <label for="{{ champ.id_for_label }}">{{ champ.label }}</label>
+  {% else %}
+    <label for="{{ champ.id_for_label }}">{{ champ.label }}</label> {{ champ }}
+  {% endif %}
+</p>
+<p class="aide" id="{{ champ.id_for_label }}_aide">{{ champ.help_text }}</p>
+{{ champ.errors }}
