@@ -52,6 +52,7 @@ L'intégration continue (GitHub Actions) lance le style, les migrations et les t
 - [Points durs de l'intégration](docs/06-points-durs.md)
 - [Référentiels et fausses données de développement](docs/donnees-de-developpement.md)
 - [Export factice au format Datalumni](docs/migration/export-factice.md)
+- [Import des membres de Datalumni](docs/migration/import-membres.md)
 - [Comment contribuer](CONTRIBUTING.md)
 
 ## Règles
