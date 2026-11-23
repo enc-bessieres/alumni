@@ -105,8 +105,13 @@ class BackOfficeTests(TestCase):
 class EcrireUnArticleTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.membre = get_user_model().objects.create_user(
-            "membre@exemple.test", "motdepasse-factice", prenom="Test", nom="Exemple"
+        Membre = get_user_model()
+        cls.membre = Membre.objects.create_user(
+            "membre@exemple.test",
+            "motdepasse-factice",
+            prenom="Test",
+            nom="Exemple",
+            statut_inscription=Membre.StatutInscription.VALIDEE,
         )
         cls.adresse = reverse("blog:ecrire")
 
@@ -145,3 +150,12 @@ class EcrireUnArticleTests(TestCase):
         self.client.force_login(self.membre)
         self.envoyer(statut="publie")
         self.assertEqual(Article.objects.get().statut, Article.Statut.EN_ATTENTE)
+
+    def test_un_membre_non_valide_ne_peut_pas_ecrire(self):
+        non_valide = get_user_model().objects.create_user(
+            "nonvalide@exemple.test", "motdepasse-factice", prenom="Test", nom="Exemple"
+        )
+        self.client.force_login(non_valide)
+        reponse = self.envoyer()
+        self.assertEqual(reponse.status_code, 403)
+        self.assertFalse(Article.objects.exists())

@@ -1,7 +1,8 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
+
+from membres.droits import reserve_aux_membres_valides
 
 from .forms import ArticleForm
 from .models import Article
@@ -28,7 +29,7 @@ def adresse_unique(titre):
     return adresse
 
 
-@login_required
+@reserve_aux_membres_valides
 def ecrire(request):
     if request.method == "POST":
         formulaire = ArticleForm(request.POST)
