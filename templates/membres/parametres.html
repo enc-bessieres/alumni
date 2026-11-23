@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block titre %}Paramètres — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <h1>Paramètres</h1>
+
+  <form class="parametres" method="post" action="{% url 'membres:parametres' %}">
+    {% csrf_token %}
+    <fieldset>
+      <legend>Annuaire</legend>
+      {% with champ=formulaire.visible_dans_annuaire %}
+        <p class="case-a-cocher">
+          {{ champ }}
+          <label for="{{ champ.id_for_label }}">{{ champ.label }}</label>
+        </p>
+        <p class="aide" id="{{ champ.id_for_label }}_aide">{{ champ.help_text }}</p>
+      {% endwith %}
+    </fieldset>
+    <p><button type="submit">Enregistrer</button></p>
+  </form>
+
+  <p><a href="{% url 'membres:annuaire' %}">Voir l'annuaire</a></p>
+{% endblock %}

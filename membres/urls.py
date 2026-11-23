@@ -5,5 +5,6 @@ from . import views
 app_name = "membres"
 
 urlpatterns = [
-    path("", views.annuaire, name="annuaire"),
+    path("annuaire/", views.annuaire, name="annuaire"),
+    path("parametres/", views.parametres, name="parametres"),
 ]

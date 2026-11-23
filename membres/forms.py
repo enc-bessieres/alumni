@@ -30,3 +30,27 @@ class FiltresAnnuaire(forms.Form):
         # Seulement les promos qui existent, de la plus récente à la plus ancienne.
         promos = Formation.objects.order_by("-promo").values_list("promo", flat=True).distinct()
         self.fields["promo"].choices = [("", "Toutes")] + [(p, p) for p in promos]
+
+
+class ParametresForm(forms.ModelForm):
+    """
+    Les réglages que le membre change lui-même. Seuls les champs listés ici peuvent être
+    modifiés : un champ ajouté à la main dans la requête (is_staff, groupes…) est ignoré.
+    """
+
+    class Meta:
+        model = Membre
+        fields = ["visible_dans_annuaire"]
+        labels = {"visible_dans_annuaire": "Apparaître dans l'annuaire"}
+        # Le lecteur d'écran lit l'explication avec la case (accessibilité).
+        widgets = {
+            "visible_dans_annuaire": forms.CheckboxInput(
+                attrs={"aria-describedby": "id_visible_dans_annuaire_aide"}
+            )
+        }
+        help_texts = {
+            "visible_dans_annuaire": (
+                "Les membres validés verront votre nom, votre catégorie et vos diplômes. "
+                "Jamais votre adresse e-mail."
+            )
+        }
