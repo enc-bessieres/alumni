@@ -12,9 +12,6 @@ from referentiels.models import Diplome, Formation
 def index(request):
     """Page d'accueil du site."""
     chiffres = {
-        "membres": Membre.objects.filter(
-            statut_inscription=Membre.StatutInscription.VALIDEE
-        ).count(),
         "promos": Formation.objects.values("promo").distinct().count(),
         "diplomes": Diplome.objects.count(),
         "membres": Membre.objects.filter(
