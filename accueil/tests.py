@@ -24,9 +24,9 @@ class AccueilTests(TestCase):
         self.assertEqual(reponse.content, b"ok")
 
 
-def creer_membre(email, **champs):
+def creer_membre(email, nom="Test", **champs):
     return Membre.objects.create_user(
-        email, prenom="Test", nom="Test", categorie=Membre.Categorie.ADMINISTRATIF, **champs
+        email, prenom="Test", nom=nom, categorie=Membre.Categorie.ADMINISTRATIF, **champs
     )
 
 
@@ -37,6 +37,11 @@ class ChiffresClesTests(TestCase):
     def test_seuls_les_membres_valides_sont_comptes(self):
         creer_membre("valide@exemple.test", statut_inscription=Membre.StatutInscription.VALIDEE)
         creer_membre("en-attente@exemple.test")
+        creer_membre(
+            "inactif@exemple.test",
+            statut_inscription=Membre.StatutInscription.VALIDEE,
+            is_active=False,
+        )
 
         self.assertEqual(self.chiffres()["membres"], 1)
 
@@ -53,3 +58,38 @@ class ChiffresClesTests(TestCase):
             )
 
         self.assertEqual(self.chiffres()["promos"], 2)
+
+
+class DerniersInscritsTests(TestCase):
+    def setUp(self):
+        valide = Membre.StatutInscription.VALIDEE
+        creer_membre(
+            "visible@exemple.test",
+            nom="Visible",
+            statut_inscription=valide,
+            visible_dans_annuaire=True,
+        )
+        creer_membre(
+            "cache@exemple.test",
+            nom="Cache",
+            statut_inscription=valide,
+            visible_dans_annuaire=False,
+        )
+        creer_membre("attente@exemple.test", nom="Attente", visible_dans_annuaire=True)
+        self.lecteur = creer_membre("lecteur@exemple.test", statut_inscription=valide)
+
+    def test_un_visiteur_ne_voit_aucun_nom(self):
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertNotContains(reponse, "Derniers inscrits")
+        self.assertNotContains(reponse, "Visible")
+        self.assertContains(reponse, "Rejoindre le réseau")
+
+    def test_un_membre_voit_seulement_les_membres_de_l_annuaire(self):
+        self.client.force_login(self.lecteur)
+
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertContains(reponse, "Visible")
+        self.assertNotContains(reponse, "Cache")
+        self.assertNotContains(reponse, "Attente")

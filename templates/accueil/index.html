@@ -6,6 +6,9 @@
   <section aria-labelledby="titre-bandeau">
     <p id="titre-bandeau">À COMPLÉTER : phrase de présentation du réseau.</p>
   </section>
+    {% if not user.is_authenticated %}
+      <p><a href="{% url 'account_signup' %}">Rejoindre le réseau</a></p>
+    {% endif %}
 
   <section aria-labelledby="titre-chiffres">
     <h2 id="titre-chiffres">Le réseau en chiffres</h2>
@@ -14,5 +17,17 @@
       <li><strong>{{ chiffres.promos }}</strong> promo{{ chiffres.promos|pluralize }}</li>
       <li><strong>{{ chiffres.diplomes }}</strong> diplôme{{ chiffres.diplomes|pluralize }}</li>
     </ul>
+
+      {% if derniers_inscrits %}
+    <section aria-labelledby="titre-inscrits">
+      <h2 id="titre-inscrits">Derniers inscrits</h2>
+      <ul>
+        {% for membre in derniers_inscrits %}
+          <li>{{ membre.prenom }} {{ membre.nom }} ({{ membre.get_categorie_display }})</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+    
   </section>
 {% endblock %}
