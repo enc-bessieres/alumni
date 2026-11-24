@@ -53,3 +53,24 @@ class ChiffresClesTests(TestCase):
             )
 
         self.assertEqual(self.chiffres()["promos"], 2)
+
+
+class BandeauTests(TestCase):
+    def setUp(self):
+        adresse = reverse("account_login")
+        self.lien_du_bandeau = f'href="{adresse}">Se connecter'
+
+    def test_un_visiteur_voit_le_lien_de_connexion(self):
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertContains(reponse, self.lien_du_bandeau)
+
+    def test_un_membre_connecte_ne_le_voit_pas(self):
+        membre = creer_membre(
+            "connecte@exemple.test", statut_inscription=Membre.StatutInscription.VALIDEE
+        )
+        self.client.force_login(membre)
+
+        reponse = self.client.get(reverse("accueil:index"))
+
+        self.assertNotContains(reponse, self.lien_du_bandeau)
