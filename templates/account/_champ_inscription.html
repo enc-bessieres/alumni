@@ -1,0 +1,10 @@
+{# Un champ de l'inscription : libellé, saisie, aide et erreurs. #}
+<p class="{% if champ.widget_type == 'checkbox' %}case-a-cocher{% else %}champ{% endif %}">
+  {% if champ.widget_type == 'checkbox' %}
+    {{ champ }} <label for="{{ champ.id_for_label }}">{{ champ.label }}</label>
+  {% else %}
+    <label for="{{ champ.id_for_label }}">{{ champ.label }}</label> {{ champ }}
+  {% endif %}
+</p>
+{% if champ.help_text %}<p class="aide">{{ champ.help_text|safe }}</p>{% endif %}
+{{ champ.errors }}

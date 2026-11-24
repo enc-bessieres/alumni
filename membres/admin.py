@@ -29,8 +29,18 @@ class MembreAdmin(UserAdmin):
     les règles de membres/droits.py : on ne décide pas ici qui a le droit.
     """
 
-    list_display = ["nom", "prenom", "email", "categorie", "statut_inscription", "is_staff"]
-    list_filter = ["statut_inscription", "categorie", "groups", "is_staff"]
+    list_display = [
+        "nom",
+        "prenom",
+        "email",
+        "categorie",
+        "statut_inscription",
+        "cree_le",
+        "is_staff",
+    ]
+    # « Inscrit le » : les validateurs passent en revue les nouveaux comptes après coup
+    # (décision 0005), par exemple ceux des 7 derniers jours.
+    list_filter = ["statut_inscription", "cree_le", "categorie", "groups", "is_staff"]
     search_fields = ["nom", "prenom", "nom_de_naissance", "email"]
     ordering = ["nom", "prenom"]
     # visible_dans_annuaire est le choix du membre : l'équipe le voit, mais ne le change pas.

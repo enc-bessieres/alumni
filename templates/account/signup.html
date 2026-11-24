@@ -1,0 +1,54 @@
+{% extends "account/base_entrance.html" %}
+
+{% block head_title %}Inscription{% endblock head_title %}
+
+{% block content %}
+  <h1>Inscription</h1>
+  <p>Déjà inscrit ? <a href="{% url 'account_login' %}">Connectez-vous</a>.</p>
+
+  {# Un seul envoi, présenté en étapes. L'équipe valide ensuite chaque inscription. #}
+  <form class="inscription" method="post" action="{% url 'account_signup' %}" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <fieldset>
+      <legend>1. Votre compte</legend>
+      {% include "account/_champ_inscription.html" with champ=form.email %}
+      {% include "account/_champ_inscription.html" with champ=form.password1 %}
+      {% include "account/_champ_inscription.html" with champ=form.password2 %}
+    </fieldset>
+
+    <fieldset>
+      <legend>2. Vous</legend>
+      {% include "account/_champ_inscription.html" with champ=form.civilite %}
+      {% include "account/_champ_inscription.html" with champ=form.prenom %}
+      {% include "account/_champ_inscription.html" with champ=form.nom %}
+      {% include "account/_champ_inscription.html" with champ=form.nom_de_naissance %}
+    </fieldset>
+
+    <fieldset>
+      <legend>3. Votre lien avec l'ENC Bessières</legend>
+      {% include "account/_champ_inscription.html" with champ=form.categorie %}
+    </fieldset>
+
+    <fieldset>
+      <legend>4. Conditions</legend>
+      <p>
+        <a href="/page/cgu/" target="_blank" rel="noopener">Lire les conditions générales d'utilisation</a>
+        et la <a href="/page/confidentialite/" target="_blank" rel="noopener">politique de confidentialité</a>.
+      </p>
+      {% include "account/_champ_inscription.html" with champ=form.cgu %}
+    </fieldset>
+
+    {# Piège à robots (membres/inscription.py) : invisible et hors de la navigation au clavier. #}
+    <div hidden>
+      <label for="{{ form.site_web.id_for_label }}">{{ form.site_web.label }}</label>
+      <input type="text" name="{{ form.site_web.html_name }}" id="{{ form.site_web.id_for_label }}"
+             tabindex="-1" autocomplete="off">
+    </div>
+    {{ form.site_web.errors }}
+
+    {{ redirect_field }}
+    <p><button type="submit">S'inscrire</button></p>
+  </form>
+{% endblock content %}
