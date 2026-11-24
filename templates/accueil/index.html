@@ -2,6 +2,14 @@
 
 {% block contenu %}
   <h1>Alumni ENC Bessières</h1>
+
+  <section aria-labelledby="titre-bandeau">
+    <p id="titre-bandeau">À COMPLÉTER : phrase de présentation du réseau.</p>
+    {% if not user.is_authenticated %}
+      <p><a href="{{ url_connexion }}">Se connecter</a></p>
+    {% endif %}
+  </section>
+
   <section aria-labelledby="titre-chiffres">
     <h2 id="titre-chiffres">Le réseau en chiffres</h2>
     <ul>
