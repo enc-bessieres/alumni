@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.admin.models import LogEntry
 
 from moderation.models import MotInterdit
 
@@ -102,6 +103,24 @@ class BackOfficeTests(TestCase):
         )
         article.refresh_from_db()
         self.assertNotIn("<script", article.contenu)
+
+    def test_un_administrateur_retire_un_article(self):
+        article = Article.objects.create(
+            titre="A retirer",
+            slug="a-retirer",
+            contenu="<p>X</p>",
+            statut=Article.Statut.PUBLIE,
+        )
+        self.client.force_login(self.administrateur)
+        self.client.post(
+            reverse("admin:blog_article_changelist"),
+            {"action": "retirer", "_selected_action": [article.pk]},
+        )
+        article.refresh_from_db()
+        self.assertEqual(article.statut, Article.Statut.REFUSE)
+        self.assertTrue(
+            LogEntry.objects.filter(object_id=str(article.pk), user=self.administrateur).exists()
+        )
 
 
 class EcrireUnArticleTests(TestCase):
