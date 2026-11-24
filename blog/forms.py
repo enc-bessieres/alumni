@@ -2,7 +2,7 @@ from django import forms
 
 from moderation.filtres import mots_trouves
 
-from .models import Article
+from .models import Article, Signalement
 
 
 class ArticleForm(forms.ModelForm):
@@ -20,3 +20,9 @@ class ArticleForm(forms.ModelForm):
                 "Votre article contient un mot interdit. Merci de le reformuler."
             )
         return donnees
+
+
+class SignalementForm(forms.ModelForm):
+    class Meta:
+        model = Signalement
+        fields = ["motif"]

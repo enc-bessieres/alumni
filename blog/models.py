@@ -50,3 +50,33 @@ class Article(models.Model):
 
     def get_absolute_url(self):
         return reverse("blog:detail", args=[self.slug])
+
+
+class Signalement(models.Model):
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name="signalements",
+        verbose_name="article",
+    )
+    membre = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="signalements",
+        verbose_name="membre",
+    )
+    motif = models.CharField("motif", max_length=200, blank=True)
+    traite = models.BooleanField("traité", default=False)
+    cree_le = models.DateTimeField("créé le", auto_now_add=True)
+
+    class Meta:
+        ordering = ["-cree_le"]
+        verbose_name = "signalement"
+        verbose_name_plural = "signalements"
+        constraints = [
+            models.UniqueConstraint(fields=["article", "membre"], name="un_signalement_par_membre")
+        ]
+
+    def __str__(self):
+        return f"Signalement de « {self.article} »"

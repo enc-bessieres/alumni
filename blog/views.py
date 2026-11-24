@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
+from django.views.decorators.http import require_POST
 
 from membres.droits import reserve_aux_membres_valides
 
-from .forms import ArticleForm
-from .models import Article
+from .forms import ArticleForm, SignalementForm
+from .models import Article, Signalement
 
 
 def detail(request, slug):
@@ -44,3 +45,21 @@ def ecrire(request):
     else:
         formulaire = ArticleForm()
     return render(request, "blog/ecrire.html", {"formulaire": formulaire})
+
+
+@require_POST
+@reserve_aux_membres_valides
+def signaler(request, slug):
+    article = get_object_or_404(Article, slug=slug, statut=Article.Statut.PUBLIE)
+    formulaire = SignalementForm(request.POST)
+    if formulaire.is_valid():
+        _, cree = Signalement.objects.get_or_create(
+            article=article,
+            membre=request.user,
+            defaults={"motif": formulaire.cleaned_data["motif"]},
+        )
+        if cree:
+            messages.success(request, "Merci, l'équipe va vérifier cet article.")
+        else:
+            messages.info(request, "Vous avez déjà signalé cet article.")
+    return redirect(article)

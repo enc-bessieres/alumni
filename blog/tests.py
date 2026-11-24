@@ -1,9 +1,9 @@
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.admin.models import LogEntry
 
 from moderation.models import MotInterdit
 
@@ -200,3 +200,10 @@ class ListeNoireTests(TestCase):
         )
         self.assertContains(reponse, "Votre article contient un mot interdit.")
         self.assertFalse(Article.objects.exists())
+
+
+class SignalementAdminTest:
+    def test_lien_vers_la_fiche_de_l_article(self):
+        reponse = self.client.get(self.url)
+        adresse = reverse("admin:blog_article_change", args=[self.tres_signale.pk])
+        self.assertContains(reponse, f'href="{adresse}"')

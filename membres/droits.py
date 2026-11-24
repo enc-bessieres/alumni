@@ -86,6 +86,8 @@ GROUPES = {
         # Liste noire (#43) : l'école ajoute des mots ; la suppression reste aux superutilisateurs.
         "moderation.view_motinterdit",
         "moderation.add_motinterdit",
+        "blog.view_signalement",
+        "blog.change_signalement",
     ],
 }
 
