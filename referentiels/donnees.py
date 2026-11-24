@@ -30,7 +30,8 @@ DIPLOMES = {
 }
 
 # Référentiels d'administration (#39). Listes de départ, modifiables ensuite dans le back-office.
-# Types de contrat : à valider avec Vera (offres). Secteurs : à valider avec Alex (profils).
+# Types de contrat : à valider avec Vera (offres). Secteurs : validés par Alex (profils), sans
+# « Autre » : le secteur est facultatif, un secteur vide veut déjà dire « non renseigné ».
 TYPES_DE_CONTRAT = [
     "Alternance",
     "CDD",
@@ -56,5 +57,4 @@ SECTEURS = [
     "Santé et social",
     "Tourisme et hôtellerie",
     "Transport et logistique",
-    "Autre",
 ]

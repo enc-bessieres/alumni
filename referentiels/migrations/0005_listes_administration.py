@@ -34,7 +34,6 @@ SECTEURS = [
     "Santé et social",
     "Tourisme et hôtellerie",
     "Transport et logistique",
-    "Autre",
 ]
 
 
