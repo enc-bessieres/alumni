@@ -2,5 +2,12 @@
 
 {% block contenu %}
   <h1>Alumni ENC Bessières</h1>
-  <p>À COMPLÉTER : contenu de la page d'accueil.</p>
+  <section aria-labelledby="titre-chiffres">
+    <h2 id="titre-chiffres">Le réseau en chiffres</h2>
+    <ul>
+      <li><strong>{{ chiffres.membres }}</strong> membre{{ chiffres.membres|pluralize }}</li>
+      <li><strong>{{ chiffres.promos }}</strong> promo{{ chiffres.promos|pluralize }}</li>
+      <li><strong>{{ chiffres.diplomes }}</strong> diplôme{{ chiffres.diplomes|pluralize }}</li>
+    </ul>
+  </section>
 {% endblock %}
