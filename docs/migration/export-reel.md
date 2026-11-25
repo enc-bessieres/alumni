@@ -1,6 +1,6 @@
 # Les exports réels de Datalumni
 
-Relevé du **25 novembre 2026**. Cette page décrit le format et les volumes des exports, sans aucune donnée personnelle. Les fichiers eux-mêmes sont dans le dossier `sources/` de chaque poste et ne vont jamais dans le dépôt : voir `docs/decisions/0006-donnees-reelles.md`.
+Relevé du **25 novembre 2026**. Cette page décrit le format et les volumes des exports, sans aucune donnée personnelle. Les fichiers eux-mêmes sont dans le dépôt privé `enc-bessieres/alumni-donnees`, à cloner dans le dossier `sources/` du projet (`git clone https://github.com/enc-bessieres/alumni-donnees.git sources`). Ils ne vont jamais dans ce dépôt-ci, qui est public : voir `docs/decisions/0006-donnees-reelles.md`.
 
 Elle remplace l'hypothèse de `docs/migration/export-factice.md`, qui supposait un fichier JSON.
 

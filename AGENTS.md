@@ -80,7 +80,7 @@ docker compose exec web ruff check . && docker compose exec web ruff format .
 
 ## Règles non négociables
 
-1. **Aucune donnée réelle dans le dépôt, ni dans une IA, ni dans Slack ou GitHub.** Les exports réels de Datalumni restent dans le dossier `sources/` du poste, ignoré par Git (`docs/decisions/0006-donnees-reelles.md`). Les tests, les démos et les captures d'écran utilisent les fausses données générées par le projet.
+1. **Aucune donnée réelle dans le dépôt, ni dans une IA, ni dans Slack ou GitHub.** Les exports réels de Datalumni sont dans le dépôt privé `enc-bessieres/alumni-donnees`, cloné dans le dossier `sources/` du poste, que ce dépôt-ci ignore (`docs/decisions/0006-donnees-reelles.md`). Les tests, les démos et les captures d'écran utilisent les fausses données générées par le projet.
 2. **Aucun secret dans le dépôt.** Les mots de passe, clés et jetons vont dans `.env`, qui n'est pas versionné. Le dépôt ne contient que `.env.example`, avec des valeurs factices.
 3. **Les droits d'accès sont définis à un seul endroit**, avec le mécanisme du framework. On ne contourne jamais ce mécanisme dans un contrôleur ou une route.
 4. **Jamais de SQL construit en collant des valeurs dans le texte de la requête.** On passe par l'ORM ou par des requêtes paramétrées.
