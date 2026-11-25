@@ -12,7 +12,7 @@ C'est le socle : tout le monde en dépend, il passe donc en premier.
 
 - **Connexion :**
   - e-mail + mot de passe ;
-  - première connexion après la bascule : le membre définit son mot de passe par un lien reçu par e-mail (Datalumni ne fournit pas les mots de passe, voir `docs/migration/export-reel.md`) ;
+  - première connexion après la bascule : le membre saisit son e-mail, puis modifie son mot de passe (déjà inscrit chez Datalumni) ou le définit (jamais inscrit), par un lien reçu par e-mail (voir `docs/migration/export-reel.md`) ;
   - Google, LinkedIn ;
   - mot de passe oublié ;
   - déconnexion.

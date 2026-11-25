@@ -126,15 +126,42 @@ Les candidatures portent un mode (`Sur la plateforme`, `Lien externe`, `Par emai
 | Statut de l'inscription (en attente, refusée) | Un compte activé est considéré comme validé |
 | Articles, événements, groupes, messages | 14 articles et 2 événements : reprise à la main |
 
-## Les mots de passe
+## Les mots de passe et la première connexion
 
-Datalumni ne fournit pas les mots de passe. La vérification de l'ancien mot de passe au premier login, prévue dans `docs/06-points-durs.md`, est abandonnée.
+Datalumni ne fournit pas les mots de passe. La vérification de l'ancien mot de passe au premier login, prévue dans `docs/06-points-durs.md`, est abandonnée. Tous les comptes sont importés **sans mot de passe utilisable** (`set_unusable_password()`).
 
-- **Tous les comptes sont importés sans mot de passe utilisable** (`set_unusable_password()`).
-- **À la première connexion**, le membre demande un lien par e-mail et définit son mot de passe. C'est le parcours « mot de passe oublié », déjà livré : il reste à l'annoncer clairement sur la page de connexion.
-- **Le lien prouve que l'adresse appartient au membre** : elle est marquée vérifiée au même moment, et un compte jamais activé devient activé.
-- **« Se connecter avec Google »** évite le mot de passe pour les adresses Gmail : 2724 comptes.
-- Pour 4905 comptes sur 6138, il n'y avait de toute façon aucun mot de passe à reprendre.
+L'export dit en revanche qui s'était inscrit : c'est la colonne `account_status`. L'import la conserve sur le membre, et le site s'en sert pour adapter ce qu'il dit, sans jamais expliquer pourquoi.
+
+### Trois situations
+
+| Situation | Comment le site la reconnaît | Comptes | Ce qu'on dit au membre |
+|---|---|---|---|
+| **Déjà inscrit chez Datalumni** | `account_status` = `True` à l'import, et pas encore de mot de passe ici | 1233 | « Modifiez votre mot de passe » |
+| **Jamais inscrit** : compte importé par l'école, jamais activé | `account_status` = `False` à l'import, et pas encore de mot de passe ici | 4905 | « Définissez votre mot de passe » |
+| **Déjà passé par le nouveau site**, ou inscrit ici | Le compte a un mot de passe | 0 au départ | Connexion ordinaire |
+
+### Le parcours
+
+1. **La connexion commence par l'adresse e-mail seule.** Un champ, un bouton « Continuer ».
+2. **Le compte a un mot de passe :** le site demande le mot de passe. C'est aussi ce qu'il affiche pour une adresse inconnue, qui échouera comme un mauvais mot de passe.
+3. **Le compte est importé et n'a pas encore de mot de passe :** le site envoie un lien à cette adresse et l'annonce, avec le texte de la situation :
+   - déjà inscrit : « Pour continuer, modifiez votre mot de passe. Nous venons de vous envoyer un lien à cette adresse. » ;
+   - jamais inscrit : « Bienvenue ! Pour activer votre compte, définissez votre mot de passe. Nous venons de vous envoyer un lien à cette adresse. »
+4. **L'e-mail et la page ouverte par le lien** portent le même mot : « Modifier mon mot de passe » ou « Définir mon mot de passe ». La page demande le nouveau mot de passe, deux fois. Elle ne demande **jamais l'ancien**.
+5. **Une fois le mot de passe enregistré,** le membre est connecté, son adresse est marquée vérifiée, et son compte est activé : il entre dans le cas « connexion ordinaire » pour la suite.
+
+### Ce qui protège les comptes
+
+- **Le mot de passe ne se définit que par le lien reçu par e-mail.** Sans accès à la boîte du membre, on ne peut pas prendre son compte. Il n'existe aucune page qui permette de le définir directement.
+- **Le lien ne sert qu'une fois et expire** (jeton de réinitialisation de Django, `PASSWORD_RESET_TIMEOUT`). Un bouton « Renvoyer le lien » en redemande un.
+- **Le nombre d'envois est limité** par adresse e-mail et par adresse IP, pour qu'on ne puisse ni inonder une boîte, ni tester des adresses en série.
+- **Un compte jamais activé reste hors de l'annuaire** jusqu'à ce que son titulaire ait défini son mot de passe.
+
+### À décider
+
+- **Le membre qui n'a plus accès à son adresse** (ancienne adresse d'étudiant, ancien employeur) : il ne peut pas recevoir le lien. Il lui faut une façon de joindre l'équipe, qui change l'adresse dans le back-office après vérification.
+- **Un e-mail d'annonce à la bascule,** aux 1233 inscrits ou à tous : le parcours ci-dessus fonctionne sans, puisque le lien part quand le membre se présente.
+- **« Se connecter avec Google »** évite le mot de passe pour les 2724 adresses Gmail.
 
 ## Tester les performances
 
