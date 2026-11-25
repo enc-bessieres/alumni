@@ -1,5 +1,6 @@
 .git
 .env
 _prof
+sources
 staticfiles
 **/__pycache__

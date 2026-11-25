@@ -1,5 +1,7 @@
 # Export factice au format Datalumni
 
+> **Mise à jour du 25 novembre 2026.** Les exports réels sont arrivés, et leur format est différent : un CSV à plat, décrit dans [export-reel.md](export-reel.md). Le générateur est à adapter pour produire ce CSV.
+
 Issue #36 (Luc). Tant que l'échantillon de Datalumni n'est pas arrivé, l'import se construit sur un **export factice** : un fichier JSON qui a la forme supposée du vrai export, rempli de personnes inventées (règle 1 d'AGENTS.md).
 
 Ne pas confondre avec `charger_donnees_dev` : cette commande remplit directement la base pour travailler en local. L'export factice est un **fichier**, que l'import lira.

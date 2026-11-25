@@ -51,6 +51,7 @@ L'intégration continue (GitHub Actions) lance le style, les migrations et les t
 - [Choix technique](docs/05-choix-technique.md)
 - [Points durs de l'intégration](docs/06-points-durs.md)
 - [Référentiels et fausses données de développement](docs/donnees-de-developpement.md)
+- [Exports réels de Datalumni : format et volumes](docs/migration/export-reel.md)
 - [Export factice au format Datalumni](docs/migration/export-factice.md)
 - [Comment contribuer](CONTRIBUTING.md)
 
