@@ -11,7 +11,8 @@ Chaque étudiant est **responsable d'un domaine**, de la base de données à l'�
 C'est le socle : tout le monde en dépend, il passe donc en premier.
 
 - **Connexion :**
-  - e-mail + mot de passe, avec vérification des hashes `pbkdf2_sha256` importés ;
+  - e-mail + mot de passe ;
+  - première connexion après la bascule : le membre définit son mot de passe par un lien reçu par e-mail (Datalumni ne fournit pas les mots de passe, voir `docs/migration/export-reel.md`) ;
   - Google, LinkedIn ;
   - mot de passe oublié ;
   - déconnexion.
@@ -45,7 +46,7 @@ C'est le chemin critique : il commence dès l'obtention d'un premier export.
   - membres, profils, groupes et timelines (diplôme, promo) ;
   - articles, posts, événements, médias (rapatriés depuis `media3.datalumni.com`).
 - **Comptes :**
-  - import des hashes Authentik ;
+  - import sans mot de passe, depuis le CSV réel de l'annuaire (6138 comptes, dont 1233 activés) ;
   - rapprochement Google/LinkedIn par e-mail vérifié ;
   - rapport des comptes en doublon ou sans e-mail.
 - **Répétitions :** script rejouable de bout en bout et **3 migrations à blanc** chronométrées avant la bascule.

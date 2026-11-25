@@ -9,6 +9,9 @@
 # Données : jamais dans le dépôt
 /data/
 /exports/
+# Exports réels de Datalumni (décision 0006) : sur le poste, jamais dans Git
+/sources/
+*.xlsx
 *.sql
 *.sql.gz
 *.dump
