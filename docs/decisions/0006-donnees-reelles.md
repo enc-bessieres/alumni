@@ -20,14 +20,15 @@ Datalumni a aussi confirmé qu'elle ne fournit pas les mots de passe, même hach
 
 Ces fichiers contiennent les noms, adresses e-mail et téléphones de 6138 personnes, et des liens vers des CV. Chaque membre de l'équipe en est responsable sur son poste.
 
-- **Un seul emplacement :** le dossier `sources/` à la racine du projet. Il est ignoré par Git (`.gitignore`) et par Docker (`.dockerignore`). Avant d'y poser les fichiers, on récupère `main` et on vérifie que `git status` ne les montre pas.
-- **Jamais dans le dépôt.** Le dépôt est public : un fichier commité est publié, et le reste même après suppression. Pas de `git add -f`, pas de copie dans un autre dossier du projet.
+- **Où les trouver :** dans le dépôt **privé** `enc-bessieres/alumni-donnees`, lisible par les membres de l'organisation. À la racine du projet : `git clone https://github.com/enc-bessieres/alumni-donnees.git sources`. Pour les mettre à jour : `git -C sources pull`.
+- **Un seul emplacement sur le poste :** ce dossier `sources/`. Il est ignoré par le dépôt du projet (`.gitignore`) et par Docker (`.dockerignore`).
+- **Jamais dans le dépôt du projet.** Il est public : un fichier commité est publié, et le reste même après suppression. Pas de `git add -f`, pas de copie dans un autre dossier du projet.
 - **Jamais dans une IA.** On ne colle ni fichier, ni ligne, ni capture d'écran d'une donnée réelle dans Claude, Copilot ou un autre assistant. Pour demander de l'aide, on donne les noms des colonnes (`docs/migration/export-reel.md`) ou une ligne de l'export factice.
 - **Jamais dans Slack, une issue, une PR ou un commit.** Un bug se décrit avec l'identifiant de la ligne (`user_id`), pas avec le nom de la personne.
 - **Pas de copie ailleurs :** ni clé USB personnelle, ni messagerie, ni espace de stockage en ligne, ni ordinateur personnel.
 - **Les tests et les démos restent sur les fausses données.** L'intégration continue n'a pas accès aux fichiers réels : un test qui en dépend échoue. Le générateur d'export factice produit le même format, au même volume.
 - **Suppression le vendredi 18 décembre :** chacun supprime le dossier `sources/` et sa base locale (`docker compose down -v`) avant de quitter le stage.
 
-## À confirmer
+## Suivi
 
-- L'avis du DPO sur cet accès reste à demander (Philippe Chenut).
+Philippe Chenut, chef de travaux et délégué à la protection des données de l'établissement, a participé à la réunion du 25 novembre avec Datalumni.
