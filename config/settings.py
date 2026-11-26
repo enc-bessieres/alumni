@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "membres",  # Alex : comptes, profils, annuaire
     "referentiels",  # Luc : sites, niveaux, diplômes
     "pages_libres",
+    "evenements",
     "gabarit",  # Steeve : gabarit des pages, menu, application installable
     "django_prose_editor",
     "texte_riche",
