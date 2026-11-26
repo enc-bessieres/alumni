@@ -275,13 +275,14 @@ summary::-webkit-details-marker {
   background: var(--bordeaux-clair);
 }
 
-/* Le niveau du message se voit : vert pour un succès, rouge pour une erreur. */
-.message--success {
+/* Le niveau du message se voit : vert pour un succès, rouge pour une erreur.
+   « .messages » devant : sinon « .messages li », plus précis, l'emporterait. */
+.messages .message--success {
   border-left-color: var(--succes);
   background: var(--succes-clair);
 }
 
-.message--error {
+.messages .message--error {
   border-left-color: var(--erreur);
   background: var(--erreur-clair);
 }
