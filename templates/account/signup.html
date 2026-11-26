@@ -6,7 +6,7 @@
   <h1>Inscription</h1>
   <p>Déjà inscrit ? <a href="{% url 'account_login' %}">Connectez-vous</a>.</p>
 
-  {# Un seul envoi, présenté en étapes. Sans validation, sauf pour les recruteurs (décision 0005). #}
+  {# Un seul envoi, présenté en étapes. L'équipe valide ensuite l'inscription (décision 0005). #}
   <form class="inscription" method="post" action="{% url 'account_signup' %}" novalidate>
     {% csrf_token %}
     {% if form.errors %}

@@ -62,41 +62,58 @@ class InscriptionTests(TestCase):
         lien = re.search(r"/compte/confirm-email/\S+/", mail.outbox[-1].body).group(0)
         return self.client.post(lien, follow=True)
 
-    def test_une_inscription_cree_un_membre_valide_mais_pas_encore_connecte(self):
+    def valider(self):
+        """Ce que fait un validateur dans le back-office."""
+        Membre.objects.filter(email=EMAIL).update(
+            statut_inscription=Membre.StatutInscription.VALIDEE
+        )
+
+    def test_une_inscription_cree_un_membre_en_attente_pas_encore_connecte(self):
         reponse = self.inscrire()
 
         membre = Membre.objects.get(email=EMAIL)
         self.assertEqual((membre.prenom, membre.nom), ("Léa", "Martin"))
         self.assertEqual(membre.civilite, Membre.Civilite.MADAME)
         self.assertEqual(membre.categorie, Membre.Categorie.ALUMNI)
-        self.assertEqual(membre.statut_inscription, Membre.StatutInscription.VALIDEE)
+        self.assertEqual(membre.statut_inscription, Membre.StatutInscription.EN_ATTENTE)
         self.assertTrue(membre.check_password(MOT_DE_PASSE))
-        self.assertContains(reponse, "Il reste à vérifier votre adresse e-mail")
+        self.assertContains(reponse, "Vérifiez votre adresse e-mail pour entrer sur le site")
         self.assertEqual(mail.outbox[-1].to, [EMAIL])
         # Tant que l'adresse n'est pas vérifiée, personne n'est connecté.
         self.assertNotIn("_auth_user_id", self.client.session)
         self.assertRedirects(self.client.get(ANNUAIRE), f"{CONNEXION}?next={ANNUAIRE}")
 
-    def test_le_lien_de_verification_connecte_le_membre(self):
+    def test_le_lien_de_verification_connecte_le_membre_sans_ouvrir_l_annuaire(self):
         self.inscrire()
-
-        self.cliquer_le_lien_de_verification()
-
-        self.assertEqual(self.client.get(ANNUAIRE).status_code, 200)
-
-    def test_un_recruteur_attend_la_validation(self):
-        self.inscrire(categorie="recruteur")
-        membre = Membre.objects.get(email=EMAIL)
-        self.assertEqual(membre.statut_inscription, Membre.StatutInscription.EN_ATTENTE)
 
         reponse = self.cliquer_le_lien_de_verification()
 
-        self.assertContains(reponse, "Votre inscription est en attente de validation.")
-        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertIn("_auth_user_id", self.client.session)
+        self.assertContains(reponse, "en attente de validation")
+        annuaire = self.client.get(ANNUAIRE)
+        self.assertEqual(annuaire.status_code, 403)
+        self.assertContains(
+            annuaire, "Votre inscription est en attente de validation", status_code=403
+        )
+
+    def test_l_annuaire_s_ouvre_des_que_l_inscription_est_validee(self):
+        self.inscrire()
+        self.cliquer_le_lien_de_verification()
+
+        self.valider()
+
+        self.assertEqual(self.client.get(ANNUAIRE).status_code, 200)
+
+    def test_un_recruteur_attend_la_validation_comme_les_autres(self):
+        self.inscrire(categorie="recruteur")
+        self.cliquer_le_lien_de_verification()
+
+        membre = Membre.objects.get(email=EMAIL)
+        self.assertEqual(membre.statut_inscription, Membre.StatutInscription.EN_ATTENTE)
+        self.assertEqual(self.client.get(ANNUAIRE).status_code, 403)
 
     def test_on_ne_peut_pas_se_donner_de_statut_ni_de_droits(self):
         self.inscrire(
-            categorie="recruteur",
             statut_inscription="validee",
             is_staff="on",
             is_superuser="on",
@@ -109,15 +126,18 @@ class InscriptionTests(TestCase):
         self.assertFalse(membre.is_superuser)
         self.assertFalse(membre.groups.exists())
 
-    def test_un_compte_refuse_apres_coup_perd_l_acces_tout_de_suite(self):
+    def test_un_compte_refuse_perd_l_acces_tout_de_suite(self):
         self.inscrire()
         self.cliquer_le_lien_de_verification()
+        self.valider()
 
         Membre.objects.filter(email=EMAIL).update(
             statut_inscription=Membre.StatutInscription.REFUSEE
         )
 
-        self.assertEqual(self.client.get(ANNUAIRE).status_code, 403)
+        reponse = self.client.get(ANNUAIRE)
+        self.assertEqual(reponse.status_code, 403)
+        self.assertNotContains(reponse, "en attente de validation", status_code=403)
 
     def test_le_champ_piege_arrete_les_robots(self):
         reponse = self.client.post(INSCRIPTION, formulaire(site_web="https://spam.exemple.test"))

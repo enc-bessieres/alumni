@@ -38,8 +38,8 @@ class MembreAdmin(UserAdmin):
         "cree_le",
         "is_staff",
     ]
-    # « Inscrit le » : les validateurs passent en revue les nouveaux comptes après coup
-    # (décision 0005), par exemple ceux des 7 derniers jours.
+    # Les validateurs trouvent les inscriptions à valider avec les filtres « statut » (en attente)
+    # et « créé le » (par exemple les 7 derniers jours) : décision 0005.
     list_filter = ["statut_inscription", "cree_le", "categorie", "groups", "is_staff"]
     search_fields = ["nom", "prenom", "nom_de_naissance", "email"]
     ordering = ["nom", "prenom"]

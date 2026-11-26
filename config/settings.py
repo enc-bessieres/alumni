@@ -109,9 +109,9 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 # Nos champs en plus à l'inscription : identité, catégorie, CGU (membres/inscription.py).
 ACCOUNT_SIGNUP_FORM_CLASS = "membres.inscription.InscriptionForm"
 # Un clic sur le lien de vérification connecte le nouveau membre (allauth ne le fait que dans
-# le navigateur qui a servi à s'inscrire). Un recruteur en attente reste refusé (adapter.py).
+# le navigateur qui a servi à s'inscrire). Une inscription refusée reste dehors (adapter.py).
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-# Inscriptions sans validation (décision 0005) : on limite le nombre de comptes créés depuis
+# Inscription ouverte à tous (décision 0005) : on limite le nombre de comptes créés depuis
 # une même adresse IP (allauth autorise 20 par minute par défaut).
 ACCOUNT_RATE_LIMITS = {"signup": "5/m/ip,20/h/ip"}
 # Une adresse doit être vérifiée avant de se connecter. Les comptes importés de Datalumni

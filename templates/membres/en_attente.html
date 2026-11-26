@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block titre %}Inscription en attente — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  {# Page montrée à un membre connecté dont l'inscription attend un validateur (décision 0005). #}
+  <h1>Votre inscription est en attente de validation</h1>
+  <p>
+    L'annuaire et les fiches des membres sont réservés aux membres dont l'inscription a été
+    validée par l'équipe de l'ENC Bessières. Ils s'ouvriront dès que la vôtre le sera.
+  </p>
+  <p><a href="{% url 'accueil:index' %}">Revenir à l'accueil</a></p>
+{% endblock %}

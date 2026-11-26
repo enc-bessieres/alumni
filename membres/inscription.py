@@ -3,19 +3,15 @@ Le formulaire d'inscription. django-allauth s'occupe de l'e-mail et du mot de pa
 (adresse unique, vérification par e-mail, règles de mot de passe, limite de tentatives) ;
 ce formulaire ajoute ce qu'il faut savoir du nouveau membre.
 
-Pas de validation avant d'entrer (décision docs/decisions/0005) : un membre dont l'adresse est
-vérifiée est validé d'office, sauf un recruteur, qui attend la validation de l'équipe. Un
-validateur peut refuser un compte à tout moment : il perd alors l'accès aux pages des membres.
+Décision docs/decisions/0005 : un nouvel inscrit entre sur le site dès que son adresse est
+vérifiée, mais son inscription reste « en attente » : l'annuaire et les fiches ne s'ouvrent
+qu'après la validation d'un validateur (reserve_aux_membres_valides, dans droits.py).
 """
 
 from django import forms
 from django.contrib import messages
 
 from .models import Membre
-
-# Les seules catégories qui doivent attendre qu'un validateur accepte l'inscription : un
-# recruteur n'est pas un ancien de l'école et ne doit pas pouvoir parcourir l'annuaire d'office.
-CATEGORIES_A_VALIDER = {Membre.Categorie.RECRUTEUR}
 
 
 class InscriptionForm(forms.Form):
@@ -33,7 +29,6 @@ class InscriptionForm(forms.Form):
     categorie = forms.ChoiceField(
         label="Vous êtes",
         choices=[("", "— Choisissez —")] + Membre.Categorie.choices,
-        help_text="Une inscription de recruteur est vérifiée par l'équipe avant d'être ouverte.",
     )
     cgu = forms.BooleanField(
         label="J'accepte les conditions générales d'utilisation",
@@ -55,14 +50,10 @@ class InscriptionForm(forms.Form):
             setattr(user, champ, self.cleaned_data[champ])
         # Le statut est décidé ici, jamais par ce que le visiteur envoie : un champ
         # statut_inscription, is_staff ou groupes ajouté à la main est ignoré.
-        if user.categorie in CATEGORIES_A_VALIDER:
-            user.statut_inscription = Membre.StatutInscription.EN_ATTENTE
-            message = (
-                "Merci ! Votre inscription de recruteur sera vérifiée par l'équipe de "
-                "l'ENC Bessières. Vous pourrez vous connecter dès qu'elle aura été validée."
-            )
-        else:
-            user.statut_inscription = Membre.StatutInscription.VALIDEE
-            message = "Bienvenue ! Il reste à vérifier votre adresse e-mail pour terminer."
+        user.statut_inscription = Membre.StatutInscription.EN_ATTENTE
         user.save()
-        messages.info(request, message)
+        messages.info(
+            request,
+            "Bienvenue ! Vérifiez votre adresse e-mail pour entrer sur le site. L'annuaire "
+            "s'ouvrira dès que l'équipe de l'ENC Bessières aura validé votre inscription.",
+        )
