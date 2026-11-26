@@ -179,6 +179,9 @@ class ReferentielsAdministrationTests(TestCase):
         noms = TypeDeContrat.objects.values_list("nom", flat=True)
         self.assertEqual(sorted(noms), sorted(TYPES_DE_CONTRAT))
         self.assertEqual(sorted(Secteur.objects.values_list("nom", flat=True)), sorted(SECTEURS))
+        # Les listes de Datalumni (docs/migration/export-reel.md), noms à l'identique.
+        self.assertEqual((len(TYPES_DE_CONTRAT), len(SECTEURS)), (5, 26))
+        self.assertTrue(Secteur.objects.filter(nom="Conseil / Audit").exists())
         self.assertEqual(Tag.objects.count(), 0)  # les tags se créent dans le back-office
 
     def test_un_type_de_contrat_ne_peut_pas_exister_deux_fois(self):

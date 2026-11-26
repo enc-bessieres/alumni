@@ -30,31 +30,42 @@ DIPLOMES = {
 }
 
 # Référentiels d'administration (#39). Listes de départ, modifiables ensuite dans le back-office.
-# Types de contrat : à valider avec Vera (offres). Secteurs : validés par Alex (profils), sans
-# « Autre » : le secteur est facultatif, un secteur vide veut déjà dire « non renseigné ».
+# Ce sont celles de Datalumni (docs/migration/export-reel.md), écrites à l'identique : l'import
+# relie le secteur d'un membre ou d'une offre, et le type d'une offre, par le nom exact.
+# « / » fait partie de certains noms (« Conseil / Audit ») : ne jamais le découper.
 TYPES_DE_CONTRAT = [
-    "Alternance",
-    "CDD",
     "CDI",
-    "Indépendant",
-    "Intérim",
+    "Alternance",
     "Stage",
-    "Volontariat (VIE, service civique)",
+    "CDD",
+    "Autre",
 ]
 
 SECTEURS = [
-    "Assurance",
-    "Banque",
-    "Commerce",
-    "Communication et marketing",
-    "Comptabilité et audit",
-    "Conseil",
-    "Enseignement et formation",
-    "Fonction publique",
-    "Immobilier",
+    "Agences de communication, marketing, événementiel",
+    "Agro-alimentaire",
+    "Association non lucrative",
+    "Automobile",
+    "Autres",
+    "Banque / Assurance / Finance",
+    "Cabinet d'expertise comptable / Comptabilité",
+    "Conseil / Audit",
+    "Culture / Media / Divertissement",
+    "Digital / Technologie",
+    "Droit / Eco-gestion / Science Politique",
+    "Enseignement / Formation / Recrutement",
+    "Enseignement, Formation",
+    "Entrepreneuriat / Start-up",
+    "Environnement / Santé / Social",
+    "Esthétique",
+    "Grande distribution / Ventes",
+    "Hôtellerie",
     "Industrie",
-    "Informatique et numérique",
-    "Santé et social",
-    "Tourisme et hôtellerie",
-    "Transport et logistique",
+    "Mode / Luxe / Beauté",
+    "Organisation internationale",
+    "Publicité / Marketing / Communication",
+    "Sciences / Recherche",
+    "Secteur public et administration",
+    "Tourisme / Hôtellerie / Restauration",
+    "Travaux Publics",
 ]

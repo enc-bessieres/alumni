@@ -4,36 +4,47 @@ Migration de DONNÉES : crée les types de contrat et les secteurs de départ (#
 Comme pour la 0002, les listes sont RECOPIÉES ici, et non importées de `referentiels/donnees.py` :
 une migration doit toujours donner le même résultat. Les listes se modifient ensuite dans le
 back-office ; pour changer la liste de départ, on écrit une NOUVELLE migration.
+Ce sont les listes de Datalumni (docs/migration/export-reel.md), à l'identique.
 Les tags commencent vides : ils se créent dans le back-office.
 """
 
 from django.db import migrations
 
 TYPES_DE_CONTRAT = [
-    "Alternance",
-    "CDD",
     "CDI",
-    "Indépendant",
-    "Intérim",
+    "Alternance",
     "Stage",
-    "Volontariat (VIE, service civique)",
+    "CDD",
+    "Autre",
 ]
 
 SECTEURS = [
-    "Assurance",
-    "Banque",
-    "Commerce",
-    "Communication et marketing",
-    "Comptabilité et audit",
-    "Conseil",
-    "Enseignement et formation",
-    "Fonction publique",
-    "Immobilier",
+    "Agences de communication, marketing, événementiel",
+    "Agro-alimentaire",
+    "Association non lucrative",
+    "Automobile",
+    "Autres",
+    "Banque / Assurance / Finance",
+    "Cabinet d'expertise comptable / Comptabilité",
+    "Conseil / Audit",
+    "Culture / Media / Divertissement",
+    "Digital / Technologie",
+    "Droit / Eco-gestion / Science Politique",
+    "Enseignement / Formation / Recrutement",
+    "Enseignement, Formation",
+    "Entrepreneuriat / Start-up",
+    "Environnement / Santé / Social",
+    "Esthétique",
+    "Grande distribution / Ventes",
+    "Hôtellerie",
     "Industrie",
-    "Informatique et numérique",
-    "Santé et social",
-    "Tourisme et hôtellerie",
-    "Transport et logistique",
+    "Mode / Luxe / Beauté",
+    "Organisation internationale",
+    "Publicité / Marketing / Communication",
+    "Sciences / Recherche",
+    "Secteur public et administration",
+    "Tourisme / Hôtellerie / Restauration",
+    "Travaux Publics",
 ]
 
 

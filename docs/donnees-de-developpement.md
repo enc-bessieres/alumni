@@ -7,7 +7,7 @@ Issue #10 (Luc). Cette page explique ce qui existe, comment s'en servir et comme
 | Élément | Où | Rôle |
 |---|---|---|
 | **Sites, niveaux, diplômes** | `referentiels/models.py` | Les listes fixes de l'école : 2 sites, 2 niveaux, 20 diplômes rattachés à un niveau |
-| **Types de contrat, secteurs, tags** | `referentiels/models.py` | Les listes de l'administration (#39) : 7 types de contrat (offres), 14 secteurs (profils, annuaire), tags vides au départ. Modifiables dans le back-office |
+| **Types de contrat, secteurs, tags** | `referentiels/models.py` | Les listes de l'administration (#39) : les 5 types de contrat (offres) et les 26 secteurs (profils, offres, annuaire) de Datalumni, tags vides au départ. Modifiables dans le back-office |
 | **Formation** | `referentiels/models.py` | Le parcours d'un membre : diplôme + site + promo. Un membre peut en avoir plusieurs |
 | **Données de départ** | `referentiels/migrations/0002_donnees_initiales.py` | Crée les sites, niveaux et diplômes à l'installation |
 | **Faux membres** | `accueil/fausses_donnees.py` | Fabrique les membres, sans base de données ni bibliothèque externe |
