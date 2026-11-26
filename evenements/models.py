@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from texte_riche.champs import ChampTexteRiche
@@ -21,3 +22,10 @@ class Evenement(models.Model):
 
     def __str__(self):
         return self.titre
+
+    def clean(self):
+        super().clean()
+        if self.date_fin and self.date_debut and self.date_fin < self.date_debut:
+            raise ValidationError(
+                {"date_fin": "La date de fin ne peut pas précéder la date de début."}
+            )
