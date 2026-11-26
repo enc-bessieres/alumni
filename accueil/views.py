@@ -27,8 +27,6 @@ def index(request):
         {"chiffres": chiffres, "derniers_inscrits": derniers_inscrits},
     )
 
-    return render(request, "accueil/index.html", {"chiffres": chiffres})
-
 
 @require_GET
 def sante(request):
