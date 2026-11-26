@@ -71,7 +71,7 @@ def lire_csv(chemin):
 
 
 def moment(texte):
-    """« 2025-04-14T09:12:47+00:00 » ou « 2026-06-24 » → une date avec fuseau ; vide → None."""
+    """« 2026-06-24 » (date seule, comme import_date) ou une date ISO avec fuseau ; vide → None."""
     if not texte:
         return None
     valeur = datetime.fromisoformat(texte)

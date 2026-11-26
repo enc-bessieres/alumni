@@ -27,7 +27,7 @@ def ligne(**modifications):
             "account_status": "True",
             "category": "Alumni",
             "visibility_directory": "True",
-            "import_date": "2025-04-14T09:12:47+00:00",
+            "import_date": "2025-04-14",  # une date seule, comme dans le vrai fichier
             "last_login": "2026-02-03T18:30:05+00:00",
         }
         | modifications
@@ -48,7 +48,7 @@ class ImportTests(TestCase):
         self.assertEqual(membre.categorie, Membre.Categorie.ALUMNI)
         self.assertEqual(membre.statut_inscription, Membre.StatutInscription.VALIDEE)
         self.assertTrue(membre.visible_dans_annuaire)
-        self.assertEqual(membre.cree_le.isoformat(), "2025-04-14T09:12:47+00:00")
+        self.assertEqual(membre.cree_le.isoformat(), "2025-04-14T00:00:00+00:00")
         self.assertFalse(membre.has_usable_password())  # Datalumni ne donne pas les mots de passe
         adresse = EmailAddress.objects.get(user=membre)
         self.assertEqual(
