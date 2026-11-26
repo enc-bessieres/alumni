@@ -143,6 +143,11 @@ class InscriptionTests(TestCase):
 
         self.assertIn("password1", reponse.context["form"].errors)
         self.assertFalse(Membre.objects.exists())
+        # Le membre voit pourquoi : un message en haut, et l'erreur en rouge sous le champ.
+        self.assertContains(reponse, "L'inscription n'a pas abouti")
+        self.assertContains(
+            reponse, '<li class="message message--error">Ce mot de passe est trop court.'
+        )
 
     def test_une_adresse_deja_inscrite_ne_cree_pas_de_second_compte(self):
         self.inscrire()

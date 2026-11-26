@@ -6,10 +6,20 @@
   <h1>Inscription</h1>
   <p>Déjà inscrit ? <a href="{% url 'account_login' %}">Connectez-vous</a>.</p>
 
-  {# Un seul envoi, présenté en étapes. L'équipe valide ensuite chaque inscription. #}
+  {# Un seul envoi, présenté en étapes. Sans validation, sauf pour les recruteurs (décision 0005). #}
   <form class="inscription" method="post" action="{% url 'account_signup' %}" novalidate>
     {% csrf_token %}
-    {{ form.non_field_errors }}
+    {% if form.errors %}
+      {# En haut du formulaire : on sait tout de suite que l'envoi n'a pas abouti, et pourquoi. #}
+      <ul class="messages" role="alert">
+        <li class="message message--error">
+          L'inscription n'a pas abouti : corrigez les champs signalés ci-dessous.
+        </li>
+        {% for erreur in form.non_field_errors %}
+          <li class="message message--error">{{ erreur }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
     <fieldset>
       <legend>1. Votre compte</legend>
