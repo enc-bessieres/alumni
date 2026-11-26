@@ -17,14 +17,15 @@ from datetime import UTC, datetime
 
 from referentiels.donnees import DIPLOMES, SITES
 
-# Les 28 colonnes de directory.csv, dans l'ordre de docs/migration/export-reel.md.
+# Les 28 colonnes de directory.csv, dans l'ordre du vrai fichier (vérifié par Alex sur #91) :
+# notifications_registration est la dernière, contrairement au tableau de export-reel.md.
 COLONNES = [
     "user_id", "external_ref", "first_name", "last_name", "birth_name", "email", "civility",
     "location", "phone", "account_status", "current_position", "current_company",
     "business_sector", "last_login", "last_profile_update", "account_activation_date",
     "category", "campus", "degree", "promotion_year", "import_date",
-    "notifications_newsletter", "notifications_event", "notifications_registration",
-    "visibility_recruiters", "visibility_directory", "job_search", "mentoring_role",
+    "notifications_newsletter", "notifications_event", "visibility_recruiters",
+    "visibility_directory", "job_search", "mentoring_role", "notifications_registration",
 ]  # fmt: skip
 
 TOTAL = 6138
@@ -173,7 +174,10 @@ def generer_export_factice(graine=2026):
         lignes[i]["birth_name"] = h.choice(NOMS).upper()
 
     # 3. Origine et dates. Vide = inscrit seul (455 comptes, tous activés).
+    # import_date est une date seule (AAAA-MM-JJ), comme account_activation_date ; le moment
+    # exact est gardé à part pour tirer une activation qui vient après l'import.
     inscrits_seuls = set(parmi(actives, 455))
+    importe_le = {}
     importes = [i for i in range(TOTAL) if i not in inscrits_seuls]
     h.shuffle(importes)
     for rang, i in enumerate(importes):
@@ -183,10 +187,10 @@ def generer_export_factice(graine=2026):
             moment = moment_entre(*IMPORT_OCTOBRE)
         else:
             moment = moment_entre(OUVERTURE, RELEVE)
-        lignes[i]["import_date"] = iso(moment)
+        importe_le[i] = moment
+        lignes[i]["import_date"] = moment.date().isoformat()
     for i in actives:
-        depuis = datetime.fromisoformat(lignes[i]["import_date"] or iso(OUVERTURE))
-        activation = moment_entre(depuis, RELEVE)
+        activation = moment_entre(importe_le.get(i, OUVERTURE), RELEVE)
         lignes[i]["account_activation_date"] = activation.date().isoformat()
         lignes[i]["last_login"] = iso(moment_entre(activation, RELEVE))
     for i in parmi(set(range(TOTAL)) - actives, 1252 - ACTIVES):

@@ -15,7 +15,7 @@ Ne pas confondre avec `charger_donnees_dev`, qui remplit directement la base pou
 
 ## Ce qui est identique au vrai export
 
-- **Le format** : les 28 colonnes, dans le même ordre ; UTF-8 avec BOM ; virgules ; une ligne d'en-tête ; `True` et `False` en toutes lettres ; une case vide quand Datalumni n'a rien.
+- **Le format** : les 28 colonnes, dans l'ordre du vrai fichier ; UTF-8 avec BOM ; virgules ; une ligne d'en-tête ; `True` et `False` en toutes lettres ; `import_date` et `account_activation_date` en date seule (`AAAA-MM-JJ`) ; une case vide quand Datalumni n'a rien.
 - **Les volumes, colonne par colonne** : 6138 comptes, dont 1233 activés, avec la répartition par catégorie, et le nombre de cases remplies de chaque colonne. C'est le tableau de [export-reel.md](export-reel.md), vérifié par `datalumni/tests/test_export_factice.py`.
 - **Les cas à traiter par l'import** :
   - 4 comptes sans nom ;
@@ -38,8 +38,8 @@ Ne pas confondre avec `charger_donnees_dev`, qui remplit directement la base pou
 | `location`, `current_position`, `current_company` | Quelques villes, des postes et des entreprises « Exemple » |
 | Les dates | Tirées entre l'ouverture de Datalumni (26 mars 2025) et le relevé (25 novembre 2026), avec les deux vagues d'import (avril et octobre 2025) |
 
-**Hypothèses à vérifier sur le vrai fichier** (par la personne qui a accès à `sources/`, sans copier de ligne) :
-- le format exact de `import_date` : ici, une date ISO avec fuseau, comme `last_login` ;
-- l'ordre des colonnes : ici, celui du tableau de `export-reel.md`.
+**Vérifié sur le vrai fichier** (par Alex, sur #91, sans copier de ligne) :
+- `import_date` est une date seule, comme `account_activation_date` ;
+- l'ordre des colonnes est celui du tableau de [export-reel.md](export-reel.md), **sauf `notifications_registration`, qui est la dernière colonne**, après `mentoring_role`.
 
 Pas d'export factice des offres, des candidatures ni des mentorats : leurs fichiers réels ont trop peu de lignes pour être importés (voir [export-reel.md](export-reel.md)).

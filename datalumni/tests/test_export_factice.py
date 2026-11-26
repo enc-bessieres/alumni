@@ -4,6 +4,7 @@ Ces tests n'ont pas besoin de la base de données.
 """
 
 from collections import Counter
+from datetime import date
 
 from django.test import SimpleTestCase
 
@@ -29,9 +30,22 @@ class ExportFacticeTests(SimpleTestCase):
         self.assertEqual(generer_export_factice(), self.lignes)
         self.assertNotEqual(generer_export_factice(7)[0]["user_id"], self.lignes[0]["user_id"])
 
-    def test_les_28_colonnes_du_vrai_export(self):
-        self.assertEqual(len(COLONNES), 28)
+    def test_les_28_colonnes_dans_l_ordre_du_vrai_fichier(self):
+        self.assertEqual(len(set(COLONNES)), 28)
+        # Vérifié sur le vrai fichier (#91) : notifications_registration est la dernière.
+        self.assertEqual(COLONNES[:2], ["user_id", "external_ref"])
+        self.assertEqual(COLONNES[-2:], ["mentoring_role", "notifications_registration"])
         self.assertTrue(all(list(ligne) == COLONNES for ligne in self.lignes))
+
+    def test_dates_seules_et_activation_apres_l_import(self):
+        for colonne in ("import_date", "account_activation_date"):
+            dates = [ligne[colonne] for ligne in self.lignes if ligne[colonne]]
+            # AAAA-MM-JJ, sans heure : comme dans le vrai fichier (#91).
+            self.assertTrue(all(date.fromisoformat(d).isoformat() == d for d in dates))
+        actives = [ligne for ligne in self.lignes if ligne["account_activation_date"]]
+        self.assertTrue(
+            all(ligne["import_date"] <= ligne["account_activation_date"] for ligne in actives)
+        )
 
     def test_les_volumes_de_l_export_reel(self):
         # Colonne : nombre de cases remplies, relevé dans docs/migration/export-reel.md.
