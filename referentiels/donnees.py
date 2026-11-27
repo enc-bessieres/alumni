@@ -25,7 +25,7 @@ DIPLOMES = {
         "BTS SIO",
         "BTS TOURISME",
     ],
-    # ATS (adaptation technicien supérieur) est une classe préparatoire : à confirmer.
+    # ATS (adaptation technicien supérieur) est une classe préparatoire (confirmé le 17 novembre).
     "Prépa": ["ATS", "D1", "D2", "DCG", "DCG2", "DCG3", "DSCG", "ECG", "ECT"],
 }
 

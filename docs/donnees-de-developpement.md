@@ -62,5 +62,4 @@ docker compose exec web python manage.py charger_donnees_dev
 ## Ce qui reste
 
 - Photos (24 %), expériences (28 %) et villes avec coordonnées (53 %) : elles attendent les champs du profil du membre (#9).
-- ATS est rangé en Prépa : à confirmer.
-- L'export au **format Datalumni**, avec les cas difficiles (comptes jamais activés, doublons, homonymes, comptes Google seulement), arrive avec l'import des membres.
+- L'export factice au **format réel de Datalumni** (CSV, 6138 comptes, cas difficiles compris) est un fichier à part : voir `docs/migration/export-factice.md`.
