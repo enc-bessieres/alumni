@@ -3,9 +3,12 @@
 from io import StringIO
 
 from allauth.account.models import EmailAddress
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.management import CommandError, call_command
+from django.shortcuts import resolve_url
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from membres.models import Membre
 from referentiels.models import Diplome, Formation
@@ -90,10 +93,12 @@ class ChargerDonneesDevTests(TestCase):
     def test_un_faux_membre_se_connecte_par_la_page_de_connexion(self):
         charger("--nombre", "3")
         membre = Membre.objects.first()
+        # Par le nom des adresses (remarque d'Alex sur #34) : le test suit si elles changent.
         reponse = self.client.post(
-            "/compte/login/", {"login": membre.email, "password": MOT_DE_PASSE_DE_TEST}
+            reverse("account_login"), {"login": membre.email, "password": MOT_DE_PASSE_DE_TEST}
         )
-        self.assertRedirects(reponse, "/", fetch_redirect_response=False)
+        attendue = resolve_url(settings.LOGIN_REDIRECT_URL)
+        self.assertRedirects(reponse, attendue, fetch_redirect_response=False)
         self.assertEqual(int(self.client.session["_auth_user_id"]), membre.pk)
 
     def test_chaque_faux_membre_a_une_seule_adresse_verifiee_meme_apres_relance(self):
