@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Exists, OuterRef, Prefetch, Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_GET, require_http_methods
 
@@ -23,6 +23,11 @@ def membres_de_l_annuaire():
     )
     # pk en dernier : deux homonymes gardent le même ordre d'une page à l'autre.
     return membres.order_by("nom", "prenom", "pk")
+
+
+def formations_completes():
+    """Les formations avec leur diplôme et leur site, chargés en une requête (pas de N+1)."""
+    return Prefetch("formations", queryset=Formation.objects.select_related("diplome", "site"))
 
 
 def filtrer(membres, filtres):
@@ -56,9 +61,7 @@ def annuaire(request):
     formulaire.is_valid()
     membres = filtrer(membres_de_l_annuaire(), formulaire.cleaned_data)
     # Les formations des 25 membres de la page en une requête, au lieu d'une par membre.
-    membres = membres.prefetch_related(
-        Prefetch("formations", queryset=Formation.objects.select_related("diplome", "site"))
-    )
+    membres = membres.prefetch_related(formations_completes())
     page = Paginator(membres, MEMBRES_PAR_PAGE).get_page(request.GET.get("page"))
 
     # Les liens « Page suivante » gardent la recherche et les filtres : ?q=…&promo=…&page=
@@ -76,6 +79,22 @@ def annuaire(request):
     # La même adresse renvoie la page entière ou la liste seule : le cache doit les distinguer.
     patch_vary_headers(reponse, ["HX-Request"])
     return reponse
+
+
+@require_GET
+@reserve_aux_membres_valides
+def fiche(request, pk):
+    """
+    La fiche d'un membre de l'annuaire. Un membre masqué, en attente, refusé ou inactif
+    donne une 404, comme s'il n'existait pas. Seule exception : chacun voit sa propre fiche,
+    même masquée, pour savoir ce que les autres verront.
+    """
+    if pk == request.user.pk:
+        membres = Membre.objects.all()
+    else:
+        membres = membres_de_l_annuaire()
+    membre = get_object_or_404(membres.prefetch_related(formations_completes()), pk=pk)
+    return render(request, "membres/fiche.html", {"membre": membre})
 
 
 @require_http_methods(["GET", "POST"])

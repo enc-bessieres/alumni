@@ -48,10 +48,11 @@ class ParametresTests(TestCase):
         self.membre = creer()
         self.client.force_login(self.membre)
 
-    def test_la_case_est_decochee_par_defaut(self):
+    def test_les_cases_sont_decochees_par_defaut(self):
         reponse = self.client.get(PARAMETRES)
 
         self.assertContains(reponse, '<input type="checkbox" name="visible_dans_annuaire"')
+        self.assertContains(reponse, '<input type="checkbox" name="email_visible"')
         self.assertNotContains(reponse, "checked")
 
     def test_cocher_la_case_rend_visible_dans_l_annuaire(self):

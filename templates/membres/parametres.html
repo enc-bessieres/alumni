@@ -5,20 +5,22 @@
 {% block contenu %}
   <h1>Paramètres</h1>
 
-  <form class="parametres" method="post" action="{% url 'membres:parametres' %}">
+  <form class="parametres" method="post" action="{% url 'membres:parametres' %}" novalidate>
     {% csrf_token %}
     <fieldset>
       <legend>Annuaire</legend>
-      {% with champ=formulaire.visible_dans_annuaire %}
-        <p class="case-a-cocher">
-          {{ champ }}
-          <label for="{{ champ.id_for_label }}">{{ champ.label }}</label>
-        </p>
-        <p class="aide" id="{{ champ.id_for_label }}_aide">{{ champ.help_text }}</p>
-      {% endwith %}
+      {% include "membres/_champ.html" with champ=formulaire.visible_dans_annuaire %}
+    </fieldset>
+    <fieldset>
+      <legend>Ma fiche</legend>
+      {% include "membres/_champ.html" with champ=formulaire.email_visible %}
+      {% include "membres/_champ.html" with champ=formulaire.linkedin %}
     </fieldset>
     <p><button type="submit">Enregistrer</button></p>
   </form>
 
-  <p><a href="{% url 'membres:annuaire' %}">Voir l'annuaire</a></p>
+  <p>
+    <a href="{% url 'membres:fiche' user.pk %}">Voir ma fiche</a> ·
+    <a href="{% url 'membres:annuaire' %}">Voir l'annuaire</a>
+  </p>
 {% endblock %}

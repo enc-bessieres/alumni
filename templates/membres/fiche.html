@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block titre %}{{ membre.prenom }} {{ membre.nom }} — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <p><a href="{% url 'membres:annuaire' %}">← Annuaire</a></p>
+
+  {% if membre == user and not membre.visible_dans_annuaire %}
+    <ul class="messages">
+      <li>
+        Votre fiche n'apparaît pas dans l'annuaire : vous seul la voyez.
+        <a href="{% url 'membres:parametres' %}">Changer dans Paramètres</a>
+      </li>
+    </ul>
+  {% endif %}
+
+  <article class="fiche-membre">
+    <h1>{{ membre.prenom }} {{ membre.nom }}</h1>
+    <p class="fiche-categorie">{{ membre.get_categorie_display }}</p>
+
+    {% if membre.formations.all %}
+      <h2>Diplômes</h2>
+      <ul>
+        {% for formation in membre.formations.all %}
+          <li>{{ formation.diplome }}, promo {{ formation.promo }} — {{ formation.site }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {# Chaque contact n'apparaît que si le membre l'a choisi dans ses paramètres. #}
+    {% if membre.email_visible or membre.linkedin %}
+      <h2>Contact</h2>
+      <ul>
+        {% if membre.email_visible %}
+          <li>E-mail : <a href="mailto:{{ membre.email }}">{{ membre.email }}</a></li>
+        {% endif %}
+        {% if membre.linkedin %}
+          {# noopener noreferrer : LinkedIn ne reçoit ni l'adresse de la fiche ni la main sur l'onglet. #}
+          <li>
+            <a href="{{ membre.linkedin }}" target="_blank" rel="noopener noreferrer">Profil LinkedIn</a>
+          </li>
+        {% endif %}
+      </ul>
+    {% endif %}
+  </article>
+
+  {% if membre == user %}
+    <p><a href="{% url 'membres:parametres' %}">Modifier ce que je montre</a></p>
+  {% endif %}
+{% endblock %}
