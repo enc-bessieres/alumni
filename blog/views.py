@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 
-from membres.droits import reserve_aux_membres_valides
+from membres.droits import est_membre_valide, reserve_aux_membres_valides
 
 from .forms import ArticleForm
 from .models import Article
@@ -15,7 +15,8 @@ def detail(request, slug):
 
 def liste(request):
     articles = Article.objects.filter(statut=Article.Statut.PUBLIE)
-    return render(request, "blog/liste.html", {"articles": articles})
+    peut_ecrire = est_membre_valide(request.user)
+    return render(request, "blog/liste.html", {"articles": articles, "peut_ecrire": peut_ecrire})
 
 
 def adresse_unique(titre):

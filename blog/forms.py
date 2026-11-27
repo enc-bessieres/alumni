@@ -15,8 +15,10 @@ class ArticleForm(forms.ModelForm):
         texte = " ".join(
             [donnees.get("titre", ""), donnees.get("resume", ""), donnees.get("contenu", "")]
         )
-        if mots_trouves(texte):
+        trouves = mots_trouves(texte)
+        if trouves:
             raise forms.ValidationError(
-                "Votre article contient un mot interdit. Merci de le reformuler."
+                "Votre article contient un mot interdit : %(mots)s. Merci de le reformuler.",
+                params={"mots": ", ".join(trouves)},
             )
         return donnees

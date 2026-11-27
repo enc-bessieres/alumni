@@ -4,7 +4,7 @@
 
 {% block contenu %}
 <h1>Actualités</h1>
-{% if user.is_authenticated %}
+{% if peut_ecrire %}
   <p><a href="{% url 'blog:ecrire' %}">Écrire un article</a></p>
 {% endif %}
 {% for article in articles %}

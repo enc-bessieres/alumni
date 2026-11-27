@@ -4,6 +4,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from blog.forms import ArticleForm
+from membres.models import Membre
 from moderation.models import MotInterdit
 
 from .models import Article
@@ -179,5 +181,48 @@ class ListeNoireTests(TestCase):
             reverse("blog:ecrire"),
             {"titre": "Titre", "resume": "", "contenu": "<p>Un motinterdit ici</p>"},
         )
-        self.assertContains(reponse, "Votre article contient un mot interdit.")
+        self.assertContains(reponse, "Votre article contient un mot interdit : motinterdit.")
         self.assertFalse(Article.objects.exists())
+
+        class RelectureFormulaireTests(TestCase):
+            def test_une_phrase_normale_n_est_pas_refusee(self):
+                # La base de test contient la liste de départ, chargée par la migration.
+                formulaire = ArticleForm(
+                    data={
+                        "titre": "Bilan de l'année",
+                        "contenu": "<p>Le cabinet dégage un bénéfice de 12 % cette année.</p>",
+                    }
+                )
+                self.assertTrue(formulaire.is_valid())
+
+            def test_le_message_cite_le_mot_interdit(self):
+                MotInterdit.objects.create(mot="motinterdit")
+                formulaire = ArticleForm(
+                    data={"titre": "Un titre", "contenu": "<p>Un motinterdit ici.</p>"}
+                )
+                self.assertFalse(formulaire.is_valid())
+                self.assertIn("motinterdit", formulaire.non_field_errors()[0])
+
+        class LienEcrireTests(TestCase):
+            def creer_membre(self, email, **champs):
+                return Membre.objects.create_user(
+                    email,
+                    prenom="Test",
+                    nom="Test",
+                    categorie=Membre.Categorie.ADMINISTRATIF,
+                    **champs,
+                )
+
+            def test_un_membre_valide_voit_le_lien(self):
+                membre = self.creer_membre(
+                    "valide@exemple.test", statut_inscription=Membre.StatutInscription.VALIDEE
+                )
+                self.client.force_login(membre)
+                reponse = self.client.get(reverse("blog:liste"))
+                self.assertContains(reponse, reverse("blog:ecrire"))
+
+            def test_un_membre_en_attente_ne_voit_pas_le_lien(self):
+                membre = self.creer_membre("attente@exemple.test")
+                self.client.force_login(membre)
+                reponse = self.client.get(reverse("blog:liste"))
+                self.assertNotContains(reponse, reverse("blog:ecrire"))
