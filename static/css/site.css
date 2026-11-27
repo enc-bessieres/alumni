@@ -1,12 +1,14 @@
 /* Feuille de style du site.
    Mobile d'abord : les règles de base visent le téléphone,
-   celles pour ordinateur sont dans le @media à la fin. */
+   celles pour tablette et ordinateur sont dans les @media en fin de fichier. */
 
-/* Couleurs et typographie : définies ici, une seule fois. */
+/* Couleurs, typographie et mouvements : définis ici, une seule fois. */
 :root {
+  /* Relevés sur le logo du site enc-bessieres.org ; à confirmer avec la charte graphique. */
   --bordeaux: #55001f;
   --bordeaux-fonce: #370028;
   --bordeaux-clair: #f5e6ea;
+  --orange-enc: #f39200;
 
   --succes: #1e7b34;
   --succes-clair: #e7f4ea;
@@ -18,16 +20,22 @@
   --fond: #ffffff;
   --sur-bordeaux: #ffffff;
   --bordure: #e2e4ea;
-  --ombre: 0 0.5rem 1.5rem rgb(0 0 0 / 15%);
+  --bordure-forte: #cfc6ca;
+  --ombre-carte: 0 1px 2px rgb(31 36 48 / 6%);
+  --ombre: 0 18px 40px -12px rgb(55 0 40 / 28%);
 
   --police: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --taille-texte: 1rem;
   --taille-petite: 0.875rem;
+  --taille-menu: 0.8125rem;
   --taille-mini: 0.8rem;
   --interligne: 1.5;
+  --largeur-site: 80rem;
 
   --rayon: 0.5rem;
   --hauteur-barre-mobile: 3.75rem;
+  --duree: 200ms;
+  --courbe: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -36,8 +44,8 @@
 
 body {
   margin: 0;
-  /* Laisse la place à la barre du bas sur mobile. */
-  padding-bottom: var(--hauteur-barre-mobile);
+  /* Laisse la place à la barre du bas sur mobile, et à la barre d'accueil de l'iPhone. */
+  padding-bottom: calc(var(--hauteur-barre-mobile) + env(safe-area-inset-bottom));
   font-family: var(--police);
   font-size: var(--taille-texte);
   line-height: var(--interligne);
@@ -54,6 +62,13 @@ h3 {
 
 a {
   color: var(--bordeaux);
+}
+
+/* Contour visible pour la navigation au clavier. */
+:focus-visible {
+  outline: 3px solid var(--bordeaux);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
 }
 
 /* Listes des menus : sans puces ni marges. Les listes du contenu des pages gardent les leurs. */
@@ -74,36 +89,99 @@ summary::-webkit-details-marker {
   display: none;
 }
 
-/* En-tête */
+/* Lien « Aller au contenu » : caché jusqu'à ce qu'on y arrive au clavier. */
+.evitement {
+  position: absolute;
+  top: -4rem;
+  left: 1rem;
+  z-index: 20;
+  padding: 0.5rem 1rem;
+  border-radius: var(--rayon);
+  background: var(--bordeaux);
+  color: var(--sur-bordeaux);
+  font-weight: 700;
+  box-shadow: var(--ombre);
+  transition: top var(--duree) var(--courbe);
+}
+
+.evitement:focus {
+  top: 1rem;
+}
+
+/* « Se connecter » : un bouton bordeaux, lisible sur l'en-tête blanc. */
+.se-connecter {
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--rayon);
+  background: var(--bordeaux);
+  color: var(--sur-bordeaux);
+  font-weight: 600;
+  text-decoration: none;
+  /* Ne jamais couper « Se connecter » sur deux lignes, même sur un petit écran. */
+  white-space: nowrap;
+}
+
+/* En-tête blanc : reste visible pendant le défilement. */
 .entete {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--bordure);
+  background: var(--fond);
+  box-shadow: var(--ombre-carte);
+}
+
+/* Signature : le filet orange et bordeaux de l'école, tout en haut de la page. */
+.entete::before {
+  content: "";
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, var(--orange-enc), var(--bordeaux) 60%, var(--bordeaux-fonce));
+}
+
+.entete-haut {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem;
-  background: var(--bordeaux);
-  color: var(--sur-bordeaux);
+  max-width: var(--largeur-site);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
 }
 
 .marque {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--sur-bordeaux);
-  font-weight: 700;
+  gap: 0.25rem 0.75rem;
+  min-width: 0;
+  color: var(--bordeaux);
+  font-size: 1.125rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   text-decoration: none;
+  transition: transform var(--duree) var(--courbe);
 }
 
-.logo {
-  font-size: 0.75rem;
-  font-weight: 400;
+.marque:active {
+  transform: scale(0.98);
 }
 
-.se-connecter {
-  color: var(--sur-bordeaux);
-  font-weight: 600;
-  /* Ne jamais couper « Se connecter » sur deux lignes, même sur un petit écran. */
+/* Sur un petit écran, le nom passe sous le logo plutôt que d'être coupé en plusieurs lignes. */
+.nom-du-site {
   white-space: nowrap;
+}
+
+/* Le pointillé signale un emplacement à compléter. */
+.logo {
+  flex: none;
+  padding: 0.125rem 0.5rem;
+  border: 1px dashed var(--bordure-forte);
+  border-radius: 0.375rem;
+  color: var(--texte-doux);
+  font-size: var(--taille-mini);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 /* Zone membre */
@@ -113,6 +191,7 @@ summary::-webkit-details-marker {
 
 .zone-membre summary {
   display: flex;
+  color: var(--texte);
   align-items: center;
   gap: 0.5rem;
   white-space: nowrap;
@@ -124,8 +203,8 @@ summary::-webkit-details-marker {
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 50%;
-  background: var(--sur-bordeaux);
-  color: var(--bordeaux);
+  background: var(--bordeaux);
+  color: var(--sur-bordeaux);
   font-size: var(--taille-mini);
   font-weight: 700;
 }
@@ -168,9 +247,18 @@ summary::-webkit-details-marker {
   cursor: pointer;
 }
 
-/* Contenu */
+/* Menu principal en haut : caché sur mobile et tablette, où la barre du bas le remplace. */
+.menu-principal {
+  display: none;
+}
+
+/* Contenu : centré, sur la même largeur que l'en-tête. */
 .contenu {
-  padding: 1rem;
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--largeur-site);
+  margin: 0 auto;
+  padding: 1.75rem 1rem 3rem;
 }
 
 /* Messages de Django (connexion réussie, déconnexion…) */
@@ -187,13 +275,14 @@ summary::-webkit-details-marker {
   background: var(--bordeaux-clair);
 }
 
-/* Le niveau du message se voit : vert pour un succès, rouge pour une erreur. */
-.message--success {
+/* Le niveau du message se voit : vert pour un succès, rouge pour une erreur.
+   « .messages » devant : sinon « .messages li », plus précis, l'emporterait. */
+.messages .message--success {
   border-left-color: var(--succes);
   background: var(--succes-clair);
 }
 
-.message--error {
+.messages .message--error {
   border-left-color: var(--erreur);
   background: var(--erreur-clair);
 }
@@ -269,47 +358,6 @@ summary::-webkit-details-marker {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
-}
-
-/* Menus : la colonne de gauche est cachée sur mobile. */
-.menu-lateral {
-  display: none;
-}
-
-.menu-lateral a,
-.barre-mobile a,
-.barre-mobile summary {
-  color: var(--texte);
-  text-decoration: none;
-}
-
-[aria-current="page"] {
-  color: var(--bordeaux);
-  font-weight: 700;
-}
-
-/* Barre du bas sur mobile */
-.barre-mobile {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: var(--hauteur-barre-mobile);
-  border-top: 1px solid var(--bordure);
-  background: var(--fond);
-}
-
-.barre-mobile > ul {
-  display: flex;
-  height: 100%;
-}
-
-.barre-mobile > ul > li {
-  display: grid;
-  flex: 1;
-  place-items: center;
-  font-size: var(--taille-mini);
-  text-align: center;
 }
 
 /* Annuaire (membres) : filtres, puis une fiche par membre. */
@@ -396,41 +444,53 @@ summary::-webkit-details-marker {
   margin-top: 1rem;
 }
 
-/* Ordinateur : menu à gauche, plus de barre en bas. */
+.barre-mobile a,
+.barre-mobile summary {
+  color: var(--texte);
+  text-decoration: none;
+}
+
+[aria-current="page"] {
+  color: var(--bordeaux);
+  font-weight: 700;
+}
+
+/* Barre du bas sur mobile */
+.barre-mobile {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--hauteur-barre-mobile);
+  border-top: 1px solid var(--bordure);
+  background: var(--fond);
+}
+
+.barre-mobile > ul {
+  display: flex;
+  height: 100%;
+}
+
+.barre-mobile > ul > li {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  font-size: var(--taille-mini);
+  text-align: center;
+}
+
+/* Tablette : plus d'air, les deux sites côte à côte dans le pied de page. */
 @media (min-width: 48rem) {
-  body {
-    padding-bottom: 0;
+  .entete-haut {
+    padding: 1rem 1.5rem;
   }
 
-  .barre-mobile {
-    display: none;
+  .marque {
+    font-size: 1.25rem;
   }
 
-  .mise-en-page {
-    display: grid;
-    grid-template-columns: 14rem 1fr;
-  }
-
-  .menu-lateral {
-    display: block;
-    padding: 1rem;
-    border-right: 1px solid var(--bordure);
-  }
-
-  .menu-lateral a {
-    display: block;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--rayon);
-  }
-
-  .menu-lateral [aria-current="page"] {
-    background: var(--bordeaux-clair);
-  }
-
-  /* Le texte garde une largeur lisible, aligné à gauche à côté du menu. */
   .contenu {
-    max-width: 60rem;
-    padding: 1.5rem 2rem;
+    padding: 2rem 1.5rem 3rem;
   }
 
   .sites {
@@ -450,5 +510,81 @@ summary::-webkit-details-marker {
 
   .annuaire {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Ordinateur : le menu complet passe dans l'en-tête, plus de barre en bas. */
+@media (min-width: 64rem) {
+  body {
+    padding-bottom: 0;
+  }
+
+  .barre-mobile {
+    display: none;
+  }
+
+  .menu-principal {
+    display: block;
+    border-top: 1px solid var(--bordure);
+  }
+
+  .menu-principal ul {
+    display: flex;
+    gap: 2rem;
+    max-width: var(--largeur-site);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .menu-principal a {
+    position: relative;
+    display: block;
+    padding: 0.875rem 0;
+    color: var(--texte-doux);
+    font-size: var(--taille-menu);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color var(--duree);
+  }
+
+  .menu-principal a:hover,
+  .menu-principal [aria-current="page"] {
+    color: var(--bordeaux);
+  }
+
+  /* Trait bordeaux sous l'entrée : il glisse au survol et reste sous la page active. */
+  .menu-principal a::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--bordeaux);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duree) var(--courbe);
+  }
+
+  .menu-principal a:hover::after,
+  .menu-principal [aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+}
+
+/* Réglage « réduire les animations » de l'appareil : on les coupe toutes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
   }
 }
