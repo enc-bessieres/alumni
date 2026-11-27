@@ -1,13 +1,14 @@
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Exists, OuterRef, Prefetch, Q
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils.cache import patch_vary_headers
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 
 from referentiels.models import Formation
 
 from .droits import reserve_aux_membres_valides
-from .forms import FiltresAnnuaire
+from .forms import FiltresAnnuaire, ParametresForm
 from .models import Membre
 
 MEMBRES_PAR_PAGE = 25
@@ -75,3 +76,21 @@ def annuaire(request):
     # La même adresse renvoie la page entière ou la liste seule : le cache doit les distinguer.
     patch_vary_headers(reponse, ["HX-Request"])
     return reponse
+
+
+@require_http_methods(["GET", "POST"])
+@reserve_aux_membres_valides
+def parametres(request):
+    """
+    Le membre règle ses propres paramètres. Pas d'identifiant dans l'adresse : on modifie
+    toujours le compte connecté (request.user), jamais celui d'un autre.
+    """
+    # Une case décochée n'est pas envoyée : le formulaire doit être lié dès qu'il y a un POST.
+    donnees = request.POST if request.method == "POST" else None
+    formulaire = ParametresForm(donnees, instance=request.user)
+    if formulaire.is_bound and formulaire.is_valid():
+        formulaire.save()
+        messages.success(request, "Vos paramètres sont enregistrés.")
+        # Redirection après l'envoi : recharger la page ne renvoie pas le formulaire.
+        return redirect("membres:parametres")
+    return render(request, "membres/parametres.html", {"formulaire": formulaire})
