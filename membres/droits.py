@@ -78,6 +78,11 @@ GROUPES = {
         "pages_libres.add_page",
         "pages_libres.change_page",
         "pages_libres.delete_page",
+        # Événements (#60).
+        "evenements.view_evenement",
+        "evenements.add_evenement",
+        "evenements.change_evenement",
+        "evenements.delete_evenement",
         # Blog (#43) : articles.
         "blog.view_article",
         "blog.add_article",
@@ -133,11 +138,11 @@ def creer_groupes(app_config=None, **kwargs):
 
 def peut_modifier_le_compte(utilisateur, membre):
     """
-    Peut-on modifier ou supprimer ce compte (y compris le statut de son inscription) ?
+        Peut-on modifier ou supprimer ce compte (y compris le statut de son inscription) ?
     - le compte d'un superutilisateur : seulement un superutilisateur ;
     - le compte d'un membre de l'équipe (accès au back-office ou au moins un groupe) :
-      seulement avec « gerer_les_droits ». Sinon un validateur pourrait refuser l'inscription
-      d'un administrateur, qui ne pourrait plus se connecter.
+          seulement avec « gerer_les_droits ». Sinon un validateur pourrait refuser l'inscription
+          d'un administrateur, qui ne pourrait plus se connecter.
     """
     if membre.is_superuser:
         return utilisateur.is_superuser
@@ -172,7 +177,7 @@ def est_membre_valide(utilisateur):
 
 def reserve_aux_membres_valides(vue):
     """
-    Décorateur des vues réservées aux membres validés :
+        Décorateur des vues réservées aux membres validés :
     - visiteur non connecté : page de connexion, puis retour à la page demandée ;
     - connecté, inscription en attente (décision 0005) : page qui explique l'attente, code 403 ;
     - connecté mais refusé ou désactivé après sa connexion : page 403.
