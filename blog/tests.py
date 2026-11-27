@@ -4,6 +4,10 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from blog.forms import ArticleForm
+from membres.models import Membre
+from moderation.models import MotInterdit
+
 from .models import Article
 
 
@@ -91,3 +95,137 @@ class BackOfficeTests(TestCase):
         )
         article = Article.objects.get(slug="par-l-admin")
         self.assertEqual(article.auteur, self.administrateur)
+
+    def test_le_contenu_d_un_article_est_nettoye(self):
+        article = Article.objects.create(
+            titre="Piège",
+            slug="piege",
+            contenu="<p>Texte</p><script>alert(1)</script>",
+        )
+        article.refresh_from_db()
+        self.assertNotIn("<script", article.contenu)
+
+
+class EcrireUnArticleTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        Membre = get_user_model()
+        cls.membre = Membre.objects.create_user(
+            "membre@exemple.test",
+            "motdepasse-factice",
+            prenom="Test",
+            nom="Exemple",
+            statut_inscription=Membre.StatutInscription.VALIDEE,
+        )
+        cls.adresse = reverse("blog:ecrire")
+
+    def envoyer(self, **donnees):
+        valeurs = {"titre": "Mon article", "resume": "", "contenu": "<p>Bonjour</p>"}
+        valeurs.update(donnees)
+        return self.client.post(self.adresse, valeurs)
+
+    def test_un_visiteur_est_renvoye_vers_la_connexion(self):
+        reponse = self.client.get(self.adresse)
+        self.assertEqual(reponse.status_code, 302)
+        self.assertIn("next=/blog/ecrire/", reponse.url)
+
+    def test_un_membre_publie_un_article(self):
+        self.client.force_login(self.membre)
+        self.envoyer()
+        article = Article.objects.get()
+        self.assertEqual(article.statut, Article.Statut.PUBLIE)
+        self.assertIsNotNone(article.publie_le)
+        self.assertEqual(article.auteur, self.membre)
+        self.assertEqual(article.slug, "mon-article")
+
+    def test_un_article_envoye_est_visible_du_public(self):
+        self.client.force_login(self.membre)
+        self.envoyer()
+        self.client.logout()
+        reponse = self.client.get(reverse("blog:liste"))
+        self.assertContains(reponse, "Mon article")
+
+    def test_deux_titres_identiques_donnent_deux_adresses(self):
+        self.client.force_login(self.membre)
+        self.envoyer()
+        self.envoyer()
+        adresses = sorted(Article.objects.values_list("slug", flat=True))
+        self.assertEqual(adresses, ["mon-article", "mon-article-2"])
+
+    def test_un_membre_non_valide_ne_peut_pas_ecrire(self):
+        non_valide = get_user_model().objects.create_user(
+            "nonvalide@exemple.test", "motdepasse-factice", prenom="Test", nom="Exemple"
+        )
+        self.client.force_login(non_valide)
+        reponse = self.envoyer()
+        self.assertEqual(reponse.status_code, 403)
+        self.assertFalse(Article.objects.exists())
+
+
+class ListeNoireTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        Membre = get_user_model()
+        cls.membre = Membre.objects.create_user(
+            "membre@exemple.test",
+            "motdepasse-factice",
+            prenom="Test",
+            nom="Exemple",
+            statut_inscription=Membre.StatutInscription.VALIDEE,
+        )
+        MotInterdit.objects.create(mot="motinterdit")
+
+    def test_un_article_avec_un_mot_interdit_est_refuse(self):
+        self.client.force_login(self.membre)
+        reponse = self.client.post(
+            reverse("blog:ecrire"),
+            {"titre": "Titre", "resume": "", "contenu": "<p>Un motinterdit ici</p>"},
+        )
+        self.assertContains(reponse, "Votre article contient un mot interdit : motinterdit.")
+        self.assertFalse(Article.objects.exists())
+
+
+class RelectureFormulaireTests(TestCase):
+    def test_une_phrase_normale_n_est_pas_refusee(self):
+        # La base de test contient la liste de départ, chargée par la migration.
+        formulaire = ArticleForm(
+            data={
+                "titre": "Bilan de l'année",
+                "contenu": "<p>Le cabinet dégage un bénéfice de 12 % cette année. "
+                "Une recette de chili con carne pour le pot de fin d'année.</p>",
+            }
+        )
+        self.assertTrue(formulaire.is_valid(), formulaire.errors)
+
+    def test_le_message_cite_le_mot_interdit(self):
+        MotInterdit.objects.create(mot="motinterdit")
+        formulaire = ArticleForm(
+            data={"titre": "Un titre", "contenu": "<p>Un motinterdit ici.</p>"}
+        )
+        self.assertFalse(formulaire.is_valid())
+        self.assertIn("motinterdit", formulaire.non_field_errors()[0])
+
+
+class LienEcrireTests(TestCase):
+    def creer_membre(self, email, **champs):
+        return Membre.objects.create_user(
+            email,
+            prenom="Test",
+            nom="Test",
+            categorie=Membre.Categorie.ADMINISTRATIF,
+            **champs,
+        )
+
+    def test_un_membre_valide_voit_le_lien(self):
+        membre = self.creer_membre(
+            "valide@exemple.test", statut_inscription=Membre.StatutInscription.VALIDEE
+        )
+        self.client.force_login(membre)
+        reponse = self.client.get(reverse("blog:liste"))
+        self.assertContains(reponse, reverse("blog:ecrire"))
+
+    def test_un_membre_en_attente_ne_voit_pas_le_lien(self):
+        membre = self.creer_membre("attente@exemple.test")
+        self.client.force_login(membre)
+        reponse = self.client.get(reverse("blog:liste"))
+        self.assertNotContains(reponse, reverse("blog:ecrire"))

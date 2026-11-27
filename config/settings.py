@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "texte_riche",
     "datalumni",
     "blog",
+    "moderation",
 ]
 
 MIDDLEWARE = [
