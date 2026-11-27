@@ -22,6 +22,7 @@ from django.apps import apps
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import render
 
 from .models import Membre
 
@@ -59,11 +60,29 @@ GROUPES = {
         "referentiels.add_formation",
         "referentiels.change_formation",
         "referentiels.delete_formation",
+        # Référentiels d'administration (#39) : types de contrat, secteurs, tags.
+        "referentiels.view_typedecontrat",
+        "referentiels.add_typedecontrat",
+        "referentiels.change_typedecontrat",
+        "referentiels.delete_typedecontrat",
+        "referentiels.view_secteur",
+        "referentiels.add_secteur",
+        "referentiels.change_secteur",
+        "referentiels.delete_secteur",
+        "referentiels.view_tag",
+        "referentiels.add_tag",
+        "referentiels.change_tag",
+        "referentiels.delete_tag",
         # Pages libres (#23) : mentions légales, CGU…
         "pages_libres.view_page",
         "pages_libres.add_page",
         "pages_libres.change_page",
         "pages_libres.delete_page",
+        # Blog (#43) : articles.
+        "blog.view_article",
+        "blog.add_article",
+        "blog.change_article",
+        "blog.delete_article",
         # Mentorat (Steeve) : les sujets, et la consultation des profils de mentorat.
         "mentorat.view_sujet",
         "mentorat.add_sujet",
@@ -161,7 +180,8 @@ def reserve_aux_membres_valides(vue):
     """
     Décorateur des vues réservées aux membres validés :
     - visiteur non connecté : page de connexion, puis retour à la page demandée ;
-    - connecté mais pas validé (inscription refusée après sa connexion…) : page 403.
+    - connecté, inscription en attente (décision 0005) : page qui explique l'attente, code 403 ;
+    - connecté mais refusé ou désactivé après sa connexion : page 403.
     """
 
     @wraps(vue)
@@ -169,6 +189,11 @@ def reserve_aux_membres_valides(vue):
         if not request.user.is_authenticated:
             return redirect_to_login(request.get_full_path())
         if not est_membre_valide(request.user):
+            utilisateur = request.user
+            if utilisateur.is_active and (
+                utilisateur.statut_inscription == Membre.StatutInscription.EN_ATTENTE
+            ):
+                return render(request, "membres/en_attente.html", status=403)
             raise PermissionDenied
         return vue(request, *args, **kwargs)
 
