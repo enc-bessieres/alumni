@@ -1,85 +1,45 @@
-# Export factice au format Datalumni
+# Export factice de l'annuaire Datalumni
 
-Issue #36 (Luc). Tant que l'échantillon de Datalumni n'est pas arrivé, l'import se construit sur un **export factice** : un fichier JSON qui a la forme supposée du vrai export, rempli de personnes inventées (règle 1 d'AGENTS.md).
+Issues #36 et #84 (Luc). L'export factice est un **faux `directory.csv`** : le même fichier que l'export réel de l'annuaire, décrit dans [export-reel.md](export-reel.md), mais rempli de personnes inventées (règle 1 d'AGENTS.md).
 
-Ne pas confondre avec `charger_donnees_dev` : cette commande remplit directement la base pour travailler en local. L'export factice est un **fichier**, que l'import lira.
+Les tests, l'intégration continue, les démos et la mesure de durée de l'import s'appuient **sur lui, jamais sur les fichiers réels** (décision 0006).
 
 ```bash
-docker compose exec web python manage.py generer_export_factice             # écrit exports/datalumni-factice.json
+docker compose exec web python manage.py generer_export_factice             # écrit exports/datalumni-factice-directory.csv
 docker compose exec web python manage.py generer_export_factice --graine 7  # un autre export, tout aussi reproductible
 ```
 
-Le dossier `exports/` n'est pas versionné (`.gitignore`). Même graine, même fichier, au caractère près : deux migrations à blanc sur le même export sont comparables.
+Le dossier `exports/` n'est pas versionné (`.gitignore`). Même graine, même fichier, au caractère près : deux imports à blanc sur le même export sont comparables.
 
-## Un format supposé
+Ne pas confondre avec `charger_donnees_dev`, qui remplit directement la base pour travailler en local. L'export factice est un **fichier**, que l'import lira.
 
-> **Le format est une hypothèse.** Il est déduit de l'API membre relevée dans `docs/01-audit-existant.md` (§ 2) et de la liste des demandes de `docs/06-points-durs.md` (§ 8). Quand l'échantillon arrive, on adapte `datalumni/export_factice.py` et la lecture de l'import, et rien d'autre.
+## Ce qui est identique au vrai export
 
-```jsonc
-{
-  "format": "datalumni-factice/1",
-  "groupes": [
-    { "uuid": "…", "type": "site",    "nom": "ENC Bessières", "parent_uuid": null },
-    { "uuid": "…", "type": "niveau",  "nom": "BTS",           "parent_uuid": null },
-    { "uuid": "…", "type": "diplome", "nom": "BTS SIO",       "parent_uuid": "<uuid du niveau BTS>" }
-  ],
-  "membres": [
-    {
-      "uuid": "…",                          // deviendra legacy_id
-      "email": "ines.martin.12@exemple.test",
-      "email_verifie": true,
-      "password": "pbkdf2_sha256$1000$…$…", // champ Authentik tel quel
-      "origine": "import",                  // import (vague d'avril 2025) ou inscription
-      "date_inscription": "2025-04-14T09:12:47Z",
-      "derniere_connexion": "2026-02-03T18:30:05Z",
-      "statut": "accepte",                  // accepte, en_attente, refuse
-      "visible_annuaire": true,
-      "categorie": "Alumni",
-      "metadata": {
-        "civilite": "Mme", "prenom": "Inès", "nom": "Martin", "nom_naissance": null,
-        "photo": null,
-        "localisation": { "commune": "Paris", "departement": "75", "region": "Île-de-France",
-                          "pays": "France", "lat": 48.8835, "lng": 2.3219 }
-      },
-      "experiences": [
-        { "intitule": "Comptable", "organisation": "Cabinet Exemple Audit", "debut": 2019,
-          "fin": null, "poste_actuel": true, "secteur": "Comptabilité", "lieu": "Paris" }
-      ],
-      "groupes": [
-        { "groupe_uuid": "<site>",    "timeline": null },
-        { "groupe_uuid": "<diplôme>", "timeline": { "annee": 2019 } } // l'année de promo
-      ],
-      "liaisons": [],                       // comptes Google ou LinkedIn rattachés
-      "consentements": { "cgu_acceptees_le": "2025-04-14T09:12:47Z", "newsletter": false }
-    }
-  ]
-}
-```
+- **Le format** : les 28 colonnes, dans l'ordre du vrai fichier ; UTF-8 avec BOM ; virgules ; une ligne d'en-tête ; `True` et `False` en toutes lettres ; `import_date` et `account_activation_date` en date seule (`AAAA-MM-JJ`) ; une case vide quand Datalumni n'a rien.
+- **Les volumes, colonne par colonne** : 6138 comptes, dont 1233 activés, avec la répartition par catégorie, et le nombre de cases remplies de chaque colonne. C'est le tableau de [export-reel.md](export-reel.md), vérifié par `datalumni/tests/test_export_factice.py`.
+- **Les cas à traiter par l'import** :
+  - 4 comptes sans nom ;
+  - 6036 noms en majuscules ;
+  - 5 écritures de civilité ;
+  - 12 doubles catégories, 52 doubles sites et 121 comptes à plusieurs diplômes pour une seule promo, séparés par ` / ` ;
+  - 437 comptes sans diplôme ;
+  - promos de 1963 à 2029 ;
+  - 455 comptes inscrits seuls (`import_date` vide) ;
+  - **128 groupes d'homonymes** (259 comptes).
+- **Les listes** : les 26 secteurs de `business_sector`, et les diplômes et sites du référentiel (`referentiels/donnees.py`).
 
-Pas encore générés : compétences, mentorat, contenus, messages, fichiers. On les ajoutera avec l'import qui en a besoin.
+## Ce qui est inventé
 
-## Ce que contient l'export par défaut
+| Colonne | Dans l'export factice |
+|---|---|
+| `first_name`, `last_name`, `birth_name` | Des prénoms et des noms courants, combinés au hasard |
+| `email` | `prenom.nom.N@exemple.test`, et `@enc-bessieres.exemple.test` pour imiter les 2048 adresses de l'école : jamais un vrai domaine |
+| `phone` | `+3363998…` : la plage que l'ARCEP réserve à la fiction |
+| `location`, `current_position`, `current_company` | Quelques villes, des postes et des entreprises « Exemple » |
+| Les dates | Tirées entre l'ouverture de Datalumni (26 mars 2025) et le relevé (25 novembre 2026), avec les deux vagues d'import (avril et octobre 2025) |
 
-Les volumes reprennent l'annuaire relevé le 8 novembre 2026 :
+**Vérifié sur le vrai fichier** (par Alex, sur #91, sans copier de ligne) :
+- `import_date` est une date seule, comme `account_activation_date` ;
+- l'ordre des colonnes est celui du tableau de [export-reel.md](export-reel.md), **sauf `notifications_registration`, qui est la dernière colonne**, après `mentoring_role`.
 
-| Élément | Nombre | Source |
-|---|---|---|
-| Membres visibles dans l'annuaire | 1222 (Alumni 1143, Enseignant 50, Équipe administrative 10, Étudiant 9, Candidat 9, Recruteur 1) | `docs/01`, § 2 |
-| Membres masqués de l'annuaire | 78 | Hypothèse, pour arriver à « environ 1300 » |
-| Comptes importés en avril 2025 | 784 (le reste s'est inscrit seul) | `docs/01`, § 2 |
-| Promos | de 1990 à 2026 pour les alumni, 2027 ou 2028 pour les étudiants, sur les 20 diplômes | issue #10 |
-| Deux diplômes | 120 alumni : un premier diplôme, puis un DCG trois ans plus tard | Hypothèse |
-
-> **Le relevé n'est pas cohérent, à vérifier sur l'échantillon :** les catégories font 1222 alors que l'annuaire annonce 1214 membres, et 784 importés + 423 inscrits font 1207. Un membre a peut-être plusieurs catégories. Le factice garde les chiffres par catégorie.
-
-Arrivent dans la seconde PR de l'issue #36 :
-
-- les **profils peu remplis** de la plateforme actuelle : 24 % de photos, 28 % d'expériences, 53 % de villes avec coordonnées (pour l'instant, `photo`, `localisation` et `experiences` sont vides) ;
-- les **cas difficiles** de `docs/06-points-durs.md` (§ 1) : comptes jamais activés, sans e-mail, doublons, homonymes, comptes Google ou LinkedIn seulement.
-
-## Conventions pour rester factice
-
-- Toutes les adresses sont en **`.test`**, un domaine réservé qui ne peut appartenir à personne : aucun e-mail ne peut partir vers une vraie personne.
-- Tous les comptes ont le mot de passe `motdepasse-factice`, avec un sel différent. On pourra donc tester la reprise des mots de passe en se connectant avec n'importe quel compte importé.
-- Les empreintes sont fabriquées par **le hasher de Django lui-même** (`PBKDF2PasswordHasher`), avec **1 000 itérations** au lieu de 1 000 000, pour générer 1 300 comptes en une seconde. Django lit le nombre d'itérations dans l'empreinte : `check_password` l'accepte, puis Django ré-enregistre l'empreinte au réglage actuel à la première connexion.
-- Les noms viennent de deux listes de 40 prénoms et 40 noms, combinés sans répétition : deux membres ne portent jamais le même nom par hasard.
+Pas d'export factice des offres, des candidatures ni des mentorats : leurs fichiers réels ont trop peu de lignes pour être importés (voir [export-reel.md](export-reel.md)).

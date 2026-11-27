@@ -8,7 +8,11 @@ Ces sujets sont difficiles parce qu'ils touchent les vraies données, de vrais c
 
 Ainsi rien ne bloque pendant le stage, et rien de sensible ne passe par les postes des étudiants.
 
+> **Mise à jour du 25 novembre 2026.** Datalumni a fourni les exports, mais pas les mots de passe. Les étudiants travaillent désormais sur les exports réels (`docs/decisions/0006-donnees-reelles.md`). Le format, les volumes et le nouveau parcours de première connexion sont dans `docs/migration/export-reel.md`, qui fait foi quand il contredit cette page.
+
 ## 1. Les comptes et les mots de passe
+
+> **Abandonné :** la reprise des mots de passe décrite ci-dessous. Chaque membre définit son mot de passe par un lien reçu par e-mail.
 
 ### Ce qui se passe
 
