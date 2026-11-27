@@ -42,6 +42,11 @@ class ChiffresClesTests(TestCase):
             statut_inscription=Membre.StatutInscription.VALIDEE,
             is_active=False,
         )
+        creer_membre(  # importé de Datalumni, jamais activé (#85)
+            "jamais-active@exemple.test",
+            statut_inscription=Membre.StatutInscription.VALIDEE,
+            compte_active=False,
+        )
 
         self.assertEqual(self.chiffres()["membres"], 1)
 

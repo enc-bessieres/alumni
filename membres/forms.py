@@ -40,17 +40,27 @@ class ParametresForm(forms.ModelForm):
 
     class Meta:
         model = Membre
-        fields = ["visible_dans_annuaire"]
-        labels = {"visible_dans_annuaire": "Apparaître dans l'annuaire"}
-        # Le lecteur d'écran lit l'explication avec la case (accessibilité).
-        widgets = {
-            "visible_dans_annuaire": forms.CheckboxInput(
-                attrs={"aria-describedby": "id_visible_dans_annuaire_aide"}
-            )
+        fields = ["visible_dans_annuaire", "email_visible", "linkedin"]
+        labels = {
+            "visible_dans_annuaire": "Apparaître dans l'annuaire",
+            "email_visible": "Montrer mon adresse e-mail sur ma fiche",
+            "linkedin": "Mon profil LinkedIn",
         }
         help_texts = {
             "visible_dans_annuaire": (
-                "Les membres validés verront votre nom, votre catégorie et vos diplômes. "
-                "Jamais votre adresse e-mail."
-            )
+                "Les membres validés voient votre nom, votre catégorie et vos diplômes, jamais "
+                "votre adresse e-mail. Décochez pour ne plus apparaître dans l'annuaire."
+            ),
+            "email_visible": "Seuls les membres validés voient votre fiche.",
+            "linkedin": "Facultatif. Par exemple https://www.linkedin.com/in/prenom-nom/",
+        }
+        # Le lecteur d'écran lit l'explication avec chaque champ (accessibilité).
+        widgets = {
+            "visible_dans_annuaire": forms.CheckboxInput(
+                attrs={"aria-describedby": "id_visible_dans_annuaire_aide"}
+            ),
+            "email_visible": forms.CheckboxInput(
+                attrs={"aria-describedby": "id_email_visible_aide"}
+            ),
+            "linkedin": forms.URLInput(attrs={"aria-describedby": "id_linkedin_aide"}),
         }

@@ -14,8 +14,11 @@ def index(request):
     chiffres = {
         "promos": Formation.objects.values("promo").distinct().count(),
         "diplomes": Diplome.objects.count(),
+        # Un compte importé jamais activé (#85) n'est pas encore un membre du réseau.
         "membres": Membre.objects.filter(
-            statut_inscription=Membre.StatutInscription.VALIDEE, is_active=True
+            statut_inscription=Membre.StatutInscription.VALIDEE,
+            is_active=True,
+            compte_active=True,
         ).count(),
     }
     derniers_inscrits = []
