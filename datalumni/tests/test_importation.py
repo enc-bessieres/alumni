@@ -55,21 +55,37 @@ class ImportTests(TestCase):
             (adresse.email, adresse.primary, adresse.verified), (membre.email, True, False)
         )
 
-    def test_relancer_met_a_jour_sans_doublon_ni_toucher_au_mot_de_passe(self):
+    def test_relancer_met_a_jour_un_compte_pas_encore_venu_sans_doublon(self):
         donnees = ligne()
         importer([donnees])
-        membre = Membre.objects.get()
-        membre.set_password("defini-sur-le-nouveau-site")  # le membre a suivi le lien (#85)
-        membre.save()
         donnees["last_name"] = "MARTIN-DURAND"
 
         resume = importer([donnees])
 
-        self.assertEqual((resume.crees, resume.mis_a_jour), (0, 1))
-        membre.refresh_from_db()
-        self.assertEqual(membre.nom, "MARTIN-DURAND")
-        self.assertTrue(membre.check_password("defini-sur-le-nouveau-site"))
+        self.assertEqual((resume.crees, resume.mis_a_jour, resume.deja_venus), (0, 1, 0))
+        self.assertEqual(Membre.objects.get().nom, "MARTIN-DURAND")
         self.assertEqual(EmailAddress.objects.count(), 1)
+
+    def test_une_relance_ne_touche_pas_un_compte_deja_venu_sur_le_site(self):
+        # Le test d'Alex sur #102 : le membre a suivi le lien (#85), puis fait ses choix ici.
+        lignes = generer_export_factice()[:20]
+        importer(lignes)
+        membre = Membre.objects.get(legacy_id=lignes[0]["user_id"])
+        membre.visible_dans_annuaire = False  # retiré de l'annuaire (règle 5)
+        membre.email = "nouvelle.adresse@exemple.test"
+        membre.set_password("Un-mot-de-passe-2026")
+        membre.save()
+        EmailAddress.objects.filter(user=membre).update(email=membre.email, verified=True)
+
+        resume = importer(lignes)
+
+        self.assertEqual((resume.crees, resume.mis_a_jour, resume.deja_venus), (0, 19, 1))
+        membre.refresh_from_db()
+        self.assertFalse(membre.visible_dans_annuaire)
+        self.assertEqual(membre.email, "nouvelle.adresse@exemple.test")
+        self.assertTrue(membre.check_password("Un-mot-de-passe-2026"))
+        adresse = EmailAddress.objects.get(user=membre)
+        self.assertEqual((adresse.email, adresse.verified), (membre.email, True))
 
     def test_les_cinq_civilites_de_datalumni(self):
         civilites = ["Mme.", "Madame", "M.", "Monsieur", "Non renseigné"]
@@ -169,6 +185,19 @@ class LectureEtCommandeTests(TestCase):
         self.assertIn(f"ignoré {sans_email['user_id']} : pas d'adresse e-mail", texte)
         self.assertNotIn("MARTIN", texte)  # ni nom ni e-mail dans le terminal
         self.assertNotIn("exemple.test", texte)
+
+    def test_la_commande_compte_a_part_les_comptes_deja_venus(self):
+        with tempfile.TemporaryDirectory() as dossier:
+            chemin = self.ecrire(dossier, [ligne()])
+            call_command("importer_datalumni", str(chemin), stdout=StringIO())
+            membre = Membre.objects.get()
+            membre.set_password("Un-mot-de-passe-2026")
+            membre.save()
+            sortie = StringIO()
+            call_command("importer_datalumni", str(chemin), stdout=sortie)
+
+        self.assertIn("0 membres créés, 0 mis à jour, 0 ignorés", sortie.getvalue())
+        self.assertIn("1 déjà venus sur le nouveau site : non modifiés", sortie.getvalue())
 
     def test_la_commande_refuse_un_fichier_introuvable_ou_d_un_autre_format(self):
         with self.assertRaises(CommandError):

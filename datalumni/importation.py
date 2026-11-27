@@ -56,6 +56,8 @@ class CompteIgnore(Exception):
 class Resume:
     crees: int = 0
     mis_a_jour: int = 0
+    # Comptes dont le titulaire est déjà venu sur le nouveau site : une relance n'y touche pas.
+    deja_venus: int = 0
     # (identifiant Datalumni, raison) : comptes non importés.
     ignores: list = field(default_factory=list)
 
@@ -114,6 +116,13 @@ def importer(lignes):
 
     for ligne in lignes:
         identifiant = ligne["user_id"]
+        membre = par_legacy_id.get(identifiant)
+        # Déjà venu sur le nouveau site : il a défini son mot de passe par le lien reçu (#85).
+        # Ses choix d'ici (retrait de l'annuaire, nouvelle adresse…) priment sur l'export :
+        # une relance ne touche plus du tout à ce compte (règle 5, remarque d'Alex sur #102).
+        if membre is not None and membre.has_usable_password():
+            resume.deja_venus += 1
+            continue
         try:
             champs = champs_du_membre(ligne)
         except CompteIgnore as raison:
@@ -125,15 +134,13 @@ def importer(lignes):
             resume.ignores.append((identifiant, "adresse e-mail déjà utilisée par un autre compte"))
             continue
 
-        membre = par_legacy_id.get(identifiant)
         if membre is None:
             membre = Membre(
                 legacy_id=identifiant,
                 # Un compte activé chez Datalumni est considéré comme validé (export-reel.md).
                 statut_inscription=Membre.StatutInscription.VALIDEE,
             )
-            # Pas de mot de passe chez Datalumni. Fixé à la création seulement : une relance
-            # ne retire jamais le mot de passe qu'un membre a défini sur le nouveau site.
+            # Pas de mot de passe chez Datalumni : le membre le définira par le lien reçu (#85).
             membre.set_unusable_password()
             if creation := moment(ligne["import_date"]) or moment(ligne["account_activation_date"]):
                 membre.cree_le = creation

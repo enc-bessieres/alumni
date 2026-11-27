@@ -39,6 +39,10 @@ class Command(BaseCommand):
                 f"{len(resume.ignores)} ignorés, en {duree:.0f} s."
             )
         )
+        if resume.deja_venus:
+            self.stdout.write(
+                f"{resume.deja_venus} déjà venus sur le nouveau site : non modifiés par l'import."
+            )
         # Seulement l'identifiant Datalumni et la raison : sur le vrai export, noms et e-mails
         # sont des données personnelles, ils n'ont rien à faire dans un terminal.
         for identifiant, raison in resume.ignores:

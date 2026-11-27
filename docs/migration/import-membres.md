@@ -13,8 +13,9 @@ Le vrai fichier ne s'importe que sur le poste de la personne autorisée, depuis 
 
 ## Rejouable, tout ou rien
 
-- Un membre est retrouvé par son identifiant Datalumni (`user_id` → `legacy_id`) : relancer l'import **ne crée pas de doublon**. Il remet à jour ce que l'export contient (nom, catégorie, civilité, visibilité, dernière connexion).
-- **Jamais écrasé par une relance** : le mot de passe que le membre a défini sur le nouveau site, et le statut de son inscription.
+- Un membre est retrouvé par son identifiant Datalumni (`user_id` → `legacy_id`) : relancer l'import **ne crée pas de doublon**. Il remet à jour ce que l'export contient (nom, catégorie, civilité, visibilité, dernière connexion), pour les comptes dont le titulaire n'est **pas encore venu** sur le nouveau site.
+- **Un membre déjà venu sur le nouveau site** (il a défini son mot de passe) **n'est plus touché du tout** par une relance : ses choix d'ici priment (retrait de l'annuaire, nouvelle adresse…). La commande le compte à part : « déjà venus sur le nouveau site ».
+- Le statut de l'inscription n'est fixé qu'à la création du compte : une relance ne le change jamais.
 - Une erreur au milieu annule tout : la base n'est jamais à moitié importée.
 
 ## Correspondance des colonnes
