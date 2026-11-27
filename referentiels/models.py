@@ -1,6 +1,10 @@
 """
 Les référentiels de l'école : sites, niveaux, diplômes (vocabulaire d'AGENTS.md), et le parcours
 de chaque membre (Formation). Les référentiels sont créés par la migration 0002.
+
+Les référentiels d'administration (#39) servent aux autres domaines : types de contrat pour les
+offres (Vera), secteurs et tags pour les profils et l'annuaire (Alex). Leurs listes de départ
+sont créées par la migration 0005, et se modifient ensuite dans le back-office.
 """
 
 from django.conf import settings
@@ -58,6 +62,31 @@ class Diplome(Referentiel):
     class Meta(Referentiel.Meta):
         verbose_name = "diplôme"
         verbose_name_plural = "diplômes"
+
+
+class TypeDeContrat(Referentiel):
+    """Le contrat d'une offre d'emploi ou de stage : CDI, CDD, Stage, Alternance…"""
+
+    class Meta(Referentiel.Meta):
+        verbose_name = "type de contrat"
+        verbose_name_plural = "types de contrat"
+
+
+class Secteur(Referentiel):
+    """Un secteur d'activité : celui d'une expérience, d'une offre, d'un filtre de l'annuaire."""
+
+    class Meta(Referentiel.Meta):
+        verbose_name = "secteur"
+        verbose_name_plural = "secteurs"
+
+
+class Tag(Referentiel):
+    """Un mot-clé de profil, géré dans le back-office (vide au départ, comme on ne sait pas
+    encore lesquels Datalumni utilise)."""
+
+    class Meta(Referentiel.Meta):
+        verbose_name = "tag"
+        verbose_name_plural = "tags"
 
 
 class Formation(models.Model):

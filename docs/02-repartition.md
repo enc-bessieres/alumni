@@ -11,7 +11,8 @@ Chaque étudiant est **responsable d'un domaine**, de la base de données à l'�
 C'est le socle : tout le monde en dépend, il passe donc en premier.
 
 - **Connexion :**
-  - e-mail + mot de passe, avec vérification des hashes `pbkdf2_sha256` importés ;
+  - e-mail + mot de passe ;
+  - première connexion après la bascule : le membre saisit son e-mail, puis modifie son mot de passe (déjà inscrit chez Datalumni) ou le définit (jamais inscrit), par un lien reçu par e-mail (voir `docs/migration/export-reel.md`) ;
   - Google, LinkedIn ;
   - mot de passe oublié ;
   - déconnexion.
@@ -45,7 +46,7 @@ C'est le chemin critique : il commence dès l'obtention d'un premier export.
   - membres, profils, groupes et timelines (diplôme, promo) ;
   - articles, posts, événements, médias (rapatriés depuis `media3.datalumni.com`).
 - **Comptes :**
-  - import des hashes Authentik ;
+  - import sans mot de passe, depuis le CSV réel de l'annuaire (6138 comptes, dont 1233 activés) ;
   - rapprochement Google/LinkedIn par e-mail vérifié ;
   - rapport des comptes en doublon ou sans e-mail.
 - **Répétitions :** script rejouable de bout en bout et **3 migrations à blanc** chronométrées avant la bascule.
@@ -89,15 +90,37 @@ C'est le chemin critique : il commence dès l'obtention d'un premier export.
   - articles avec image, rédaction, validation, publication ;
   - vues, likes, commentaires, signalement.
 - **Fil d'actualité :** posts des membres et agrégation des articles, événements et offres.
+
+Les événements, les offres et les ressources, d'abord prévus dans ce domaine, sont confiés à Sidouane et Vera depuis le 25 novembre.
+
+## Sidouane Chendjou — Événements
+
+Dans l'équipe du 25 novembre au 18 décembre. Issues #60 à #66.
+
 - **Événements :**
-  - création, inscription, liste des inscrits ;
-  - visibilité restreinte à un groupe ;
+  - création dans le back-office, puis proposition par un membre, soumise à publication ;
+  - liste des événements à venir et passés, page d'un événement ;
+  - inscription et désinscription, places limitées ;
+  - liste des participants, visible selon le choix de chaque inscrit ;
   - export vers un agenda (fichier `.ics`).
+- **Plus tard :** visibilité restreinte à un groupe (dépend des groupes de Steeve), image de l'événement (dépend du stockage des fichiers).
+
+## Vera Miremma — Emplois et stages
+
+Dans l'équipe du 25 novembre au 18 décembre. Issues #67 à #73.
+
 - **Offres d'emploi et de stage :**
-  - dépôt, validation ;
-  - contrat, lieu, salaire, expérience ;
-  - candidature.
-- **Ressources :** documents classés par catégorie.
+  - dépôt par un membre, validation dans le back-office ;
+  - contrat (référentiel de Luc, #39), lieu, rémunération, expérience ;
+  - liste filtrable par mot-clé, type de contrat et lieu ;
+  - candidature, envoyée par e-mail au contact de l'offre.
+- **Plus tard :** candidature avec le CV du profil (dépend du profil d'Axel).
+
+## Sidouane et Vera — Ressources
+
+En binôme, la dernière semaine. Issue #74.
+
+- **Ressources :** documents classés par catégorie, d'abord sous forme de liens.
 
 ## Relectures croisées
 
@@ -107,6 +130,8 @@ C'est le chemin critique : il commence dès l'obtention d'un premier export.
 | Marie Dominique | Luc |
 | Axel | Luc |
 | Luc | Axel |
+| Sidouane | Vera |
+| Vera | Sidouane |
 
 Chaque demande de fusion est relue par un étudiant **avant** que Timothée la valide.
 
