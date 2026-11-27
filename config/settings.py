@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "texte_riche",
     "datalumni",
     "blog",
+    "messagerie",  # Steeve : messagerie privée
 ]
 
 MIDDLEWARE = [
