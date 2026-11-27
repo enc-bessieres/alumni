@@ -47,8 +47,10 @@ class AccesFicheTests(TestCase):
         self.assertEqual(self.client.get(fiche(self.lea)).status_code, 403)
 
     def test_la_fiche_d_un_membre_hors_annuaire_n_existe_pas(self):
-        # Masqué, en attente, refusé ou inactif : 404, comme s'il n'existait pas.
+        # Masqué, en attente, refusé, inactif ou jamais activé (#85) : 404, comme s'il n'existait
+        # pas.
         absents = [
+            creer("Jamais", "Active", compte_active=False),
             creer("Kenza", "Masquee", visible_dans_annuaire=False),
             creer("Paul", "Attente", statut_inscription=Membre.StatutInscription.EN_ATTENTE),
             creer("Rita", "Refus", statut_inscription=Membre.StatutInscription.REFUSEE),

@@ -82,7 +82,8 @@ class ChargerDonneesDevTests(TestCase):
             membre.full_clean(exclude=["password"])  # respecte toutes les règles du modèle
             self.assertEqual(membre.statut_inscription, Membre.StatutInscription.VALIDEE)
             self.assertFalse(membre.is_staff)
-        un_membre = Membre.objects.first()
+        # Un membre qui a un mot de passe : 2 sur 10 n'en ont pas (première connexion, #85).
+        un_membre = next(m for m in Membre.objects.all() if m.has_usable_password())
         self.assertEqual(
             authenticate(email=un_membre.email, password=MOT_DE_PASSE_DE_TEST), un_membre
         )
@@ -101,6 +102,16 @@ class ChargerDonneesDevTests(TestCase):
         charger("--nombre", "5")
         self.assertEqual(EmailAddress.objects.count(), 5)
         self.assertEqual(EmailAddress.objects.filter(verified=True, primary=True).count(), 5)
+
+    def test_les_trois_situations_de_la_premiere_connexion(self):
+        # #85 : 2 faux membres sur 10 sont importés sans mot de passe (rangs 8 et 9).
+        charger("--nombre", "20")
+        importes = [m for m in Membre.objects.order_by("pk") if not m.has_usable_password()]
+        self.assertEqual([m.compte_active for m in importes], [True, False, True, False])
+        self.assertFalse(EmailAddress.objects.filter(user__in=importes, verified=True).exists())
+        ordinaires = Membre.objects.exclude(pk__in=[m.pk for m in importes])
+        self.assertEqual(ordinaires.count(), 16)
+        self.assertTrue(all(m.compte_active and m.has_usable_password() for m in ordinaires))
 
     def test_les_referentiels_sont_deja_la_grace_a_la_migration(self):
         charger("--nombre", "1")

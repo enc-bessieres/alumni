@@ -15,10 +15,14 @@ MEMBRES_PAR_PAGE = 25
 
 
 def membres_de_l_annuaire():
-    """Les membres qu'on a le droit de montrer : validés, actifs, et qui l'ont choisi (règle 5)."""
+    """
+    Les membres qu'on a le droit de montrer : validés, actifs, qui l'ont choisi (règle 5), et
+    dont le compte est activé (un compte importé jamais activé reste caché, #85).
+    """
     membres = Membre.objects.filter(
         visible_dans_annuaire=True,
         is_active=True,
+        compte_active=True,
         statut_inscription=Membre.StatutInscription.VALIDEE,
     )
     # pk en dernier : deux homonymes gardent le même ordre d'une page à l'autre.

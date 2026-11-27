@@ -121,6 +121,20 @@ class Membre(AbstractBaseUser, PermissionsMixin):
     # La date de dernière connexion est le champ last_login d'AbstractBaseUser : Django le met
     # à jour à chaque connexion et s'en sert pour périmer les liens « mot de passe oublié ».
 
+    # Première connexion après la bascule (#85, accord avec Luc sur #84). Faux pour un compte
+    # importé de Datalumni et jamais activé là-bas (account_status = False) : il reste hors de
+    # l'annuaire et des fiches, quel que soit visible_dans_annuaire, jusqu'à ce que son titulaire
+    # définisse son mot de passe par le lien reçu par e-mail. Vrai pour tous les autres comptes.
+    # Ce n'est pas is_active : un compte inactif ne peut ni se connecter ni recevoir ce lien.
+    compte_active = models.BooleanField(
+        "compte activé",
+        default=True,
+        help_text=(
+            "Faux pour un compte importé de Datalumni dont le titulaire n'a pas encore défini "
+            "son mot de passe. Il passe à vrai à sa première connexion."
+        ),
+    )
+
     # Utilisés par Django : compte actif, accès au back-office.
     is_active = models.BooleanField("actif", default=True)
     is_staff = models.BooleanField("accès au back-office", default=False)

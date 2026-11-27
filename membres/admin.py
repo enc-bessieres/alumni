@@ -35,17 +35,27 @@ class MembreAdmin(UserAdmin):
         "email",
         "categorie",
         "statut_inscription",
+        "compte_active",
         "cree_le",
         "is_staff",
     ]
     # Les validateurs trouvent les inscriptions à valider avec les filtres « statut » (en attente)
     # et « créé le » (par exemple les 7 derniers jours) : décision 0005.
-    list_filter = ["statut_inscription", "cree_le", "categorie", "groups", "is_staff"]
+    list_filter = [
+        "statut_inscription",
+        "compte_active",
+        "cree_le",
+        "categorie",
+        "groups",
+        "is_staff",
+    ]
     search_fields = ["nom", "prenom", "nom_de_naissance", "email"]
     ordering = ["nom", "prenom"]
     # Les choix du membre (annuaire, e-mail, LinkedIn) : l'équipe les voit, sans les changer.
+    # compte_active aussi : c'est la première connexion du membre qui l'active (#85).
     readonly_fields = [
         "legacy_id",
+        "compte_active",
         "last_login",
         "cree_le",
         "visible_dans_annuaire",
@@ -60,7 +70,7 @@ class MembreAdmin(UserAdmin):
             "Identité",
             {"fields": ["civilite", "prenom", "nom", "nom_de_naissance", "categorie"]},
         ),
-        ("Inscription", {"fields": ["statut_inscription", "is_active"]}),
+        ("Inscription", {"fields": ["statut_inscription", "compte_active", "is_active"]}),
         # Les choix du membre (Paramètres) : l'équipe les voit, mais ne les change pas.
         ("Annuaire et fiche", {"fields": ["visible_dans_annuaire", "email_visible", "linkedin"]}),
         # Le rôle = les groupes (Validateur, Administrateur), définis dans membres/droits.py.

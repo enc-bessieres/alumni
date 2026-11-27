@@ -116,7 +116,8 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 # une même adresse IP (allauth autorise 20 par minute par défaut).
 ACCOUNT_RATE_LIMITS = {"signup": "5/m/ip,20/h/ip"}
 # Une adresse doit être vérifiée avant de se connecter. Les comptes importés de Datalumni
-# arrivent avec une adresse déjà vérifiée : l'import crée la ligne EmailAddress correspondante.
+# arrivent sans mot de passe et avec une adresse non vérifiée : c'est le lien de la première
+# connexion (#85) qui la vérifie, avec le mot de passe.
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "membres.adapter.AdaptateurCompte"
 # Mot de passe oublié : aucun e-mail n'est envoyé à une adresse qui n'est pas celle d'un membre.

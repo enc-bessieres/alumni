@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate
 from django.db import IntegrityError
 from django.test import TestCase
 
+from membres.admin import MembreAdmin
 from membres.models import Membre
 
 
@@ -64,6 +65,12 @@ class MembreTests(TestCase):
     def test_un_compte_importe_sans_mot_de_passe_ne_peut_pas_se_connecter(self):
         membre = creer("importe@exemple.test", mot_de_passe=None)
         self.assertFalse(membre.has_usable_password())
+
+    def test_un_compte_est_active_par_defaut_et_l_equipe_ne_le_change_pas(self):
+        # Seul un compte importé jamais activé est à False (import, #84) ; c'est sa première
+        # connexion qui le passe à True (#85), pas le back-office.
+        self.assertTrue(creer("nouveau@exemple.test").compte_active)
+        self.assertIn("compte_active", MembreAdmin.readonly_fields)
 
     def test_le_superutilisateur_a_tous_les_droits_et_est_valide(self):
         admin = Membre.objects.create_superuser(

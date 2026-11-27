@@ -97,6 +97,16 @@ class AnnuaireTests(TestCase):
 
         self.assertEqual(self.membres_affiches(), {"Léa Martin", "Hugo Lefèvre", "Zoé Dupont"})
 
+    def test_un_compte_importe_jamais_active_reste_cache_jusqu_a_son_activation(self):
+        # #85 : caché quel que soit visible_dans_annuaire, tant qu'il n'a pas de mot de passe.
+        jamais_active = creer("Jamais", "Active", compte_active=False)
+        self.assertNotIn("Jamais Active", self.membres_affiches())
+
+        jamais_active.compte_active = True  # ce que fera sa première connexion
+        jamais_active.save()
+
+        self.assertIn("Jamais Active", self.membres_affiches())
+
     def test_n_affiche_jamais_l_adresse_e_mail(self):
         reponse = self.client.get(ANNUAIRE)
 
