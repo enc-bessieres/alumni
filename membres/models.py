@@ -1,8 +1,16 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.functions import Lower
 from django.utils import timezone
+
+# Seule une adresse de profil LinkedIn est acceptée : https://www.linkedin.com/in/prenom-nom/.
+# Le lien s'affiche sur la fiche : on refuse tout autre site (et donc « javascript: »).
+valider_linkedin = RegexValidator(
+    r"^https://([a-z]{2,3}\.)?linkedin\.com/in/[A-Za-z0-9_%-]+/?$",
+    "Indiquez l'adresse de votre profil, par exemple https://www.linkedin.com/in/prenom-nom/",
+)
 
 
 class MembreManager(BaseUserManager):
@@ -80,14 +88,28 @@ class Membre(AbstractBaseUser, PermissionsMixin):
         default=StatutInscription.EN_ATTENTE,
     )
 
-    # Privé par défaut (règle 5) : un membre n'apparaît dans l'annuaire que s'il l'a choisi.
-    # L'annuaire montre alors son nom, sa catégorie et ses diplômes, jamais son e-mail.
+    # Visible par défaut, comme chez Datalumni (décision docs/decisions/0004) : le membre peut se
+    # retirer de l'annuaire dans Paramètres. L'annuaire montre son nom, sa catégorie et ses
+    # diplômes, jamais son e-mail (qui reste privé par défaut : email_visible).
     visible_dans_annuaire = models.BooleanField(
         "visible dans l'annuaire",
-        default=False,
+        default=True,
         help_text=(
             "Choisi par le membre : nom, catégorie et diplômes visibles des membres validés."
         ),
+    )
+
+    # La fiche du membre : chaque information de contact est montrée seulement s'il l'a choisi.
+    email_visible = models.BooleanField(
+        "e-mail visible sur ma fiche",
+        default=False,
+        help_text="Choisi par le membre : son adresse e-mail apparaît sur sa fiche.",
+    )
+    linkedin = models.URLField(
+        "profil LinkedIn",
+        blank=True,
+        validators=[valider_linkedin],
+        help_text="Choisi par le membre : un lien vers son profil apparaît sur sa fiche.",
     )
 
     # Identifiant (UUID) chez Datalumni : import rejouable sans doublon, anciens liens redirigés.

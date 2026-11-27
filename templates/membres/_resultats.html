@@ -7,7 +7,9 @@
   <ul class="annuaire">
     {% for membre in page.object_list %}
       <li class="fiche">
-        <p class="fiche-nom">{{ membre.prenom }} {{ membre.nom }}</p>
+        <p class="fiche-nom">
+          <a href="{% url 'membres:fiche' membre.pk %}">{{ membre.prenom }} {{ membre.nom }}</a>
+        </p>
         <p class="fiche-categorie">{{ membre.get_categorie_display }}</p>
         {% if membre.formations.all %}
           <ul class="fiche-formations">

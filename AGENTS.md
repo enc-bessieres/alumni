@@ -84,7 +84,7 @@ docker compose exec web ruff check . && docker compose exec web ruff format .
 2. **Aucun secret dans le dépôt.** Les mots de passe, clés et jetons vont dans `.env`, qui n'est pas versionné. Le dépôt ne contient que `.env.example`, avec des valeurs factices.
 3. **Les droits d'accès sont définis à un seul endroit**, avec le mécanisme du framework. On ne contourne jamais ce mécanisme dans un contrôleur ou une route.
 4. **Jamais de SQL construit en collant des valeurs dans le texte de la requête.** On passe par l'ORM ou par des requêtes paramétrées.
-5. **Toute donnée personnelle est privée par défaut.** Un profil n'est visible que par les membres connectés, et seulement dans les champs que le membre a rendus visibles.
+5. **Toute donnée personnelle est privée par défaut.** Un profil n'est visible que par les membres connectés, et seulement dans les champs que le membre a rendus visibles. Seule exception : la présence dans l'annuaire (nom, catégorie, diplômes), visible par défaut des membres validés, dont le membre peut se retirer dans Paramètres (`docs/decisions/0004-annuaire-visible-par-defaut.md`).
 6. **Pas de « Lorem ipsum » ni de contenu inventé** dans les pages. Un contenu manquant s'écrit `À COMPLÉTER : …`, de façon visible.
 7. **Une fonction livrée s'accompagne d'au moins un test** qui la vérifie.
 8. **Interface en français, conçue d'abord pour le mobile.** Le menu affiche des libellés, pas seulement des icônes.
