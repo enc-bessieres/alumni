@@ -64,6 +64,11 @@ GROUPES = {
         "pages_libres.add_page",
         "pages_libres.change_page",
         "pages_libres.delete_page",
+        # Événements (#60).
+        "evenements.view_evenement",
+        "evenements.add_evenement",
+        "evenements.change_evenement",
+        "evenements.delete_evenement",
     ],
 }
 
