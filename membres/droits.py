@@ -22,6 +22,7 @@ from django.apps import apps
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import render
 
 from .models import Membre
 
@@ -83,6 +84,11 @@ GROUPES = {
         "offres.change_offre",
         "offres.delete_offre",
         "offres.valider_offre",
+        # Blog (#43) : articles.
+        "blog.view_article",
+        "blog.add_article",
+        "blog.change_article",
+        "blog.delete_article",
     ],
 }
 
@@ -174,7 +180,8 @@ def reserve_aux_membres_valides(vue):
     """
     Décorateur des vues réservées aux membres validés :
     - visiteur non connecté : page de connexion, puis retour à la page demandée ;
-    - connecté mais pas validé (inscription refusée après sa connexion…) : page 403.
+    - connecté, inscription en attente (décision 0005) : page qui explique l'attente, code 403 ;
+    - connecté mais refusé ou désactivé après sa connexion : page 403.
     """
 
     @wraps(vue)
@@ -182,6 +189,11 @@ def reserve_aux_membres_valides(vue):
         if not request.user.is_authenticated:
             return redirect_to_login(request.get_full_path())
         if not est_membre_valide(request.user):
+            utilisateur = request.user
+            if utilisateur.is_active and (
+                utilisateur.statut_inscription == Membre.StatutInscription.EN_ATTENTE
+            ):
+                return render(request, "membres/en_attente.html", status=403)
             raise PermissionDenied
         return vue(request, *args, **kwargs)
 

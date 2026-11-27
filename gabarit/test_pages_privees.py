@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 # Pages provisoires qui exigent la connexion, même tant qu'elles sont vides.
-PAGES_PRIVEES = ["profil", "parametres"]
+PAGES_PRIVEES = ["profil"]  # « Paramètres » est la vraie page de membres/ (testée là-bas)
 
 
 class PagesPriveesTests(TestCase):
