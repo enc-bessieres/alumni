@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block titre %}Inscriptions à valider — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  {# Page des validateurs (#89) : les inscriptions en attente, la plus ancienne d'abord. #}
+  <h1>Inscriptions à valider</h1>
+
+  {% if total %}
+    <p>
+      {{ total }} inscription{{ total|pluralize }} en attente.
+      {% if total > membres|length %}Les {{ membres|length }} plus anciennes sont affichées.{% endif %}
+      Le membre reçoit un e-mail quand vous validez ou refusez son inscription.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Membre</th>
+          <th scope="col">E-mail</th>
+          <th scope="col">Catégorie</th>
+          <th scope="col">Inscrit le</th>
+          <th scope="col">Adresse vérifiée</th>
+          <th scope="col">Décision</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for membre in membres %}
+          <tr>
+            <td>{{ membre.prenom }} {{ membre.nom }}{% if membre.nom_de_naissance %} — nom de naissance : {{ membre.nom_de_naissance }}{% endif %}</td>
+            <td>{{ membre.email }}</td>
+            <td>{{ membre.get_categorie_display }}</td>
+            <td>{{ membre.cree_le|date:"j F Y" }}</td>
+            <td>{{ membre.adresse_verifiee|yesno:"Oui,Non" }}</td>
+            <td>
+              <form method="post" action="{% url 'membres:decider' membre.pk %}">
+                {% csrf_token %}
+                <button type="submit" name="decision" value="valider">Valider</button>
+                <button type="submit" name="decision" value="refuser">Refuser</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Aucune inscription en attente.</p>
+  {% endif %}
+{% endblock %}

@@ -44,8 +44,8 @@
     <fieldset>
       <legend>4. Conditions</legend>
       <p>
-        <a href="/page/cgu/" target="_blank" rel="noopener">Lire les conditions générales d'utilisation</a>
-        et la <a href="/page/confidentialite/" target="_blank" rel="noopener">politique de confidentialité</a>.
+        <a href="{% url 'pages_libres:detail' 'cgu' %}" target="_blank" rel="noopener">Lire les conditions générales d'utilisation</a>
+        et la <a href="{% url 'pages_libres:detail' 'confidentialite' %}" target="_blank" rel="noopener">politique de confidentialité</a>.
       </p>
       {% include "account/_champ_inscription.html" with champ=form.cgu %}
     </fieldset>

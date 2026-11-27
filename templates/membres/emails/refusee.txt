@@ -1,0 +1,7 @@
+Bonjour {{ membre.prenom }},
+
+Votre inscription au réseau des anciens de l'ENC Bessières n'a pas été retenue.
+
+Pour en savoir plus, contactez l'équipe de l'ENC Bessières.
+
+L'équipe de l'ENC Bessières
