@@ -4,3 +4,4 @@ _prof
 sources
 staticfiles
 **/__pycache__
+media

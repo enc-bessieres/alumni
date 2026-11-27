@@ -130,6 +130,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Fichiers envoyés par les membres (images d'articles, photos de profil…) : voir l'issue #92.
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
