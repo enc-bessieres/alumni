@@ -116,6 +116,7 @@ class ZoneMembreTests(SimpleTestCase):
         self.assertIn(">CP<", html)
         self.assertIn("Profil", html)
         self.assertIn("Paramètres", html)
+        self.assertIn("Messages", html)
         self.assertNotIn("Se connecter", html)
 
     def test_sans_nom_l_initiale_vient_de_l_identifiant(self):

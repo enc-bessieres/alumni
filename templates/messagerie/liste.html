@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titre %}Messages — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <h1>Messages</h1>
+  {% if lignes %}
+    <ul class="conversations">
+      {% for conversation, autres in lignes %}
+        <li>
+          <a href="{{ conversation.get_absolute_url }}">
+            {% for membre in autres %}{{ membre.prenom }} {{ membre.nom }}{% if not forloop.last %}, {% endif %}{% empty %}Compte supprimé{% endfor %}
+          </a>
+          <p>{{ conversation.dernier_message|truncatechars:80 }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Aucune conversation. Pour écrire à un membre, passez par l'annuaire.</p>
+  {% endif %}
+{% endblock %}

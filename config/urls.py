@@ -13,6 +13,7 @@ urlpatterns = [
     path("", include("membres.urls")),  # /annuaire/ et /parametres/
     path("", include("accueil.urls")),
     path("blog/", include("blog.urls")),
+    path("messages/", include("messagerie.urls")),
     path("", include("gabarit.urls")),
 ]
 

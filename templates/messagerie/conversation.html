@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block titre %}Messages — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <p><a href="{% url 'messagerie:liste' %}">Toutes les conversations</a></p>
+  <h1>
+    {% for membre in interlocuteurs %}{{ membre.prenom }} {{ membre.nom }}{% if not forloop.last %}, {% endif %}{% empty %}Compte supprimé{% endfor %}
+  </h1>
+
+  <ol class="fil-de-messages">
+    {% for message in messages_de_la_conversation %}
+      <li{% if message.auteur_id == user.pk %} class="message-envoye"{% endif %}>
+        <p class="message-auteur">
+          {% if message.auteur %}{{ message.auteur.prenom }}{% else %}Compte supprimé{% endif %},
+          <time datetime="{{ message.envoye_le|date:'c' }}">{{ message.envoye_le|date:"j F Y, H:i" }}</time>
+        </p>
+        <p>{{ message.texte|linebreaksbr }}</p>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ formulaire.as_div }}
+    <button type="submit">Envoyer</button>
+  </form>
+{% endblock %}
