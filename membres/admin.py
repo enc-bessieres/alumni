@@ -29,8 +29,18 @@ class MembreAdmin(UserAdmin):
     les règles de membres/droits.py : on ne décide pas ici qui a le droit.
     """
 
-    list_display = ["nom", "prenom", "email", "categorie", "statut_inscription", "is_staff"]
-    list_filter = ["statut_inscription", "categorie", "groups", "is_staff"]
+    list_display = [
+        "nom",
+        "prenom",
+        "email",
+        "categorie",
+        "statut_inscription",
+        "cree_le",
+        "is_staff",
+    ]
+    # Les validateurs trouvent les inscriptions à valider avec les filtres « statut » (en attente)
+    # et « créé le » (par exemple les 7 derniers jours) : décision 0005.
+    list_filter = ["statut_inscription", "cree_le", "categorie", "groups", "is_staff"]
     search_fields = ["nom", "prenom", "nom_de_naissance", "email"]
     ordering = ["nom", "prenom"]
     # Les choix du membre (annuaire, e-mail, LinkedIn) : l'équipe les voit, sans les changer.

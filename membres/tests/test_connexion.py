@@ -46,14 +46,15 @@ class ConnexionTests(TestCase):
         se_connecter(self.client, "nouveau@exemple.test")
         self.assertNotIn("_auth_user_id", self.client.session)
 
-    def test_un_compte_en_attente_ne_se_connecte_pas_et_sait_pourquoi(self):
+    def test_un_compte_en_attente_se_connecte_et_sait_que_l_annuaire_attend(self):
+        # Décision 0005 : on entre sur le site, l'annuaire s'ouvre après la validation.
         creer_membre("attente@exemple.test", statut_inscription=Membre.StatutInscription.EN_ATTENTE)
         reponse = self.client.post(
             "/compte/login/",
             {"login": "attente@exemple.test", "password": MOT_DE_PASSE},
             follow=True,
         )
-        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertIn("_auth_user_id", self.client.session)
         self.assertContains(reponse, "en attente de validation")
 
     def test_un_compte_refuse_ne_se_connecte_pas_et_sait_pourquoi(self):
@@ -71,17 +72,6 @@ class ConnexionTests(TestCase):
         se_connecter(self.client, "ines@exemple.test")
         self.client.post("/compte/logout/")
         self.assertNotIn("_auth_user_id", self.client.session)
-
-    def test_l_inscription_reste_fermee_en_attendant_sa_pr(self):
-        self.client.post(
-            "/compte/signup/",
-            {
-                "email": "inconnu@exemple.test",
-                "password1": "Un-mot-de-passe-long-1",
-                "password2": "Un-mot-de-passe-long-1",
-            },
-        )
-        self.assertFalse(Membre.objects.filter(email="inconnu@exemple.test").exists())
 
 
 class MotsDePasseDatalumniTests(TestCase):

@@ -5,7 +5,7 @@ La base de test est créée avec toutes les migrations, donc avec les données d
 
 import uuid
 
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import ProtectedError
@@ -15,8 +15,8 @@ from django.urls import reverse
 from membres.models import Membre
 
 from .creation import creer_referentiels
-from .donnees import DIPLOMES
-from .models import Diplome, Formation, Niveau, Site
+from .donnees import DIPLOMES, SECTEURS, TYPES_DE_CONTRAT
+from .models import Diplome, Formation, Niveau, Secteur, Site, Tag, TypeDeContrat
 
 TOUS_LES_DIPLOMES = [nom for noms in DIPLOMES.values() for nom in noms]
 MOT_DE_PASSE = "motdepasse-de-test"
@@ -157,3 +157,50 @@ class FormationTests(TestCase):
         self.formation(self.sio).save()
         with self.assertRaises(ProtectedError):
             self.sio.delete()
+
+
+class ReferentielsAdministrationTests(TestCase):
+    """Types de contrat, secteurs et tags (#39) : listes de départ et back-office."""
+
+    LISTES = ["typedecontrat", "secteur", "tag"]
+
+    @classmethod
+    def setUpTestData(cls):
+        identite = {"prenom": "Test", "nom": "Exemple"}
+        cls.administrateur = Membre.objects.create_user(
+            "administrateur@exemple.test", MOT_DE_PASSE, is_staff=True, **identite
+        )
+        cls.administrateur.groups.add(Group.objects.get(name="Administrateur"))
+        cls.equipe = Membre.objects.create_user(
+            "equipe@exemple.test", MOT_DE_PASSE, is_staff=True, **identite
+        )
+
+    def test_la_migration_cree_les_types_de_contrat_et_les_secteurs(self):
+        noms = TypeDeContrat.objects.values_list("nom", flat=True)
+        self.assertEqual(sorted(noms), sorted(TYPES_DE_CONTRAT))
+        self.assertEqual(sorted(Secteur.objects.values_list("nom", flat=True)), sorted(SECTEURS))
+        # Les listes de Datalumni (docs/migration/export-reel.md), noms à l'identique.
+        self.assertEqual((len(TYPES_DE_CONTRAT), len(SECTEURS)), (5, 26))
+        self.assertTrue(Secteur.objects.filter(nom="Conseil / Audit").exists())
+        self.assertEqual(Tag.objects.count(), 0)  # les tags se créent dans le back-office
+
+    def test_un_type_de_contrat_ne_peut_pas_exister_deux_fois(self):
+        with self.assertRaises(IntegrityError):
+            TypeDeContrat.objects.create(nom="CDI")
+
+    def test_l_administrateur_gere_les_trois_listes(self):
+        self.client.force_login(self.administrateur)
+        for liste in self.LISTES:
+            with self.subTest(liste=liste):
+                page = reverse(f"admin:referentiels_{liste}_changelist")
+                self.assertEqual(self.client.get(page).status_code, 200)
+        ajout = reverse("admin:referentiels_tag_add")
+        self.client.post(ajout, {"nom": "Entrepreneuriat"})
+        self.assertTrue(Tag.objects.filter(nom="Entrepreneuriat").exists())
+
+    def test_l_equipe_sans_groupe_n_y_a_pas_acces(self):
+        self.client.force_login(self.equipe)
+        for liste in self.LISTES:
+            with self.subTest(liste=liste):
+                page = reverse(f"admin:referentiels_{liste}_changelist")
+                self.assertEqual(self.client.get(page).status_code, 403)

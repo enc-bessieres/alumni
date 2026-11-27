@@ -6,10 +6,10 @@ Ce fichier donne le contexte du projet à toute IA de développement. L'équipe 
 
 Remplacer la plateforme alumni louée par l'ENC Bessières à **Datalumni** (https://www.bessieres-alumni.org/) par une plateforme appartenant à l'établissement. La bascule est prévue **avant le 25 mars 2027**.
 
-- **Équipe :** quatre étudiants de BTS SIO SLAM, en stage du 9 novembre au 18 décembre 2026.
+- **Équipe :** quatre étudiants de BTS SIO SLAM, en stage du 9 novembre au 18 décembre 2026. Deux étudiantes, Sidouane et Vera, les rejoignent du 25 novembre au 18 décembre.
 - **Responsable technique :** Timothée Robert, enseignant. Il intègre, relit, fusionne et déploie.
 - **Relations institutionnelles :** Philippe Chenut, DDFPT. Il porte les échanges avec Datalumni, la direction et le DPO.
-- **Public du site :** environ 1300 membres. Ce sont des alumni, des étudiants, des enseignants, l'équipe administrative, des candidats et des recruteurs.
+- **Public du site :** 6138 comptes chez Datalumni, dont 1233 activés (relevé du 25 novembre 2026). Ce sont des alumni, des étudiants, des enseignants, l'équipe administrative, des candidats et des recruteurs.
 
 ## Où trouver quoi
 
@@ -21,6 +21,7 @@ Remplacer la plateforme alumni louée par l'ENC Bessières à **Datalumni** (htt
 | `docs/04-prerequis.md` | Outils, compétences, méthode |
 | `docs/05-choix-technique.md` | Comparatif des techniques |
 | `docs/06-points-durs.md` | Migration des comptes, Google/LinkedIn, e-mails, domaine, RGPD |
+| `docs/migration/export-reel.md` | Format réel des exports Datalumni : colonnes, volumes, cas à traiter |
 | `docs/decisions/` | Décisions prises, une par fichier |
 
 ## Technique
@@ -79,7 +80,7 @@ docker compose exec web ruff check . && docker compose exec web ruff format .
 
 ## Règles non négociables
 
-1. **Aucune donnée réelle dans le dépôt ni sur les postes des étudiants.** On travaille uniquement avec les fausses données générées par le projet.
+1. **Aucune donnée réelle dans le dépôt, ni dans une IA, ni dans Slack ou GitHub.** Les exports réels de Datalumni sont dans le dépôt privé `enc-bessieres/alumni-donnees`, cloné dans le dossier `sources/` du poste, que ce dépôt-ci ignore (`docs/decisions/0006-donnees-reelles.md`). Les tests, les démos et les captures d'écran utilisent les fausses données générées par le projet.
 2. **Aucun secret dans le dépôt.** Les mots de passe, clés et jetons vont dans `.env`, qui n'est pas versionné. Le dépôt ne contient que `.env.example`, avec des valeurs factices.
 3. **Les droits d'accès sont définis à un seul endroit**, avec le mécanisme du framework. On ne contourne jamais ce mécanisme dans un contrôleur ou une route.
 4. **Jamais de SQL construit en collant des valeurs dans le texte de la requête.** On passe par l'ORM ou par des requêtes paramétrées.
