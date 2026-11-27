@@ -29,5 +29,5 @@ Précision de M. Robert, le 26 novembre : « l'annuaire et les fiches restent r�
 
 ## Ce que ça implique
 
-- Les validateurs trouvent les inscriptions à valider dans le back-office (filtres « statut » et « créé le »). La 2e partie de #89 leur donnera une page dédiée, avec un e-mail au membre quand son inscription est validée ou refusée.
+- Les validateurs ont une page dédiée, `/validation/` : les inscriptions en attente, de la plus ancienne à la plus récente, avec « Valider » et « Refuser ». Le membre reçoit un e-mail dans les deux cas. Le back-office permet aussi de changer le statut, mais sans e-mail : la page est le chemin normal.
 - Import Datalumni : l'export ne contient pas de statut d'inscription ; un compte activé chez Datalumni est considéré comme validé (`docs/migration/export-reel.md`). Les comptes jamais activés suivent la première connexion (#85).

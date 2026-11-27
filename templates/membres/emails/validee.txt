@@ -1,0 +1,8 @@
+Bonjour {{ membre.prenom }},
+
+Votre inscription au réseau des anciens de l'ENC Bessières est validée.
+
+Vous avez maintenant accès à l'annuaire et aux fiches des membres :
+{{ lien_annuaire }}
+
+L'équipe de l'ENC Bessières

@@ -112,6 +112,11 @@ ACCOUNT_SIGNUP_FORM_CLASS = "membres.inscription.InscriptionForm"
 # Un clic sur le lien de vérification connecte le nouveau membre (allauth ne le fait que dans
 # le navigateur qui a servi à s'inscrire). Une inscription refusée reste dehors (adapter.py).
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+# Les limites d'allauth comptent par adresse IP. Derrière le proxy de l'hébergeur, Django ne
+# voit que l'adresse du proxy : sans ce réglage, tous les visiteurs auraient la même et la
+# limite d'inscriptions vaudrait pour tout le site. 0 en développement (pas de proxy) ; en
+# production, le nombre de proxys devant le site, à fixer dans .env avec l'hébergeur.
+ALLAUTH_TRUSTED_PROXY_COUNT = int(os.environ.get("ALLAUTH_TRUSTED_PROXY_COUNT", "0"))
 # Inscription ouverte à tous (décision 0005) : on limite le nombre de comptes créés depuis
 # une même adresse IP (allauth autorise 20 par minute par défaut).
 ACCOUNT_RATE_LIMITS = {"signup": "5/m/ip,20/h/ip"}
