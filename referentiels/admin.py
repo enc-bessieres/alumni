@@ -8,10 +8,10 @@ le superutilisateur les a toutes.
 
 from django.contrib import admin
 
-from .models import Diplome, Formation, Niveau, Site
+from .models import Diplome, Formation, Niveau, Secteur, Site, Tag, TypeDeContrat
 
 
-@admin.register(Site, Niveau)
+@admin.register(Site, Niveau, TypeDeContrat, Secteur, Tag)
 class ReferentielAdmin(admin.ModelAdmin):
     list_display = ["nom"]
     search_fields = ["nom"]
