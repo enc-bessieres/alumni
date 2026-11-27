@@ -11,6 +11,8 @@ urlpatterns = [
     path("compte/", include("allauth.urls")),
     path("page/", include("pages_libres.urls")),
     path("", include("membres.urls")),  # /annuaire/ et /parametres/
+    # Avant gabarit : /mentorat/ reste la page provisoire, ses sous-pages viennent d'ici.
+    path("mentorat/", include("mentorat.urls")),
     path("", include("accueil.urls")),
     path("blog/", include("blog.urls")),
     path("", include("gabarit.urls")),

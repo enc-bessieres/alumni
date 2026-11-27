@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block titre %}Mes préférences de mentorat — Alumni ENC Bessières{% endblock %}
+
+{% block contenu %}
+  <h1>Mes préférences de mentorat</h1>
+  <p>
+    Déclarez-vous mentor si vous pouvez accompagner d'autres membres, ou mentoré si vous
+    cherchez un mentor.
+    <a href="{% url 'pages_libres:detail' 'charte-du-mentorat' %}">Lire la charte du mentorat</a>
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ formulaire.as_div }}
+    {% if not sujets_existent %}
+      <p>
+        À COMPLÉTER : la liste des sujets de mentorat, à saisir dans le back-office
+        (les types de mentorat de Datalumni).
+      </p>
+    {% endif %}
+    <p><button type="submit">Enregistrer</button></p>
+  </form>
+{% endblock %}
