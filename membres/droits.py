@@ -77,6 +77,11 @@ GROUPES = {
         "pages_libres.add_page",
         "pages_libres.change_page",
         "pages_libres.delete_page",
+        # Blog (#43) : articles.
+        "blog.view_article",
+        "blog.add_article",
+        "blog.change_article",
+        "blog.delete_article",
     ],
 }
 
