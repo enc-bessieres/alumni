@@ -6,6 +6,9 @@
 <h1>Actualités</h1>
 {% for article in articles %}
   <article>
+    {% if article.image %}
+      <img class="vignette" src="{{ article.image.url }}" alt="{{ article.texte_alternatif }}" loading="lazy">
+    {% endif %}
     <h2><a href="{{ article.get_absolute_url }}">{{ article.titre }}</a></h2>
     <p><small>{{ article.publie_le|date:"j F Y" }}</small></p>
     {% if article.resume %}<p>{{ article.resume }}</p>{% endif %}

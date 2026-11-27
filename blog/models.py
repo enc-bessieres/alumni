@@ -3,6 +3,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
+from images.outils import verifier_taille
 from texte_riche.champs import ChampTexteRiche
 
 
@@ -18,6 +19,15 @@ class Article(models.Model):
         blank=True,
         related_name="articles",
         verbose_name="auteur",
+    )
+    image = models.ImageField(
+        "image", upload_to="articles/", blank=True, validators=[verifier_taille]
+    )
+    texte_alternatif = models.CharField(
+        "texte alternatif",
+        max_length=200,
+        blank=True,
+        help_text="Décrivez l'image pour les personnes qui ne la voient pas.",
     )
 
     class Statut(models.TextChoices):
