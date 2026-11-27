@@ -78,6 +78,12 @@ GROUPES = {
         "pages_libres.add_page",
         "pages_libres.change_page",
         "pages_libres.delete_page",
+        # Offres d'emploi et de stage (#67).
+        "offres.view_offre",
+        "offres.add_offre",
+        "offres.change_offre",
+        "offres.delete_offre",
+        "offres.valider_offre",
         # Blog (#43) : articles.
         "blog.view_article",
         "blog.add_article",
