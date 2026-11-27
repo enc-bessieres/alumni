@@ -17,7 +17,6 @@ MOTS = [
     "casse-bonbons",
     "connard",
     "connasse",
-    "con",
     "conne",
     "connerie",
     "couillon",
