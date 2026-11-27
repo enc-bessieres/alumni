@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class OffresConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'offres'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "offres"
