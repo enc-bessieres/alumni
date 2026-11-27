@@ -14,7 +14,8 @@ def mes_preferences(request):
     """Un membre validé se déclare mentor ou mentoré, ou arrête le mentorat (règle 3)."""
     # Toujours le profil du membre connecté : on ne peut pas modifier celui d'un autre.
     profil = ProfilMentorat.objects.filter(membre=request.user).first()
-    formulaire = PreferencesMentorat(request.POST or None, instance=profil)
+    donnees = request.POST if request.method == "POST" else None
+    formulaire = PreferencesMentorat(donnees, instance=profil)
 
     if request.method == "POST" and formulaire.is_valid():
         role = formulaire.cleaned_data["role"]

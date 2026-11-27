@@ -1,8 +1,8 @@
 """
 Le mentorat : un membre se déclare mentor (il accompagne d'autres membres), mentoré (il
-cherche un mentor) ou les deux, sur des sujets. C'est le champ `mentoring` de Datalumni : le
-rôle (`mentor`, `mentee` ou `mentor / mentee`), les types de mentorat et le nombre maximum de
-mentorés (docs/migration/export-reel.md).
+cherche un mentor) ou les deux, sur des sujets. Le rôle reprend la colonne `mentoring_role` de
+l'export Datalumni (`mentor`, `mentee` ou `mentor / mentee`, docs/migration/export-reel.md) ;
+les sujets et le nombre maximum de mentorés ne sont pas dans l'export.
 """
 
 from django.conf import settings
