@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django_prose_editor",
     "texte_riche",
     "datalumni",
+    "blog",
 ]
 
 MIDDLEWARE = [
@@ -107,6 +108,14 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_LOGIN_METHODS = {"email"}  # on se connecte avec son e-mail
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # notre Membre n'a pas d'identifiant
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+# Nos champs en plus à l'inscription : identité, catégorie, CGU (membres/inscription.py).
+ACCOUNT_SIGNUP_FORM_CLASS = "membres.inscription.InscriptionForm"
+# Un clic sur le lien de vérification connecte le nouveau membre (allauth ne le fait que dans
+# le navigateur qui a servi à s'inscrire). Une inscription refusée reste dehors (adapter.py).
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+# Inscription ouverte à tous (décision 0005) : on limite le nombre de comptes créés depuis
+# une même adresse IP (allauth autorise 20 par minute par défaut).
+ACCOUNT_RATE_LIMITS = {"signup": "5/m/ip,20/h/ip"}
 # Une adresse doit être vérifiée avant de se connecter. Les comptes importés de Datalumni
 # arrivent avec une adresse déjà vérifiée : l'import crée la ligne EmailAddress correspondante.
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
@@ -131,6 +140,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Fichiers envoyés par les membres (images d'articles, photos de profil…) : voir l'issue #92.
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

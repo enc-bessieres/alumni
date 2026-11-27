@@ -20,10 +20,4 @@ urlpatterns = [
     path("ressources/", views.bientot, {"titre": "Ressources"}, name="ressources"),
     # Réservées aux membres connectés (règle 3), même tant qu'elles sont vides.
     path("profil/", login_required(views.bientot), {"titre": "Profil"}, name="profil"),
-    path(
-        "parametres/",
-        login_required(views.bientot),
-        {"titre": "Paramètres"},
-        name="parametres",
-    ),
 ]

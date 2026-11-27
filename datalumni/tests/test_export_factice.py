@@ -1,101 +1,128 @@
 """
-Export factice au format Datalumni (docs/migration/export-factice.md).
+Export factice au format du vrai directory.csv (docs/migration/export-reel.md, issue #84).
 Ces tests n'ont pas besoin de la base de données.
 """
 
-import json
-from dataclasses import replace
+from collections import Counter
+from datetime import date
 
-from django.contrib.auth.hashers import PBKDF2PasswordHasher, check_password
 from django.test import SimpleTestCase
 
-from datalumni.export_factice import CONFIG_PAR_DEFAUT, generer_export_factice
-from referentiels.donnees import DIPLOMES
-
-# Produite par Django 5.2.19 (make_password) avec un mot de passe factice.
-EMPREINTE_DJANGO = "pbkdf2_sha256$1000$selCourt$aG21TaBWDeLTNSMtoroTPzcQF3l1bX7+lAimMuXMIXg="
-
-
-def annees(m):
-    """Les années de promo d'un membre, dans l'ordre de l'export."""
-    return [g["timeline"]["annee"] for g in m["groupes"] if g["timeline"]]
+from datalumni.export_factice import COLONNES, SECTEURS, generer_export_factice
+from referentiels.donnees import DIPLOMES, SITES
 
 
 class ExportFacticeTests(SimpleTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.export = generer_export_factice()  # une seule fois : il faut environ une seconde
-        cls.membres = cls.export["membres"]
+        cls.lignes = generer_export_factice()
 
-    def compter(self, condition):
-        return sum(1 for m in self.membres if condition(m))
+    def remplies(self, colonne):
+        return sum(1 for ligne in self.lignes if ligne[colonne])
 
-    # --- L'export dans son ensemble ------------------------------------------------------
+    def vraies(self, colonne):
+        return sum(1 for ligne in self.lignes if ligne[colonne] == "True")
+
+    # --- Le fichier dans son ensemble ----------------------------------------------------
 
     def test_meme_graine_meme_export_autre_graine_autre_export(self):
-        self.assertEqual(json.dumps(generer_export_factice()), json.dumps(self.export))
-        autre = generer_export_factice(replace(CONFIG_PAR_DEFAUT, graine=1))
-        self.assertNotEqual(autre["membres"][0]["uuid"], self.membres[0]["uuid"])
+        self.assertEqual(generer_export_factice(), self.lignes)
+        self.assertNotEqual(generer_export_factice(7)[0]["user_id"], self.lignes[0]["user_id"])
 
-    def test_reprend_les_chiffres_du_releve(self):
-        visibles = [m for m in self.membres if m["visible_annuaire"]]
-        self.assertEqual(len(self.membres), 1300)
-        self.assertEqual(len(visibles), 1222)  # somme des catégories (l'annuaire en annonce 1214)
-        self.assertEqual(sum(1 for m in visibles if m["categorie"] == "Alumni"), 1143)
-        self.assertEqual(sum(1 for m in visibles if m["categorie"] == "Enseignant"), 50)
-        self.assertEqual(self.compter(lambda m: m["origine"] == "import"), 784)
+    def test_les_28_colonnes_dans_l_ordre_du_vrai_fichier(self):
+        self.assertEqual(len(set(COLONNES)), 28)
+        # Vérifié sur le vrai fichier (#91) : notifications_registration est la dernière.
+        self.assertEqual(COLONNES[:2], ["user_id", "external_ref"])
+        self.assertEqual(COLONNES[-2:], ["mentoring_role", "notifications_registration"])
+        self.assertTrue(all(list(ligne) == COLONNES for ligne in self.lignes))
+
+    def test_dates_seules_et_activation_apres_l_import(self):
+        for colonne in ("import_date", "account_activation_date"):
+            dates = [ligne[colonne] for ligne in self.lignes if ligne[colonne]]
+            # AAAA-MM-JJ, sans heure : comme dans le vrai fichier (#91).
+            self.assertTrue(all(date.fromisoformat(d).isoformat() == d for d in dates))
+        actives = [ligne for ligne in self.lignes if ligne["account_activation_date"]]
+        self.assertTrue(
+            all(ligne["import_date"] <= ligne["account_activation_date"] for ligne in actives)
+        )
+
+    def test_les_volumes_de_l_export_reel(self):
+        # Colonne : nombre de cases remplies, relevé dans docs/migration/export-reel.md.
+        attendus = {
+            "user_id": 6138, "external_ref": 0, "first_name": 6134, "birth_name": 55,
+            "civility": 1242, "location": 663, "phone": 996, "current_position": 357,
+            "business_sector": 340, "last_login": 1252, "last_profile_update": 5744,
+            "account_activation_date": 1233, "category": 6133, "campus": 4978, "degree": 5701,
+            "promotion_year": 5691, "import_date": 5683, "job_search": 289, "mentoring_role": 282,
+        }  # fmt: skip
+        self.assertEqual({c: self.remplies(c) for c in attendus}, attendus)
+        self.assertEqual(self.vraies("account_status"), 1233)
+        self.assertEqual(self.vraies("visibility_directory"), 6129)  # toujours True
 
     def test_adresses_toutes_en_test_et_toutes_differentes(self):
-        adresses = [m["email"] for m in self.membres]
-        self.assertTrue(all(a.endswith("@exemple.test") for a in adresses))  # règle 1
+        adresses = [ligne["email"] for ligne in self.lignes]
+        self.assertTrue(all(a.endswith(".test") for a in adresses))  # règle 1 d'AGENTS.md
         self.assertEqual(len(set(adresses)), len(adresses))
+        self.assertTrue(all(a == a.lower() for a in adresses))
+        etudiants = sum(a.endswith("@enc-bessieres.exemple.test") for a in adresses)
+        self.assertEqual(etudiants, 2048)
 
-    def test_deux_membres_ne_portent_jamais_le_meme_nom_par_hasard(self):
-        noms = [(m["metadata"]["prenom"], m["metadata"]["nom"]) for m in self.membres]
-        self.assertEqual(len(set(noms)), len(noms))
+    def test_telephones_dans_la_plage_reservee_a_la_fiction(self):
+        telephones = [ligne["phone"] for ligne in self.lignes if ligne["phone"]]
+        self.assertTrue(all(t.startswith("+3363998") and len(t) == 12 for t in telephones))
 
-    def test_uuid_uniques_et_appartenances_vers_des_groupes_existants(self):
-        uuids = [o["uuid"] for o in self.export["groupes"] + self.membres]
-        self.assertEqual(len(set(uuids)), len(uuids))
-        connus = {g["uuid"] for g in self.export["groupes"]}
-        self.assertTrue(all(g["groupe_uuid"] in connus for m in self.membres for g in m["groupes"]))
+    def test_identifiants_uniques_et_aucun_mot_de_passe(self):
+        identifiants = [ligne["user_id"] for ligne in self.lignes]
+        self.assertEqual(len(set(identifiants)), 6138)
+        self.assertNotIn("password", COLONNES)  # Datalumni ne fournit pas les mots de passe
 
-    # --- Les référentiels et les promos --------------------------------------------------
+    # --- Les cas à traiter par l'import --------------------------------------------------
 
-    def test_reprend_les_20_diplomes_ranges_sous_leur_niveau(self):
-        diplomes = [g for g in self.export["groupes"] if g["type"] == "diplome"]
-        attendus = [nom for noms in DIPLOMES.values() for nom in noms]
-        self.assertEqual(sorted(g["nom"] for g in diplomes), sorted(attendus))
-        bts = next(g for g in self.export["groupes"] if g["type"] == "niveau" and g["nom"] == "BTS")
-        sio = next(g for g in diplomes if g["nom"] == "BTS SIO")
-        self.assertEqual(sio["parent_uuid"], bts["uuid"])
+    def test_les_comptes_actives_par_categorie(self):
+        actives = Counter(
+            ligne["category"] for ligne in self.lignes if ligne["account_status"] == "True"
+        )
+        self.assertEqual(
+            (actives["Alumni"], actives["Enseignant"], actives["Recruteur"]), (1143, 43, 17)
+        )
+        # Un compte inscrit seul (import_date vide) est forcément activé.
+        seuls = [ligne for ligne in self.lignes if not ligne["import_date"]]
+        self.assertEqual(len(seuls), 455)
+        self.assertTrue(all(ligne["account_status"] == "True" for ligne in seuls))
 
-    def test_promos_de_1990_a_2026_sur_les_20_diplomes(self):
-        alumni = [a for m in self.membres if m["categorie"] == "Alumni" for a in annees(m)]
-        self.assertEqual((min(alumni), max(alumni)), (1990, 2026))
-        utilises = {g["groupe_uuid"] for m in self.membres for g in m["groupes"] if g["timeline"]}
-        diplomes = {g["uuid"] for g in self.export["groupes"] if g["type"] == "diplome"}
-        self.assertEqual(utilises, diplomes)
+    def test_noms_en_majuscules_et_128_groupes_d_homonymes(self):
+        noms = [ligne["last_name"] for ligne in self.lignes if ligne["last_name"]]
+        self.assertEqual(sum(n == n.upper() for n in noms), 6036)
+        identites = Counter(
+            (ligne["first_name"], ligne["last_name"].upper())
+            for ligne in self.lignes
+            if ligne["first_name"]
+        )
+        groupes = [n for n in identites.values() if n > 1]
+        self.assertEqual((len(groupes), sum(groupes)), (128, 259))
 
-    def test_les_etudiants_sortiront_en_2027_ou_2028(self):
-        etudiants = [a for m in self.membres if m["categorie"] == "Étudiant" for a in annees(m)]
-        self.assertEqual(len(etudiants), 9)
-        self.assertTrue(all(a in (2027, 2028) for a in etudiants))
+    def test_categories_sites_et_diplomes_doubles_separes_par_une_barre(self):
+        self.assertEqual(sum(" / " in ligne["category"] for ligne in self.lignes), 12)
+        self.assertEqual(sum(ligne["campus"] == " / ".join(SITES) for ligne in self.lignes), 52)
+        plusieurs = [ligne for ligne in self.lignes if " / " in ligne["degree"]]
+        self.assertEqual(len(plusieurs), 121)
+        connus = {d for noms in DIPLOMES.values() for d in noms}
+        diplomes = {
+            d for ligne in self.lignes if ligne["degree"] for d in ligne["degree"].split(" / ")
+        }
+        self.assertLessEqual(diplomes, connus)
 
-    def test_plusieurs_diplomes_le_second_trois_ans_plus_tard(self):
-        plusieurs = [m for m in self.membres if len(annees(m)) > 1]
-        self.assertEqual(len(plusieurs), 120)
-        self.assertTrue(all(second == premier + 3 for premier, second in map(annees, plusieurs)))
+    def test_une_seule_promo_de_1963_a_2029(self):
+        annees = [int(ligne["promotion_year"]) for ligne in self.lignes if ligne["promotion_year"]]
+        self.assertEqual((min(annees), max(annees)), (1963, 2029))
+        self.assertTrue(all(ligne["degree"] for ligne in self.lignes if ligne["promotion_year"]))
 
-    # --- Les mots de passe --------------------------------------------------------------
-
-    def test_le_hasher_de_django_donne_la_meme_empreinte_que_django(self):
-        empreinte = PBKDF2PasswordHasher().encode("rapide-pour-test", "selCourt", 1000)
-        self.assertEqual(empreinte, EMPREINTE_DJANGO)
-
-    def test_mots_de_passe_relus_par_django(self):
-        empreinte = self.membres[0]["password"]
-        self.assertTrue(empreinte.startswith("pbkdf2_sha256$1000$"))
-        self.assertTrue(check_password("motdepasse-factice", empreinte))
-        self.assertFalse(check_password("autre-chose", empreinte))
+    def test_civilites_secteurs_et_mentorat_tels_que_datalumni_les_ecrit(self):
+        civilites = {ligne["civility"] for ligne in self.lignes} - {""}
+        self.assertEqual(civilites, {"Mme.", "M.", "Madame", "Monsieur", "Non renseigné"})
+        secteurs = {ligne["business_sector"] for ligne in self.lignes} - {""}
+        self.assertLessEqual(secteurs, set(SECTEURS))
+        self.assertEqual(len(SECTEURS), 26)
+        roles = Counter(ligne["mentoring_role"] for ligne in self.lignes if ligne["mentoring_role"])
+        self.assertEqual(roles, {"mentor": 166, "mentee": 103, "mentor / mentee": 13})

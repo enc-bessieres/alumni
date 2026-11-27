@@ -7,7 +7,7 @@
     </summary>
     <ul>
       <li><a href="{% url 'gabarit:profil' %}">Profil</a></li>
-      <li><a href="{% url 'gabarit:parametres' %}">Paramètres</a></li>
+      <li><a href="{% url 'membres:parametres' %}">Paramètres</a></li>
       {% if url_deconnexion %}
         <li>
           <form method="post" action="{{ url_deconnexion }}">
