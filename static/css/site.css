@@ -452,3 +452,13 @@ summary::-webkit-details-marker {
     grid-template-columns: 1fr 1fr;
   }
 }
+/* Images des articles du blog (issue #99) : jamais plus larges que la page. */
+.image-article {
+  max-width: 100%;
+  height: auto;
+}
+
+.vignette {
+  max-width: 12rem;
+  height: auto;
+}
